@@ -2,8 +2,8 @@ package com.javakaian.shooter;
 
 import org.apache.log4j.Logger;
 
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.javakaian.shooter.utils.GameConstants;
 
 public class ClientMain {
@@ -11,12 +11,11 @@ public class ClientMain {
 	private static Logger logger = Logger.getLogger(ClientMain.class);
 
 	public static void main(String[] arg) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = GameConstants.SCREEN_WIDTH;
-		config.height = GameConstants.SCREEN_HEIGHT;
-		config.foregroundFPS = 60;
-		config.backgroundFPS = 60;
-		config.resizable = false;
+		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
+		config.setWindowedMode(GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT);
+		config.setForegroundFPS(60);
+		config.setIdleFPS(60);
+		config.setResizable(false);
 		// config.x = 2500;
 
 		String ip = null;
@@ -26,6 +25,6 @@ public class ClientMain {
 		} else {
 			ip = arg[0];
 		}
-		new LwjglApplication(new KillThemAll(ip), config);
+		new Lwjgl3Application(new KillThemAll(ip), config);
 	}
 }
