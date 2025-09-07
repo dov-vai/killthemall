@@ -17,6 +17,14 @@ eclipse.project.name = appName + "-client"
 
 libsDirName = '../../jars/'
 
+tasks.register('run', JavaExec) {
+    dependsOn classes
+    mainClass = 'com.javakaian.shooter.ClientMain'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.projectDir
+}
+
 jar {
 
     manifest {

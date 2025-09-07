@@ -14,6 +14,14 @@ eclipse.project.name = appName + "-server"
 
 libsDirName = '../../jars/'
 
+tasks.register('run', JavaExec) {
+    dependsOn classes
+    mainClass = 'com.javakaian.shooter.ServerMain'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.projectDir
+}
+
 jar {
     manifest {
         attributes(
