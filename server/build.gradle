@@ -7,7 +7,16 @@ java {
     }
 }
 
-sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
 
 eclipse.project.name = appName + "-server"
 

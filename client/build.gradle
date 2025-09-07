@@ -7,11 +7,18 @@ java {
     }
 }
 
-sourceSets.main.java.srcDirs = [ "src/" ]
-sourceSets.main.resources.srcDirs = ["./assets"]
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
 
 project.ext.mainClassName = "com.javakaian.shooter.ClientMain"
-project.ext.assetDir = new File("./assets")
 
 eclipse.project.name = appName + "-client"
 
