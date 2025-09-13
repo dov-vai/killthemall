@@ -5,7 +5,7 @@ package com.javakaian.network.messages;
  *
  *         This message will be sent only when player died.
  */
-public class PlayerDied {
+public class PlayerDiedMessage {
 
 	/** Player id */
 	private int id;

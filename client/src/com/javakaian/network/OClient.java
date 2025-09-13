@@ -13,7 +13,7 @@ import com.esotericsoftware.kryonet.Listener;
 import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
-import com.javakaian.network.messages.PlayerDied;
+import com.javakaian.network.messages.PlayerDiedMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.ShootMessage;
 import com.javakaian.shooter.OMessageListener;
@@ -58,18 +58,18 @@ public class OClient {
 
 					if (object instanceof LoginMessage) {
 						LoginMessage m = (LoginMessage) object;
-						OClient.this.game.loginReceieved(m);
+						OClient.this.game.loginReceived(m);
 
 					} else if (object instanceof LogoutMessage) {
 						LogoutMessage m = (LogoutMessage) object;
-						OClient.this.game.logoutReceieved(m);
+						OClient.this.game.logoutReceived(m);
 					} else if (object instanceof GameWorldMessage) {
 
 						GameWorldMessage m = (GameWorldMessage) object;
 						OClient.this.game.gwmReceived(m);
-					} else if (object instanceof PlayerDied) {
+					} else if (object instanceof PlayerDiedMessage) {
 
-						PlayerDied m = (PlayerDied) object;
+						PlayerDiedMessage m = (PlayerDiedMessage) object;
 						OClient.this.game.playerDiedReceived(m);
 					}
 
@@ -92,7 +92,7 @@ public class OClient {
 		this.client.getKryo().register(PositionMessage.class);
 		this.client.getKryo().register(PositionMessage.DIRECTION.class);
 		this.client.getKryo().register(ShootMessage.class);
-		this.client.getKryo().register(PlayerDied.class);
+		this.client.getKryo().register(PlayerDiedMessage.class);
 		// primitive arrays
 		this.client.getKryo().register(float[].class);
 

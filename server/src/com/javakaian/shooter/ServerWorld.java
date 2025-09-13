@@ -12,7 +12,7 @@ import com.javakaian.network.OServer;
 import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
-import com.javakaian.network.messages.PlayerDied;
+import com.javakaian.network.messages.PlayerDiedMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.ShootMessage;
 import com.javakaian.shooter.shapes.Bullet;
@@ -26,24 +26,24 @@ public class ServerWorld implements OMessageListener {
 	private List<Enemy> enemies;
 	private List<Bullet> bullets;
 
-	private OServer oServer;
+	private OServer server;
 
 	private float deltaTime = 0;
 
 	private float enemyTime = 0f;
 
-	private LoginController loginController;
+	private UserIdPool idPool;
 
 	private Logger logger = Logger.getLogger(ServerWorld.class);
 
 	public ServerWorld() {
 
-		oServer = new OServer(this);
+		server = new OServer(this);
 		players = new ArrayList<>();
 		enemies = new ArrayList<>();
 		bullets = new ArrayList<>();
 
-		loginController = new LoginController();
+		idPool = new UserIdPool();
 
 	}
 
@@ -52,7 +52,7 @@ public class ServerWorld implements OMessageListener {
 		this.deltaTime = deltaTime;
 		this.enemyTime += deltaTime;
 
-		oServer.parseMessage();
+		server.parseMessage();
 
 		// update every object
 		players.forEach(p -> p.update(deltaTime));
@@ -69,7 +69,7 @@ public class ServerWorld implements OMessageListener {
 		spawnRandomEnemy();
 
 		GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players);
-		oServer.sendToAllUDP(m);
+		server.sendToAllUDP(m);
 
 	}
 
@@ -105,9 +105,9 @@ public class ServerWorld implements OMessageListener {
 					p.hit();
 					if (!p.isAlive()) {
 
-						PlayerDied m = new PlayerDied();
+						PlayerDiedMessage m = new PlayerDiedMessage();
 						m.setId(p.getId());
-						oServer.sendToAllUDP(m);
+						server.sendToAllUDP(m);
 					}
 
 				}
@@ -120,11 +120,11 @@ public class ServerWorld implements OMessageListener {
 	@Override
 	public void loginReceived(Connection con, LoginMessage m) {
 
-		int id = loginController.getUserID();
+		int id = idPool.getUserID();
 		players.add(new Player(m.getX(), m.getY(), 50, id));
 		logger.debug("Login Message recieved from : " + id);
 		m.setId(id);
-		oServer.sendToUDP(con.getID(), m);
+		server.sendToUDP(con.getID(), m);
 	}
 
 	@Override
@@ -132,19 +132,19 @@ public class ServerWorld implements OMessageListener {
 
 		players.stream().filter(p -> p.getId() == m.getId()).findFirst().ifPresent(p -> {
 			players.remove(p);
-			loginController.putUserIDBack(p.getId());
+			idPool.putUserIDBack(p.getId());
 		});
 		logger.debug("Logout Message recieved from : " + m.getId() + " Size: " + players.size());
 
 	}
 
 	@Override
-	public void playerMovedReceived(PositionMessage move) {
+	public void playerMovedReceived(PositionMessage m) {
 
-		players.stream().filter(p -> p.getId() == move.getId()).findFirst().ifPresent(p -> {
+		players.stream().filter(p -> p.getId() == m.getId()).findFirst().ifPresent(p -> {
 
 			Vector2 v = p.getPosition();
-			switch (move.getDirection()) {
+			switch (m.getDirection()) {
 			case LEFT:
 				v.x -= deltaTime * 200;
 				break;
@@ -166,11 +166,11 @@ public class ServerWorld implements OMessageListener {
 	}
 
 	@Override
-	public void shootMessageReceived(ShootMessage pp) {
+	public void shootReceived(ShootMessage m) {
 
-		players.stream().filter(p -> p.getId() == pp.getId()).findFirst()
+		players.stream().filter(p -> p.getId() == m.getId()).findFirst()
 				.ifPresent(p -> bullets.add(new Bullet(p.getPosition().x + p.getBoundRect().width / 2,
-						p.getPosition().y + p.getBoundRect().height / 2, 10, pp.getAngleDeg(), pp.getId())));
+						p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getId())));
 
 	}
 

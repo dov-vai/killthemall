@@ -11,25 +11,25 @@ public interface OMessageListener {
 	/**
 	 * This should be received with playerID and bullet direction
 	 * 
-	 * @param pp
+	 * @param m
 	 */
-	public void shootMessageReceived(ShootMessage pp);
+    void shootReceived(ShootMessage m);
 
 	/**
 	 * PlayerID, and location should be received.
 	 */
-	public void loginReceived(Connection con, LoginMessage m);
+    void loginReceived(Connection con, LoginMessage m);
 
 	/**
 	 * PlayerID should be received.
 	 */
-	public void logoutReceived(LogoutMessage m);
+    void logoutReceived(LogoutMessage m);
 
 	/**
 	 * PlayerID and direction should be received.
 	 * 
-	 * @param move
+	 * @param m
 	 */
-	public void playerMovedReceived(PositionMessage move);
+    void playerMovedReceived(PositionMessage m);
 
 }

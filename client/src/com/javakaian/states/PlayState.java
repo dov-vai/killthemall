@@ -15,7 +15,7 @@ import com.javakaian.network.OClient;
 import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
-import com.javakaian.network.messages.PlayerDied;
+import com.javakaian.network.messages.PlayerDiedMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.PositionMessage.DIRECTION;
 import com.javakaian.network.messages.ShootMessage;
@@ -43,7 +43,7 @@ public class PlayState extends State implements OMessageListener {
 	private List<Bullet> bullets;
 	private AimLine aimLine;
 
-	private OClient myclient;
+	private OClient client;
 
 	private BitmapFont healthFont;
 
@@ -57,8 +57,8 @@ public class PlayState extends State implements OMessageListener {
 
 	private void init() {
 
-		myclient = new OClient(sc.getInetAddress(), this);
-		myclient.connect();
+		client = new OClient(sc.getInetAddress(), this);
+		client.connect();
 
 		players = new ArrayList<>();
 		enemies = new ArrayList<>();
@@ -70,7 +70,7 @@ public class PlayState extends State implements OMessageListener {
 		LoginMessage m = new LoginMessage();
 		m.setX(new SecureRandom().nextInt(GameConstants.SCREEN_WIDTH));
 		m.setY(new SecureRandom().nextInt(GameConstants.SCREEN_HEIGHT));
-		myclient.sendTCP(m);
+		client.sendTCP(m);
 
 	}
 
@@ -139,7 +139,7 @@ public class PlayState extends State implements OMessageListener {
 		ShootMessage m = new ShootMessage();
 		m.setId(player.getId());
 		m.setAngleDeg(aimLine.getAngle());
-		myclient.sendUDP(m);
+		client.sendUDP(m);
 
 	}
 
@@ -153,44 +153,44 @@ public class PlayState extends State implements OMessageListener {
 		p.setId(player.getId());
 		if (Gdx.input.isKeyPressed(Keys.S)) {
 			p.setDirection(DIRECTION.DOWN);
-			myclient.sendUDP(p);
+			client.sendUDP(p);
 		}
 		if (Gdx.input.isKeyPressed(Keys.W)) {
 			p.setDirection(DIRECTION.UP);
-			myclient.sendUDP(p);
+			client.sendUDP(p);
 		}
 		if (Gdx.input.isKeyPressed(Keys.A)) {
 			p.setDirection(DIRECTION.LEFT);
-			myclient.sendUDP(p);
+			client.sendUDP(p);
 		}
 		if (Gdx.input.isKeyPressed(Keys.D)) {
 			p.setDirection(DIRECTION.RIGHT);
-			myclient.sendUDP(p);
+			client.sendUDP(p);
 		}
 
 	}
 
 	@Override
-	public void loginReceieved(LoginMessage m) {
+	public void loginReceived(LoginMessage m) {
 
 		player = new Player(m.getX(), m.getY(), 50);
 		player.setId(m.getId());
 	}
 
 	@Override
-	public void logoutReceieved(LogoutMessage m) {
+	public void logoutReceived(LogoutMessage m) {
 		// do the logout proccess here
 	}
 
 	@Override
-	public void playerDiedReceived(PlayerDied m) {
+	public void playerDiedReceived(PlayerDiedMessage m) {
 		if (player.getId() != m.getId())
 			return;
 
 		LogoutMessage mm = new LogoutMessage();
 		mm.setId(player.getId());
-		myclient.sendTCP(mm);
-		myclient.close();
+		client.sendTCP(mm);
+		client.close();
 		this.getSc().setState(StateEnum.GAME_OVER_STATE);
 
 	}
@@ -221,7 +221,7 @@ public class PlayState extends State implements OMessageListener {
 
 		LogoutMessage m = new LogoutMessage();
 		m.setId(player.getId());
-		myclient.sendTCP(m);
+		client.sendTCP(m);
 	}
 
 }

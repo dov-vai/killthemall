@@ -13,7 +13,7 @@ import com.esotericsoftware.kryonet.Server;
 import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
-import com.javakaian.network.messages.PlayerDied;
+import com.javakaian.network.messages.PlayerDiedMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.ShootMessage;
 import com.javakaian.shooter.OMessageListener;
@@ -115,7 +115,7 @@ public class OServer {
 
 			} else if (message instanceof ShootMessage) {
 				ShootMessage m = (ShootMessage) message;
-				messageListener.shootMessageReceived(m);
+				messageListener.shootReceived(m);
 			}
 
 		}
@@ -134,7 +134,7 @@ public class OServer {
 		this.server.getKryo().register(PositionMessage.class);
 		this.server.getKryo().register(PositionMessage.DIRECTION.class);
 		this.server.getKryo().register(ShootMessage.class);
-		this.server.getKryo().register(PlayerDied.class);
+		this.server.getKryo().register(PlayerDiedMessage.class);
 		// primitive arrays
 		this.server.getKryo().register(float[].class);
 	}

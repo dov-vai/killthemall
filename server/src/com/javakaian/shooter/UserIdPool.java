@@ -3,11 +3,11 @@ package com.javakaian.shooter;
 import java.util.LinkedList;
 import java.util.Queue;
 
-public class LoginController {
+public class UserIdPool {
 
 	private Queue<Integer> idSet;
 
-	public LoginController() {
+	public UserIdPool() {
 
 		idSet = new LinkedList<>();
 
