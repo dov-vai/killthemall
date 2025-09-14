@@ -6,7 +6,7 @@ package com.javakaian.network.messages;
 public class PositionMessage {
 
 	/** Player ID */
-	private int id;
+	private int playerId;
 	/**
 	 * The direction that player wants to move. Server will check the direction and
 	 * let player move if its possible.
@@ -17,12 +17,12 @@ public class PositionMessage {
 		LEFT, RIGHT, DOWN, UP
 	}
 
-	public int getId() {
-		return id;
+	public int getPlayerId() {
+		return playerId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
 	}
 
 	public DIRECTION getDirection() {

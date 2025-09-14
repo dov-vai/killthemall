@@ -9,13 +9,14 @@ package com.javakaian.network.messages;
 public class LogoutMessage {
 
 	/** Player id */
-	private int id;
+	private int playerId;
 
-	public int getId() {
-		return id;
+	public int getPlayerId() {
+		return playerId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
 	}
+
 }

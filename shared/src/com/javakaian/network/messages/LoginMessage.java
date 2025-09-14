@@ -10,17 +10,17 @@ package com.javakaian.network.messages;
 public class LoginMessage {
 
 	/** Player id */
-	private int id;
+	private int playerId;
 	/** Players current X,Y coordinates */
 	private float x;
 	private float y;
 
-	public int getId() {
-		return id;
+	public int getPlayerId() {
+		return playerId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
 	}
 
 	public float getX() {

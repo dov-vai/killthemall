@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.javakaian'
+version = '1.0'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}

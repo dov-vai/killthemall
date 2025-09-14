@@ -8,19 +8,19 @@ package com.javakaian.network.messages;
 public class ShootMessage {
 
 	/** Player ID */
-	private int id;
+	private int playerId;
 	/**
 	 * An Angle which player wants to shoot. This angle accepts player as an origin
 	 * point.
 	 */
 	private float angleDeg;
 
-	public int getId() {
-		return id;
+	public int getPlayerId() {
+		return playerId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setPlayerId(int playerId) {
+		this.playerId = playerId;
 	}
 
 	public float getAngleDeg() {
@@ -30,4 +30,5 @@ public class ShootMessage {
 	public void setAngleDeg(float angleDeg) {
 		this.angleDeg = angleDeg;
 	}
+
 }

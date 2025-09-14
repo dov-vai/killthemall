@@ -5,7 +5,7 @@ import java.util.Queue;
 
 public class UserIdPool {
 
-	private Queue<Integer> idSet;
+	private final Queue<Integer> idSet;
 
 	public UserIdPool() {
 

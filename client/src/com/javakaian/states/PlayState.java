@@ -137,7 +137,7 @@ public class PlayState extends State implements OMessageListener {
 	public void shoot() {
 
 		ShootMessage m = new ShootMessage();
-		m.setId(player.getId());
+		m.setPlayerId(player.getId());
 		m.setAngleDeg(aimLine.getAngle());
 		client.sendUDP(m);
 
@@ -150,7 +150,7 @@ public class PlayState extends State implements OMessageListener {
 	private void processInputs() {
 
 		PositionMessage p = new PositionMessage();
-		p.setId(player.getId());
+		p.setPlayerId(player.getId());
 		if (Gdx.input.isKeyPressed(Keys.S)) {
 			p.setDirection(DIRECTION.DOWN);
 			client.sendUDP(p);
@@ -174,7 +174,7 @@ public class PlayState extends State implements OMessageListener {
 	public void loginReceived(LoginMessage m) {
 
 		player = new Player(m.getX(), m.getY(), 50);
-		player.setId(m.getId());
+		player.setId(m.getPlayerId());
 	}
 
 	@Override
@@ -184,11 +184,11 @@ public class PlayState extends State implements OMessageListener {
 
 	@Override
 	public void playerDiedReceived(PlayerDiedMessage m) {
-		if (player.getId() != m.getId())
+		if (player.getId() != m.getPlayerId())
 			return;
 
 		LogoutMessage mm = new LogoutMessage();
-		mm.setId(player.getId());
+		mm.setPlayerId(player.getId());
 		client.sendTCP(mm);
 		client.close();
 		this.getSc().setState(StateEnum.GAME_OVER_STATE);
@@ -220,7 +220,7 @@ public class PlayState extends State implements OMessageListener {
 	public void dispose() {
 
 		LogoutMessage m = new LogoutMessage();
-		m.setId(player.getId());
+		m.setPlayerId(player.getId());
 		client.sendTCP(m);
 	}
 

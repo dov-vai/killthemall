@@ -106,7 +106,7 @@ public class ServerWorld implements OMessageListener {
 					if (!p.isAlive()) {
 
 						PlayerDiedMessage m = new PlayerDiedMessage();
-						m.setId(p.getId());
+						m.setPlayerId(p.getId());
 						server.sendToAllUDP(m);
 					}
 
@@ -123,25 +123,25 @@ public class ServerWorld implements OMessageListener {
 		int id = idPool.getUserID();
 		players.add(new Player(m.getX(), m.getY(), 50, id));
 		logger.debug("Login Message recieved from : " + id);
-		m.setId(id);
+		m.setPlayerId(id);
 		server.sendToUDP(con.getID(), m);
 	}
 
 	@Override
 	public void logoutReceived(LogoutMessage m) {
 
-		players.stream().filter(p -> p.getId() == m.getId()).findFirst().ifPresent(p -> {
+		players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst().ifPresent(p -> {
 			players.remove(p);
 			idPool.putUserIDBack(p.getId());
 		});
-		logger.debug("Logout Message recieved from : " + m.getId() + " Size: " + players.size());
+		logger.debug("Logout Message recieved from : " + m.getPlayerId() + " Size: " + players.size());
 
 	}
 
 	@Override
 	public void playerMovedReceived(PositionMessage m) {
 
-		players.stream().filter(p -> p.getId() == m.getId()).findFirst().ifPresent(p -> {
+		players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst().ifPresent(p -> {
 
 			Vector2 v = p.getPosition();
 			switch (m.getDirection()) {
@@ -168,9 +168,9 @@ public class ServerWorld implements OMessageListener {
 	@Override
 	public void shootReceived(ShootMessage m) {
 
-		players.stream().filter(p -> p.getId() == m.getId()).findFirst()
+		players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
 				.ifPresent(p -> bullets.add(new Bullet(p.getPosition().x + p.getBoundRect().width / 2,
-						p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getId())));
+						p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getPlayerId())));
 
 	}
 
