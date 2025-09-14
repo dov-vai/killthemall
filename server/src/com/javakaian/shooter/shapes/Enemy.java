@@ -1,41 +1,30 @@
 package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Enemy {
 
-	private float x;
-	private float y;
+	private Vector2 position;
 	private boolean visible = true;
 	private Rectangle boundRect;
 
 	public Enemy(float x, float y, float size) {
-		this.x = x;
-		this.y = y;
+		this.position = new Vector2(x, y);
 		this.boundRect = new Rectangle(x, y, size, size);
-
 	}
 
 	public void update(float deltaTime) {
-
-		this.boundRect.x = x;
-		this.boundRect.y = y;
+		this.boundRect.x = position.x;
+		this.boundRect.y = position.y;
 	}
 
-	public void setX(float x) {
-		this.x = x;
+	public Vector2 getPosition() {
+		return position;
 	}
 
-	public void setY(float y) {
-		this.y = y;
-	}
-
-	public float getX() {
-		return x;
-	}
-
-	public float getY() {
-		return y;
+	public void setPosition(Vector2 position) {
+		this.position = position;
 	}
 
 	public boolean isVisible() {
