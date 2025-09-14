@@ -8,28 +8,28 @@ import com.javakaian.network.messages.ShootMessage;
 
 public interface OMessageListener {
 
-	/**
-	 * This should be received with playerID and bullet direction
-	 * 
-	 * @param m
-	 */
+    /**
+     * This should be received with playerID and bullet direction
+     *
+     * @param m
+     */
     void shootReceived(ShootMessage m);
 
-	/**
-	 * PlayerID, and location should be received.
-	 */
+    /**
+     * PlayerID, and location should be received.
+     */
     void loginReceived(Connection con, LoginMessage m);
 
-	/**
-	 * PlayerID should be received.
-	 */
+    /**
+     * PlayerID should be received.
+     */
     void logoutReceived(LogoutMessage m);
 
-	/**
-	 * PlayerID and direction should be received.
-	 * 
-	 * @param m
-	 */
+    /**
+     * PlayerID and direction should be received.
+     *
+     * @param m
+     */
     void playerMovedReceived(PositionMessage m);
 
 }

@@ -5,32 +5,34 @@ package com.javakaian.network.messages;
  */
 public class PositionMessage {
 
-	/** Player ID */
-	private int playerId;
-	/**
-	 * The direction that player wants to move. Server will check the direction and
-	 * let player move if its possible.
-	 */
-	private DIRECTION direction;
+    /**
+     * Player ID
+     */
+    private int playerId;
+    /**
+     * The direction that player wants to move. Server will check the direction and
+     * let player move if its possible.
+     */
+    private Direction direction;
 
-	public enum DIRECTION {
-		LEFT, RIGHT, DOWN, UP
-	}
+    public int getPlayerId() {
+        return playerId;
+    }
 
-	public int getPlayerId() {
-		return playerId;
-	}
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
+    }
 
-	public void setPlayerId(int playerId) {
-		this.playerId = playerId;
-	}
+    public Direction getDirection() {
+        return direction;
+    }
 
-	public DIRECTION getDirection() {
-		return direction;
-	}
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
 
-	public void setDirection(DIRECTION direction) {
-		this.direction = direction;
-	}
+    public enum Direction {
+        LEFT, RIGHT, DOWN, UP
+    }
 
 }

@@ -5,25 +5,25 @@ import java.util.Queue;
 
 public class UserIdPool {
 
-	private final Queue<Integer> idSet;
+    private final Queue<Integer> idSet;
 
-	public UserIdPool() {
+    public UserIdPool() {
 
-		idSet = new LinkedList<>();
+        idSet = new LinkedList<>();
 
-		// max 100 players allowed to play at the same time.
-		for (int i = 0; i < 100; i++) {
-			idSet.add(i + 1);
-		}
-	}
+        // max 100 players allowed to play at the same time.
+        for (int i = 0; i < 100; i++) {
+            idSet.add(i + 1);
+        }
+    }
 
-	public int getUserID() {
+    public int getUserID() {
 
-		return idSet.poll();
-	}
+        return idSet.poll();
+    }
 
-	public void putUserIDBack(int id) {
-		idSet.add(id);
-	}
+    public void putUserIDBack(int id) {
+        idSet.add(id);
+    }
 
 }

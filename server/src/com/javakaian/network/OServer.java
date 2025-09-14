@@ -1,149 +1,141 @@
 package com.javakaian.network;
 
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
+import com.esotericsoftware.kryonet.Server;
+import com.javakaian.network.messages.*;
+import com.javakaian.shooter.OMessageListener;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import com.esotericsoftware.kryonet.Connection;
-import com.esotericsoftware.kryonet.Listener;
-import com.esotericsoftware.kryonet.Server;
-import com.javakaian.network.messages.GameWorldMessage;
-import com.javakaian.network.messages.LoginMessage;
-import com.javakaian.network.messages.LogoutMessage;
-import com.javakaian.network.messages.PlayerDiedMessage;
-import com.javakaian.network.messages.PositionMessage;
-import com.javakaian.network.messages.ShootMessage;
-import com.javakaian.shooter.OMessageListener;
-
 /**
  * @author oguz
- * 
- *         Server object which is responsible for creating kryo server and
- *         managing it.
- * 
- *         Every message received by server queued by this object and get
- *         processed 60 time per second. After processing messages, related
- *         methods will be invoked by this class.
- * 
- *
+ * <p>
+ * Server object which is responsible for creating kryo server and
+ * managing it.
+ * <p>
+ * Every message received by server queued by this object and get
+ * processed 60 time per second. After processing messages, related
+ * methods will be invoked by this class.
  */
 public class OServer {
 
-	/** Kyro server. */
-	private Server server;
+    private static final int TCP_PORT = 1234;
+    private static final int UDP_PORT = 1235;
+    /**
+     * Kyro server.
+     */
+    private Server server;
+    private OMessageListener messageListener;
 
-	private static final int TCP_PORT = 1234;
-	private static final int UDP_PORT = 1235;
+    /**
+     * Queue object to store messages.
+     */
+    private Queue<Object> messageQueue;
+    /**
+     * Connection queue to store connections
+     */
+    private Queue<Connection> connectionQueue;
 
-	private OMessageListener messageListener;
+    private Logger logger = Logger.getLogger(OServer.class);
 
-	/** Queue object to store messages. */
-	private Queue<Object> messageQueue;
-	/** Connection queue to store connections */
-	private Queue<Connection> connectionQueue;
+    public OServer(OMessageListener cmo) {
 
-	private Logger logger = Logger.getLogger(OServer.class);
+        this.messageListener = cmo;
 
-	public OServer(OMessageListener cmo) {
+        init();
+    }
 
-		this.messageListener = cmo;
+    private void init() {
 
-		init();
-	}
+        server = new Server();
+        registerClasses();
 
-	private void init() {
+        messageQueue = new LinkedList<>();
+        connectionQueue = new LinkedList<>();
 
-		server = new Server();
-		registerClasses();
+        server.addListener(new Listener() {
 
-		messageQueue = new LinkedList<>();
-		connectionQueue = new LinkedList<>();
+            @Override
+            public void received(Connection connection, Object object) {
 
-		server.addListener(new Listener() {
+                messageQueue.add(object);
+                connectionQueue.add(connection);
 
-			@Override
-			public void received(Connection connection, Object object) {
+            }
+        });
+        server.start();
+        try {
+            server.bind(TCP_PORT, UDP_PORT);
+            logger.debug("Server has ben started on TCP_PORT: " + TCP_PORT + " UDP_PORT: " + UDP_PORT);
+        } catch (IOException e) {
+            logger.log(Level.ALL, e);
+        }
 
-				messageQueue.add(object);
-				connectionQueue.add(connection);
+    }
 
-			}
-		});
-		server.start();
-		try {
-			server.bind(TCP_PORT, UDP_PORT);
-			logger.debug("Server has ben started on TCP_PORT: " + TCP_PORT + " UDP_PORT: " + UDP_PORT);
-		} catch (IOException e) {
-			logger.log(Level.ALL, e);
-		}
+    /**
+     * Gets messages from connection and message queues,parse them and invokes
+     * necessary methods.
+     * <p>
+     * If one those queues is empty, it returns.
+     * <p>
+     * This method will be called 60 per second.
+     */
+    public void parseMessage() {
 
-	}
+        if (connectionQueue.isEmpty() || messageQueue.isEmpty())
+            return;
 
-	/**
-	 * Gets messages from connection and message queues,parse them and invokes
-	 * necessary methods.
-	 * 
-	 * If one those queues is empty, it returns.
-	 * 
-	 * This method will be called 60 per second.
-	 */
-	public void parseMessage() {
+        for (int i = 0; i < messageQueue.size(); i++) {
 
-		if (connectionQueue.isEmpty() || messageQueue.isEmpty())
-			return;
+            Connection con = connectionQueue.poll();
+            Object message = messageQueue.poll();
 
-		for (int i = 0; i < messageQueue.size(); i++) {
+            if (message instanceof LoginMessage m) {
 
-			Connection con = connectionQueue.poll();
-			Object message = messageQueue.poll();
+                messageListener.loginReceived(con, m);
 
-			if (message instanceof LoginMessage) {
+            } else if (message instanceof LogoutMessage m) {
+                messageListener.logoutReceived(m);
 
-				LoginMessage m = (LoginMessage) message;
-				messageListener.loginReceived(con, m);
+            } else if (message instanceof PositionMessage m) {
+                messageListener.playerMovedReceived(m);
 
-			} else if (message instanceof LogoutMessage) {
-				LogoutMessage m = (LogoutMessage) message;
-				messageListener.logoutReceived(m);
+            } else if (message instanceof ShootMessage m) {
+                messageListener.shootReceived(m);
+            }
 
-			} else if (message instanceof PositionMessage) {
-				PositionMessage m = (PositionMessage) message;
-				messageListener.playerMovedReceived(m);
+        }
 
-			} else if (message instanceof ShootMessage) {
-				ShootMessage m = (ShootMessage) message;
-				messageListener.shootReceived(m);
-			}
+    }
 
-		}
+    /**
+     * This function register every class that will be sent back and forth between
+     * client and server.
+     */
+    private void registerClasses() {
+        // messages
+        this.server.getKryo().register(LoginMessage.class);
+        this.server.getKryo().register(LogoutMessage.class);
+        this.server.getKryo().register(GameWorldMessage.class);
+        this.server.getKryo().register(PositionMessage.class);
+        this.server.getKryo().register(PositionMessage.Direction.class);
+        this.server.getKryo().register(ShootMessage.class);
+        this.server.getKryo().register(PlayerDiedMessage.class);
+        // primitive arrays
+        this.server.getKryo().register(float[].class);
+    }
 
-	}
+    public void sendToAllUDP(Object m) {
+        server.sendToAllUDP(m);
+    }
 
-	/**
-	 * This function register every class that will be sent back and forth between
-	 * client and server.
-	 */
-	private void registerClasses() {
-		// messages
-		this.server.getKryo().register(LoginMessage.class);
-		this.server.getKryo().register(LogoutMessage.class);
-		this.server.getKryo().register(GameWorldMessage.class);
-		this.server.getKryo().register(PositionMessage.class);
-		this.server.getKryo().register(PositionMessage.DIRECTION.class);
-		this.server.getKryo().register(ShootMessage.class);
-		this.server.getKryo().register(PlayerDiedMessage.class);
-		// primitive arrays
-		this.server.getKryo().register(float[].class);
-	}
-
-	public void sendToAllUDP(Object m) {
-		server.sendToAllUDP(m);
-	}
-
-	public void sendToUDP(int id, Object m) {
-		server.sendToUDP(id, m);
-	}
+    public void sendToUDP(int id, Object m) {
+        server.sendToUDP(id, m);
+    }
 }

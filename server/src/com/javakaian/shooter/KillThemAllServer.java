@@ -1,53 +1,52 @@
 package com.javakaian.shooter;
 
-import org.apache.log4j.Logger;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import org.apache.log4j.Logger;
 
 public class KillThemAllServer extends ApplicationAdapter {
 
-	private float time;
-	private int updateCounter;
+    private float time;
+    private int updateCounter;
 
-	private ServerWorld serverWorld;
+    private ServerWorld serverWorld;
 
-	private Logger logger = Logger.getLogger(KillThemAllServer.class);
+    private Logger logger = Logger.getLogger(KillThemAllServer.class);
 
-	public KillThemAllServer() {
+    public KillThemAllServer() {
 
-		time = 0;
-		updateCounter = 0;
+        time = 0;
+        updateCounter = 0;
 
-		serverWorld = new ServerWorld();
+        serverWorld = new ServerWorld();
 
-	}
+    }
 
-	@Override
-	public void create() {
+    @Override
+    public void create() {
 
-		logger.debug("Server is up");
+        logger.debug("Server is up");
 
-	}
+    }
 
-	@Override
-	public void render() {
+    @Override
+    public void render() {
 
-		float deltaTime = Gdx.graphics.getDeltaTime();
-		time += deltaTime;
-		updateCounter++;
-		if (time >= 1) {
-			time = 0;
-			updateCounter = 0;
-		}
+        float deltaTime = Gdx.graphics.getDeltaTime();
+        time += deltaTime;
+        updateCounter++;
+        if (time >= 1) {
+            time = 0;
+            updateCounter = 0;
+        }
 
-		serverWorld.update(deltaTime);
-	}
+        serverWorld.update(deltaTime);
+    }
 
-	@Override
-	public void dispose() {
-		// this method will be called when the server disposed. Dispose here things that
-		// you wanna.
-	}
+    @Override
+    public void dispose() {
+        // this method will be called when the server disposed. Dispose here things that
+        // you wanna.
+    }
 
 }

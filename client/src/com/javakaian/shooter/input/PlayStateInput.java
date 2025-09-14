@@ -7,45 +7,44 @@ import com.javakaian.states.State.StateEnum;
 
 /**
  * Input handles of PlayState
- * 
- * @author oguz
  *
+ * @author oguz
  */
 public class PlayStateInput extends InputAdapter {
 
-	private PlayState playState;
+    private PlayState playState;
 
-	public PlayStateInput() {
-	}
+    public PlayStateInput() {
+    }
 
-	public PlayStateInput(PlayState playState) {
-		this.playState = playState;
-	}
+    public PlayStateInput(PlayState playState) {
+        this.playState = playState;
+    }
 
-	@Override
-	public boolean scrolled(float amountX, float amountY) {
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
 
-		playState.scrolled(amountY);
+        playState.scrolled(amountY);
 
-		return super.scrolled(amountX, amountY);
-	}
+        return super.scrolled(amountX, amountY);
+    }
 
-	@Override
-	public boolean keyDown(int keycode) {
+    @Override
+    public boolean keyDown(int keycode) {
 
-		switch (keycode) {
-		case Keys.SPACE:
-			playState.shoot();
-			break;
-		case Keys.M:
-			playState.getSc().setState(StateEnum.MENU_STATE);
-			break;
+        switch (keycode) {
+            case Keys.SPACE:
+                playState.shoot();
+                break;
+            case Keys.M:
+                playState.getSc().setState(StateEnum.MENU_STATE);
+                break;
 
-		default:
-			break;
-		}
+            default:
+                break;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
 }

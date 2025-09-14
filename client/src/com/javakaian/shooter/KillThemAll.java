@@ -7,33 +7,33 @@ import com.javakaian.states.StateController;
 
 public class KillThemAll extends ApplicationAdapter {
 
-	private StateController sc;
+    private StateController sc;
 
-	private String inetAddress;
+    private String inetAddress;
 
-	public KillThemAll(String inetAddress) {
-		this.inetAddress = inetAddress;
-	}
+    public KillThemAll(String inetAddress) {
+        this.inetAddress = inetAddress;
+    }
 
-	@Override
-	public void create() {
+    @Override
+    public void create() {
 
-		sc = new StateController(inetAddress);
-		sc.setState(StateEnum.MENU_STATE);
+        sc = new StateController(inetAddress);
+        sc.setState(StateEnum.MENU_STATE);
 
-	}
+    }
 
-	@Override
-	public void render() {
+    @Override
+    public void render() {
 
-		sc.render();
-		sc.update(Gdx.graphics.getDeltaTime());
-	}
+        sc.render();
+        sc.update(Gdx.graphics.getDeltaTime());
+    }
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		sc.dispose();
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        sc.dispose();
+    }
 
 }

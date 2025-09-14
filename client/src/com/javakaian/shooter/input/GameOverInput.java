@@ -7,28 +7,27 @@ import com.javakaian.states.State.StateEnum;
 
 /**
  * Input handles of Game Over State.
- * 
- * @author oguz
  *
+ * @author oguz
  */
 public class GameOverInput extends InputAdapter {
 
-	private GameOverState gameOver;
+    private GameOverState gameOver;
 
-	public GameOverInput(GameOverState game) {
-		this.gameOver = game;
-	}
+    public GameOverInput(GameOverState game) {
+        this.gameOver = game;
+    }
 
-	@Override
-	public boolean keyDown(int keycode) {
+    @Override
+    public boolean keyDown(int keycode) {
 
-		if (keycode == Keys.R) {
-			gameOver.restart();
-			gameOver.getSc().setState(StateEnum.PLAY_STATE);
+        if (keycode == Keys.R) {
+            gameOver.restart();
+            gameOver.getSc().setState(StateEnum.PLAY_STATE);
 
-		}
+        }
 
-		return true;
-	}
+        return true;
+    }
 
 }
