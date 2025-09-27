@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.javakaian.shooter.input.GameOverInput;
+import com.javakaian.shooter.utils.GameStats;
 import com.javakaian.shooter.utils.GameUtils;
 
 /**
@@ -33,6 +34,7 @@ public class GameOverState extends State {
 
         sb.begin();
         GameUtils.renderCenter("Game Over", sb, bitmapFont);
+        GameUtils.renderCenter("Time Alive: " + String.format("%.1fs", GameStats.getInstance().getTimeAliveSeconds()), sb, smallFont, 0.52f);
         GameUtils.renderCenter("Press R to Restart", sb, smallFont, 0.6f);
         GameUtils.renderCenter("M - Main Menu", sb, smallFont, 0.68f);
         sb.end();
