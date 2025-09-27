@@ -34,6 +34,7 @@ public class GameOverState extends State {
         sb.begin();
         GameUtils.renderCenter("Game Over", sb, bitmapFont);
         GameUtils.renderCenter("Press R to Restart", sb, smallFont, 0.6f);
+        GameUtils.renderCenter("M - Main Menu", sb, smallFont, 0.68f);
         sb.end();
     }
 

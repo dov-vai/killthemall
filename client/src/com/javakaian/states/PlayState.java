@@ -244,6 +244,7 @@ public class PlayState extends State implements OMessageListener {
         LogoutMessage m = new LogoutMessage();
         m.setPlayerId(player.getId());
         client.sendTCP(m);
+        GameStats.getInstance().endSession();
     }
 
 }
