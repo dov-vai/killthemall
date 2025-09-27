@@ -19,6 +19,7 @@ import com.javakaian.shooter.shapes.Player;
 import com.javakaian.shooter.utils.GameConstants;
 import com.javakaian.shooter.utils.GameUtils;
 import com.javakaian.shooter.utils.OMessageParser;
+import com.javakaian.shooter.utils.GameStats;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -40,6 +41,8 @@ public class PlayState extends State implements OMessageListener {
     private OClient client;
 
     private BitmapFont healthFont;
+
+    private float lastX, lastY;
 
     public PlayState(StateController sc) {
         super(sc);
@@ -111,6 +114,17 @@ public class PlayState extends State implements OMessageListener {
             return;
         aimLine.setBegin(player.getCenter());
         aimLine.update(deltaTime);
+        // track distance traveled
+        float x = player.getPosition().x;
+        float y = player.getPosition().y;
+        float dx = x - lastX;
+        float dy = y - lastY;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        if (dist > 0) {
+            GameStats.getInstance().addDistanceTraveled(dist);
+            lastX = x;
+            lastY = y;
+        }
         processInputs();
     }
 
@@ -133,6 +147,7 @@ public class PlayState extends State implements OMessageListener {
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
+        GameStats.getInstance().incrementShotsFired();
         client.sendUDP(m);
 
     }
@@ -169,6 +184,10 @@ public class PlayState extends State implements OMessageListener {
 
         player = new Player(m.getX(), m.getY(), 50);
         player.setId(m.getPlayerId());
+        lastX = player.getPosition().x;
+        lastY = player.getPosition().y;
+        GameStats.getInstance().resetSession();
+        GameStats.getInstance().startSession();
     }
 
     @Override
@@ -185,6 +204,8 @@ public class PlayState extends State implements OMessageListener {
         mm.setPlayerId(player.getId());
         client.sendTCP(mm);
         client.close();
+        GameStats.getInstance().incrementDeaths();
+        GameStats.getInstance().endSession();
         this.getSc().setState(StateEnum.GAME_OVER_STATE);
 
     }
@@ -200,7 +221,14 @@ public class PlayState extends State implements OMessageListener {
         if (player == null)
             return;
         // Find yourself.
-        players.stream().filter(p -> p.getId() == player.getId()).findFirst().ifPresent(p -> player = p);
+        float oldHealth = player.getHealth();
+        players.stream().filter(p -> p.getId() == player.getId()).findFirst().ifPresent(p -> {
+            player = p;
+            float newHealth = player.getHealth();
+            if (newHealth < oldHealth) {
+                GameStats.getInstance().addDamageTaken(oldHealth - newHealth);
+            }
+        });
         // Remove yourself from playerlist.
         players.removeIf(p -> p.getId() == player.getId());
 
@@ -216,6 +244,7 @@ public class PlayState extends State implements OMessageListener {
         LogoutMessage m = new LogoutMessage();
         m.setPlayerId(player.getId());
         client.sendTCP(m);
+        GameStats.getInstance().endSession();
     }
 
 }

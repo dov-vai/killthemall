@@ -31,9 +31,10 @@ public class MenuState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         sb.begin();
-        GameUtils.renderCenter("Menu", sb, bitmapFont);
-        GameUtils.renderCenter("Press Space to Continue", sb, smallFont, 0.5f);
-        GameUtils.renderCenter("Q to Quit", sb, smallFont, 0.6f);
+        GameUtils.renderCenter("KillThemAll", sb, bitmapFont);
+        GameUtils.renderCenter("Space - Play", sb, smallFont, 0.5f);
+        GameUtils.renderCenter("S - Statistics", sb, smallFont, 0.58f);
+        GameUtils.renderCenter("Q - Quit", sb, smallFont, 0.66f);
         sb.end();
 
     }

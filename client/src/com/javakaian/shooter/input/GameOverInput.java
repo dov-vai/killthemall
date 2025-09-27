@@ -21,10 +21,16 @@ public class GameOverInput extends InputAdapter {
     @Override
     public boolean keyDown(int keycode) {
 
-        if (keycode == Keys.R) {
-            gameOver.restart();
-            gameOver.getSc().setState(StateEnum.PLAY_STATE);
-
+        switch  (keycode) {
+            case Keys.R:
+                gameOver.restart();
+                gameOver.getSc().setState(StateEnum.PLAY_STATE);
+                break;
+            case Keys.M:
+                gameOver.getSc().setState(StateEnum.MENU_STATE);
+                break;
+            default:
+                break;
         }
 
         return true;
