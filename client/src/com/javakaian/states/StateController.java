@@ -59,6 +59,9 @@ public class StateController {
                 case MENU_STATE:
                     currentState = new MenuState(this);
                     break;
+                case STATS_STATE:
+                    currentState = new StatsState(this);
+                    break;
 
                 default:
                     currentState = new MenuState(this);
