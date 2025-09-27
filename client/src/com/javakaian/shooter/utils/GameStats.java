@@ -73,7 +73,7 @@ public final class GameStats {
 		sessionActive = false;
 	}
 
-	public void startSession() {
+	public synchronized void startSession() {
 		resetSession();
 		sessionStartNanos = System.nanoTime();
 		sessionActive = true;
