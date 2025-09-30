@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.javakaian.states.State.StateEnum;
 import com.javakaian.states.StateController;
+import com.javakaian.shooter.utils.GameStats;
 
 public class KillThemAll extends ApplicationAdapter {
 
@@ -17,10 +18,8 @@ public class KillThemAll extends ApplicationAdapter {
 
     @Override
     public void create() {
-
         sc = new StateController(inetAddress);
         sc.setState(StateEnum.MENU_STATE);
-
     }
 
     @Override
@@ -33,6 +32,7 @@ public class KillThemAll extends ApplicationAdapter {
     @Override
     public void dispose() {
         super.dispose();
+        GameStats.getInstance().save();
         sc.dispose();
     }
 

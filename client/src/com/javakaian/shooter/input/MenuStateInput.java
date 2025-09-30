@@ -25,6 +25,9 @@ public class MenuStateInput extends InputAdapter {
             case Keys.SPACE:
                 menuState.getSc().setState(StateEnum.PLAY_STATE);
                 break;
+            case Keys.S:
+                menuState.getSc().setState(StateEnum.STATS_STATE);
+                break;
             case Keys.Q:
                 menuState.quit();
                 break;
