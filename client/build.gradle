@@ -33,6 +33,7 @@ tasks.register('run', JavaExec) {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
         attributes(

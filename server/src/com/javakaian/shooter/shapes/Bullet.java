@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * @author oguz
  */
-public class Bullet {
+public class Bullet implements GameObject {
 
     private Vector2 position;
     private float size;
@@ -26,6 +26,7 @@ public class Bullet {
         this.boundRect = new Rectangle(x, y, size, size);
     }
 
+    @Override
     public void update(float deltaTime) {
 
         float speed = deltaTime * 800;
@@ -61,10 +62,12 @@ public class Bullet {
         this.size = size;
     }
 
+    @Override
     public boolean isVisible() {
         return visible;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         this.visible = visible;
     }

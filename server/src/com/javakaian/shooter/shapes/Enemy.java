@@ -3,7 +3,7 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Enemy {
+public class Enemy implements GameObject{
 
     private Vector2 position;
     private boolean visible = true;
@@ -14,6 +14,7 @@ public class Enemy {
         this.boundRect = new Rectangle(x, y, size, size);
     }
 
+    @Override
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
@@ -27,10 +28,12 @@ public class Enemy {
         this.position = position;
     }
 
+    @Override
     public boolean isVisible() {
         return visible;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
