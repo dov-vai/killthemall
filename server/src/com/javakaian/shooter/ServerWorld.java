@@ -31,6 +31,8 @@ public class ServerWorld implements OMessageListener {
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
 
+    private EntityFactory entityFactory = new GameEntityFactory();
+
     public ServerWorld() {
 
         server = new OServer(this);
@@ -77,7 +79,7 @@ public class ServerWorld implements OMessageListener {
             enemyTime = 0;
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
-            Enemy e = (Enemy)GameEntityFactory.createEnemy(); //or GameObject e / var e = GameEntityFactory.createEnemy();
+            Enemy e = (Enemy)entityFactory.createEnemy(); //or GameObject e / var e = entityFactory.createEnemy();
             enemies.add(e);
         }
     }
@@ -116,7 +118,7 @@ public class ServerWorld implements OMessageListener {
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        Player p = (Player)GameEntityFactory.createPlayer(m.getX(), m.getY(), id);
+        Player p = (Player)entityFactory.createPlayer(m.getX(), m.getY(), id);
         players.add(p);
         logger.debug("Login Message recieved from : " + id);
         m.setPlayerId(id);
@@ -166,7 +168,7 @@ public class ServerWorld implements OMessageListener {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
         .ifPresent(p -> {
-            Bullet b = (Bullet)GameEntityFactory.createBullet(
+            Bullet b = (Bullet)entityFactory.createBullet(
                 p.getPosition().x + p.getBoundRect().width / 2,
                 p.getPosition().y + p.getBoundRect().height / 2,
                 m.getAngleDeg(),
