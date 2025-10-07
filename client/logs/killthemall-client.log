@@ -4,3 +4,5 @@
 2025-10-01 17:43:24 DEBUG OClient:37 - Attempting to connect args[0]: localhost
 2025-10-07 14:44:12 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
 2025-10-07 14:44:15 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-07 16:07:51 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
+2025-10-07 16:07:55 DEBUG OClient:37 - Attempting to connect args[0]: localhost

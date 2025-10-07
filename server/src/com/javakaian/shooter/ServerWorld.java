@@ -77,7 +77,6 @@ public class ServerWorld implements OMessageListener {
             enemyTime = 0;
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
-            //Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10);
             Enemy e = (Enemy)GameEntityFactory.createEnemy(); //or GameObject e / var e = GameEntityFactory.createEnemy();
             enemies.add(e);
         }
@@ -117,8 +116,6 @@ public class ServerWorld implements OMessageListener {
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        //players.add(new Player(m.getX(), m.getY(), 50, id));
-        //players.add(GameEntityFactory.createPlayer(m.getX(), m.getY(), id));
         Player p = (Player)GameEntityFactory.createPlayer(m.getX(), m.getY(), id);
         players.add(p);
         logger.debug("Login Message recieved from : " + id);
@@ -166,10 +163,6 @@ public class ServerWorld implements OMessageListener {
 
     @Override
     public void shootReceived(ShootMessage m) {
-
-        // players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-        //         .ifPresent(p -> bullets.add(new Bullet(p.getPosition().x + p.getBoundRect().width / 2,
-        //                 p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getPlayerId())));
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
         .ifPresent(p -> {
