@@ -153,3 +153,61 @@
 2025-10-01 17:45:01 DEBUG ServerWorld:78 - Number of enemies : 15
 2025-10-01 17:45:01 DEBUG ServerWorld:78 - Number of enemies : 15
 2025-10-01 17:45:05 DEBUG ServerWorld:133 - Logout Message recieved from : 1 Size: 0
+2025-10-07 14:43:54 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-07 14:43:54 DEBUG KillThemAllServer:28 - Server is up
+2025-10-07 14:43:55 DEBUG ServerWorld:79 - Number of enemies : 0
+2025-10-07 14:43:57 DEBUG ServerWorld:79 - Number of enemies : 5
+2025-10-07 14:43:59 DEBUG ServerWorld:79 - Number of enemies : 10
+2025-10-07 14:44:01 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:15 DEBUG ServerWorld:124 - Login Message recieved from : 1
+2025-10-07 14:44:17 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:18 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:21 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:22 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:23 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:24 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:24 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:25 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:25 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:26 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:27 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:28 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:29 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:30 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:30 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:31 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:31 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:32 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:32 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:32 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:34 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:35 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:35 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:38 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:44 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:45 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:45 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:46 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:47 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:47 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:47 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:48 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:48 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:49 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:50 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:50 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:51 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:52 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:52 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:53 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:53 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:54 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:54 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:55 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:56 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:57 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:57 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:58 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:58 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:44:59 DEBUG ServerWorld:79 - Number of enemies : 15
+2025-10-07 14:45:00 DEBUG ServerWorld:136 - Logout Message recieved from : 1 Size: 0
