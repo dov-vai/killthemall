@@ -1,25 +1,13 @@
 package com.javakaian.shooter.ThemeFactory;
+
 import com.badlogic.gdx.graphics.Color;
 
-public class DarkTheme implements Theme {
+public class DarkTheme extends Theme {
 
-    @Override
-    public Color getBackgroundColor() {
-        return Color.BLACK;
-    }
-
-    @Override
-    public Color getEnemyColor() {
-        return Color.RED;
-    }
-
-    @Override
-    public Color getTextColor() {
-        return Color.WHITE;
-    }
-
-    @Override
-    public Color getAimLineColor() {
-        return Color.WHITE;
+    public DarkTheme() {
+        this.backgroundColor = Color.BLACK;
+        this.enemyColor = Color.RED;
+        this.textColor = Color.WHITE;
+        this.aimLineColor = Color.WHITE;
     }
 }
