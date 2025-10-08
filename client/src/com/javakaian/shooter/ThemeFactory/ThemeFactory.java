@@ -1,4 +1,6 @@
 package com.javakaian.shooter.ThemeFactory;
+import com.badlogic.gdx.math.Vector2;
+import com.javakaian.shooter.shapes.AimLine;
 import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.network.messages.*;
@@ -10,7 +12,7 @@ public abstract class ThemeFactory {
     public abstract Theme createTheme();
     public abstract Enemy createEnemy(float x, float y);
     public abstract Bullet createBullet(float x, float y, float size);
-
+    public abstract AimLine createAimLine(Vector2 begin, Vector2 end);
 
     public static ThemeFactory getFactory(boolean darkMode) {
         if (darkMode) {

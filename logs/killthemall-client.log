@@ -410,3 +410,19 @@ Caused by: java.net.ConnectException: Connection refused
 2025-10-08 13:18:24 DEBUG OClient:37 - Attempting to connect args[0]: localhost
 2025-10-08 13:19:03 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
 2025-10-08 13:19:04 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:35:47 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:35:51 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:36:05 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:36:06 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:37:05 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:37:07 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:41:00 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:41:02 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:44:30 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:44:33 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:48:08 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:48:10 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:49:15 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:49:17 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 15:50:18 DEBUG ClientMain:23 - No arg has been passed. LOCALHOST ip.
+2025-10-08 15:50:19 DEBUG OClient:37 - Attempting to connect args[0]: localhost

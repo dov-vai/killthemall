@@ -23,4 +23,9 @@ public class LightTheme implements Theme {
     public Color getTextColor() {
         return Color.BLACK;
     }
+
+    @Override
+    public Color getAimLineColor() {
+        return Color.BLACK;
+    }
 }

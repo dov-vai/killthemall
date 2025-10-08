@@ -23,4 +23,9 @@ public class DarkTheme implements Theme {
     public Color getTextColor() {
         return Color.WHITE;
     }
+
+    @Override
+    public Color getAimLineColor() {
+        return Color.WHITE;
+    }
 }

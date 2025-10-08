@@ -11,6 +11,7 @@ import com.javakaian.network.OClient;
 import com.javakaian.network.messages.*;
 import com.javakaian.network.messages.PositionMessage.Direction;
 import com.javakaian.shooter.OMessageListener;
+import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
 import com.javakaian.shooter.input.PlayStateInput;
 import com.javakaian.shooter.shapes.AimLine;
@@ -56,9 +57,17 @@ public class PlayState extends State implements OMessageListener {
     public void setThemeFactory(ThemeFactory factory) {
         this.themeFactory = factory;
 
+        Theme theme = factory.createTheme();
+
+        if (aimLine != null) {
+            aimLine.setColor(theme.getAimLineColor());
+            aimLine.setCamera(camera);
+        }
+
         if (healthFont != null) healthFont.dispose();
-        healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        healthFont = GameUtils.generateBitmapFont(20, theme.getTextColor());
     }
+
 
     private void init() {
         client = new OClient(sc.getInetAddress(), this);
@@ -68,7 +77,7 @@ public class PlayState extends State implements OMessageListener {
         enemies = new ArrayList<>();
         bullets = new ArrayList<>();
 
-        aimLine = new AimLine(new Vector2(0, 0), new Vector2(0, 0));
+        aimLine = themeFactory.createAimLine(new Vector2(0, 0), new Vector2(0, 0));
         aimLine.setCamera(camera);
 
         LoginMessage m = new LoginMessage();
@@ -94,7 +103,6 @@ public class PlayState extends State implements OMessageListener {
         bullets.forEach(b -> b.render(sr));
         sr.setColor(Color.BLUE);
         player.render(sr);
-        sr.setColor(Color.GREEN);
         aimLine.render(sr);
         followPlayer();
         sr.end();

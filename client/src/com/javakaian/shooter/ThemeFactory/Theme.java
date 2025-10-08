@@ -7,4 +7,5 @@ public interface Theme {
     Color getEnemyColor();
     Color getBulletColor();
     Color getTextColor();
+    Color getAimLineColor();
 }

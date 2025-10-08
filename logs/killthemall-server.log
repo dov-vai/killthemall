@@ -247,3 +247,33 @@
 2025-10-08 13:19:01 DEBUG ServerWorld:133 - Logout Message recieved from : 16 Size: 0
 2025-10-08 13:19:14 DEBUG ServerWorld:121 - Login Message recieved from : 17
 2025-10-08 13:19:22 DEBUG ServerWorld:133 - Logout Message recieved from : 17 Size: 0
+2025-10-08 15:36:12 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-08 15:36:12 DEBUG KillThemAllServer:28 - Server is up
+2025-10-08 15:36:12 DEBUG ServerWorld:78 - Number of enemies : 0
+2025-10-08 15:36:14 DEBUG ServerWorld:78 - Number of enemies : 5
+2025-10-08 15:36:16 DEBUG ServerWorld:78 - Number of enemies : 10
+2025-10-08 15:36:19 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:36:40 DEBUG ServerWorld:121 - Login Message recieved from : 1
+2025-10-08 15:36:53 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:36:55 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:37:04 DEBUG ServerWorld:133 - Logout Message recieved from : 1 Size: 0
+2025-10-08 15:37:33 DEBUG ServerWorld:121 - Login Message recieved from : 2
+2025-10-08 15:37:36 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:37:39 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:41:02 DEBUG ServerWorld:121 - Login Message recieved from : 3
+2025-10-08 15:41:12 DEBUG ServerWorld:133 - Logout Message recieved from : 2 Size: 1
+2025-10-08 15:41:15 DEBUG ServerWorld:133 - Logout Message recieved from : 3 Size: 0
+2025-10-08 15:44:49 DEBUG ServerWorld:121 - Login Message recieved from : 4
+2025-10-08 15:44:56 DEBUG ServerWorld:133 - Logout Message recieved from : 4 Size: 0
+2025-10-08 15:49:10 DEBUG ServerWorld:121 - Login Message recieved from : 5
+2025-10-08 15:49:56 DEBUG ServerWorld:121 - Login Message recieved from : 6
+2025-10-08 15:49:58 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:50:06 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:50:08 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:50:11 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:50:16 DEBUG ServerWorld:133 - Logout Message recieved from : 6 Size: 1
+2025-10-08 15:51:09 DEBUG ServerWorld:121 - Login Message recieved from : 7
+2025-10-08 15:51:13 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:51:14 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:51:16 DEBUG ServerWorld:78 - Number of enemies : 15
+2025-10-08 15:51:29 DEBUG ServerWorld:133 - Logout Message recieved from : 7 Size: 0
