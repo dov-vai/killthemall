@@ -5,8 +5,10 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
 import com.javakaian.shooter.shapes.Bullet;
+import com.javakaian.shooter.factory.BulletFactory;
+import com.javakaian.shooter.factory.ConcreteBulletFactory;
+import com.javakaian.shooter.factory.BulletType;
 import com.javakaian.shooter.shapes.Enemy;
-import com.javakaian.shooter.shapes.GameObject;
 import com.javakaian.shooter.shapes.Player;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
@@ -31,7 +33,7 @@ public class ServerWorld implements OMessageListener {
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
 
-    private EntityFactory entityFactory = new GameEntityFactory();
+    private BulletFactory bulletFactory;
 
     public ServerWorld() {
 
@@ -41,6 +43,8 @@ public class ServerWorld implements OMessageListener {
         bullets = new ArrayList<>();
 
         idPool = new UserIdPool();
+
+        bulletFactory = new ConcreteBulletFactory();
 
     }
 
@@ -79,7 +83,7 @@ public class ServerWorld implements OMessageListener {
             enemyTime = 0;
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
-            Enemy e = (Enemy)entityFactory.createEnemy(); //or GameObject e / var e = entityFactory.createEnemy();
+            Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10);
             enemies.add(e);
         }
     }
@@ -118,8 +122,7 @@ public class ServerWorld implements OMessageListener {
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        Player p = (Player)entityFactory.createPlayer(m.getX(), m.getY(), id);
-        players.add(p);
+        players.add(new Player(m.getX(), m.getY(), 50, id));
         logger.debug("Login Message recieved from : " + id);
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
@@ -168,7 +171,8 @@ public class ServerWorld implements OMessageListener {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
         .ifPresent(p -> {
-            Bullet b = (Bullet)entityFactory.createBullet(
+            Bullet b = bulletFactory.createBullet(
+                BulletType.FAST, // could be STANDARD, FAST, HEAVY
                 p.getPosition().x + p.getBoundRect().width / 2,
                 p.getPosition().y + p.getBoundRect().height / 2,
                 m.getAngleDeg(),

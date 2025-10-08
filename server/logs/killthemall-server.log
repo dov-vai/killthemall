@@ -265,3 +265,51 @@
 2025-10-07 19:14:44 DEBUG ServerWorld:81 - Number of enemies : 15
 2025-10-07 19:14:45 DEBUG ServerWorld:81 - Number of enemies : 15
 2025-10-07 19:14:47 DEBUG ServerWorld:135 - Logout Message recieved from : 1 Size: 0
+2025-10-08 11:06:50 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-08 11:06:50 DEBUG KillThemAllServer:28 - Server is up
+2025-10-08 11:06:51 DEBUG ServerWorld:85 - Number of enemies : 0
+2025-10-08 11:06:53 DEBUG ServerWorld:85 - Number of enemies : 5
+2025-10-08 11:07:05 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-08 11:07:05 DEBUG KillThemAllServer:28 - Server is up
+2025-10-08 11:07:06 DEBUG ServerWorld:85 - Number of enemies : 0
+2025-10-08 11:07:08 DEBUG ServerWorld:85 - Number of enemies : 5
+2025-10-08 11:07:10 DEBUG ServerWorld:85 - Number of enemies : 10
+2025-10-08 11:07:12 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:23 DEBUG ServerWorld:126 - Login Message recieved from : 1
+2025-10-08 11:07:24 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:25 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:27 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:28 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:29 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:07:30 DEBUG ServerWorld:138 - Logout Message recieved from : 1 Size: 0
+2025-10-08 11:08:19 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-08 11:08:19 DEBUG KillThemAllServer:28 - Server is up
+2025-10-08 11:08:19 DEBUG ServerWorld:85 - Number of enemies : 0
+2025-10-08 11:08:21 DEBUG ServerWorld:85 - Number of enemies : 5
+2025-10-08 11:08:23 DEBUG ServerWorld:85 - Number of enemies : 10
+2025-10-08 11:08:25 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:30 DEBUG ServerWorld:126 - Login Message recieved from : 1
+2025-10-08 11:08:34 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:35 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:36 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:38 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:38 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:38 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:39 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:39 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:40 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:08:40 DEBUG ServerWorld:138 - Logout Message recieved from : 1 Size: 0
+2025-10-08 11:08:57 DEBUG OServer:74 - Server has ben started on TCP_PORT: 1234 UDP_PORT: 1235
+2025-10-08 11:08:57 DEBUG KillThemAllServer:28 - Server is up
+2025-10-08 11:08:57 DEBUG ServerWorld:85 - Number of enemies : 0
+2025-10-08 11:08:59 DEBUG ServerWorld:85 - Number of enemies : 5
+2025-10-08 11:09:01 DEBUG ServerWorld:85 - Number of enemies : 10
+2025-10-08 11:09:03 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:06 DEBUG ServerWorld:126 - Login Message recieved from : 1
+2025-10-08 11:09:07 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:09 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:10 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:10 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:10 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:11 DEBUG ServerWorld:85 - Number of enemies : 15
+2025-10-08 11:09:12 DEBUG ServerWorld:138 - Logout Message recieved from : 1 Size: 0

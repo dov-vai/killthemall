@@ -8,3 +8,9 @@
 2025-10-07 16:07:55 DEBUG OClient:37 - Attempting to connect args[0]: localhost
 2025-10-07 19:14:32 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
 2025-10-07 19:14:33 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 11:07:21 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
+2025-10-08 11:07:23 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 11:08:29 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
+2025-10-08 11:08:30 DEBUG OClient:37 - Attempting to connect args[0]: localhost
+2025-10-08 11:09:04 DEBUG ClientMain:22 - No arg has been passed. LOCALHOST ip.
+2025-10-08 11:09:06 DEBUG OClient:37 - Attempting to connect args[0]: localhost
