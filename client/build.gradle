@@ -16,6 +16,14 @@ sourceSets {
             srcDirs = ['src/resources']
         }
     }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+        resources {
+            srcDirs = ['test/resources']
+        }
+    }
 }
 
 project.ext.mainClassName = "com.javakaian.shooter.ClientMain"
@@ -33,8 +41,6 @@ tasks.register('run', JavaExec) {
 }
 
 jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-
     manifest {
         attributes(
                 'Main-Class': 'com.javakaian.shooter.ClientMain'
@@ -44,3 +50,16 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
  }
+
+dependencies {
+    testImplementation(platform('org.junit:junit-bom:6.0.0'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
