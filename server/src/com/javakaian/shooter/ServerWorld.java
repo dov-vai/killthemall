@@ -5,6 +5,9 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
 import com.javakaian.shooter.shapes.Bullet;
+import com.javakaian.shooter.factory.BulletFactory;
+import com.javakaian.shooter.factory.ConcreteBulletFactory;
+import com.javakaian.shooter.factory.BulletType;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
 import com.javakaian.util.MessageCreator;
@@ -30,6 +33,8 @@ public class ServerWorld implements OMessageListener {
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
 
+    private BulletFactory bulletFactory;
+
     public ServerWorld() {
 
         server = new OServer(this);
@@ -38,6 +43,8 @@ public class ServerWorld implements OMessageListener {
         bullets = new ArrayList<>();
 
         idPool = new UserIdPool();
+
+        bulletFactory = new ConcreteBulletFactory();
 
     }
 
@@ -76,8 +83,7 @@ public class ServerWorld implements OMessageListener {
             enemyTime = 0;
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
-            //Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10);
-            Enemy e = GameEntityFactory.createEnemy();
+            Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10);
             enemies.add(e);
         }
     }
@@ -116,8 +122,7 @@ public class ServerWorld implements OMessageListener {
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        //players.add(new Player(m.getX(), m.getY(), 50, id));
-        players.add(GameEntityFactory.createPlayer(m.getX(), m.getY(), id));
+        players.add(new Player(m.getX(), m.getY(), 50, id));
         logger.debug("Login Message recieved from : " + id);
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
@@ -164,17 +169,17 @@ public class ServerWorld implements OMessageListener {
     @Override
     public void shootReceived(ShootMessage m) {
 
-        // players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-        //         .ifPresent(p -> bullets.add(new Bullet(p.getPosition().x + p.getBoundRect().width / 2,
-        //                 p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getPlayerId())));
-
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-        .ifPresent(p -> bullets.add(GameEntityFactory.createBullet(
-            p.getPosition().x + p.getBoundRect().width / 2,
-            p.getPosition().y + p.getBoundRect().height /2,
-            m.getAngleDeg(),
-            m.getPlayerId()
-        )));
+        .ifPresent(p -> {
+            Bullet b = bulletFactory.createBullet(
+                BulletType.FAST, // could be STANDARD, FAST, HEAVY
+                p.getPosition().x + p.getBoundRect().width / 2,
+                p.getPosition().y + p.getBoundRect().height / 2,
+                m.getAngleDeg(),
+                m.getPlayerId()
+            );
+            bullets.add(b);
+        });
 
     }
 

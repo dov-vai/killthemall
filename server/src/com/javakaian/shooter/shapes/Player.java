@@ -3,7 +3,7 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Player implements GameObject{
+public class Player{
 
     private float size;
     private Vector2 position;
@@ -21,7 +21,6 @@ public class Player implements GameObject{
         this.health = 100;
     }
 
-    @Override
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
@@ -68,13 +67,10 @@ public class Player implements GameObject{
         }
     }
 
-    // GameObject interface methods
-    @Override
     public boolean isVisible() {
         return alive;
     }
 
-    @Override
     public void setVisible(boolean visible) {
         this.alive = visible;
     }
