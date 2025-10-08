@@ -9,16 +9,22 @@ public class Enemy {
     private Vector2 position;
     private float size;
     private boolean visible = true;
+    private Color color;
 
     public Enemy(float x, float y, float size) {
+        this(x, y, size, Color.CYAN);
+    }
+
+    public Enemy(float x, float y, float size, Color color) {
         this.position = new Vector2(x, y);
         this.size = size;
+        this.color = color;
     }
 
     public void render(ShapeRenderer sr) {
-        sr.setColor(Color.CYAN);
+        if (!visible) return;
+        sr.setColor(color);
         sr.circle(position.x, position.y, size);
-        sr.setColor(Color.WHITE);
     }
 
     public Vector2 getPosition() {
@@ -37,4 +43,11 @@ public class Enemy {
         this.visible = visible;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }
