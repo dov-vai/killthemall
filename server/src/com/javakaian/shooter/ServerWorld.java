@@ -5,6 +5,9 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
 import com.javakaian.shooter.shapes.Bullet;
+import com.javakaian.shooter.factory.BulletFactory;
+import com.javakaian.shooter.factory.ConcreteBulletFactory;
+import com.javakaian.shooter.factory.BulletType;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
 import com.javakaian.util.MessageCreator;
@@ -30,6 +33,8 @@ public class ServerWorld implements OMessageListener {
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
 
+    private BulletFactory bulletFactory;
+
     public ServerWorld() {
 
         server = new OServer(this);
@@ -38,6 +43,8 @@ public class ServerWorld implements OMessageListener {
         bullets = new ArrayList<>();
 
         idPool = new UserIdPool();
+
+        bulletFactory = new ConcreteBulletFactory();
 
     }
 
@@ -163,8 +170,16 @@ public class ServerWorld implements OMessageListener {
     public void shootReceived(ShootMessage m) {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-                .ifPresent(p -> bullets.add(new Bullet(p.getPosition().x + p.getBoundRect().width / 2,
-                        p.getPosition().y + p.getBoundRect().height / 2, 10, m.getAngleDeg(), m.getPlayerId())));
+        .ifPresent(p -> {
+            Bullet b = bulletFactory.createBullet(
+                BulletType.FAST, // could be STANDARD, FAST, HEAVY
+                p.getPosition().x + p.getBoundRect().width / 2,
+                p.getPosition().y + p.getBoundRect().height / 2,
+                m.getAngleDeg(),
+                m.getPlayerId()
+            );
+            bullets.add(b);
+        });
 
     }
 

@@ -3,7 +3,7 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class Player {
+public class Player{
 
     private float size;
     private Vector2 position;
@@ -65,6 +65,14 @@ public class Player {
         if (this.health <= 0) {
             this.alive = false;
         }
+    }
+
+    public boolean isVisible() {
+        return alive;
+    }
+
+    public void setVisible(boolean visible) {
+        this.alive = visible;
     }
 
 }
