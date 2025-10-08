@@ -11,7 +11,6 @@ import java.util.List;
 public abstract class ThemeFactory {
     public abstract Theme createTheme();
     public abstract Enemy createEnemy(float x, float y);
-    public abstract Bullet createBullet(float x, float y, float size);
     public abstract AimLine createAimLine(Vector2 begin, Vector2 end);
 
     public static ThemeFactory getFactory(boolean darkMode) {
@@ -33,17 +32,4 @@ public abstract class ThemeFactory {
         }
         return enemies;
     }
-
-    public List<Bullet> createBulletsFromGWM(GameWorldMessage m) {
-        float[] tb = m.getBullets();
-        List<Bullet> blist = new ArrayList<>();
-        for (int i = 0; i < tb.length / 3; i++) {
-            float x = tb[i * 3];
-            float y = tb[i * 3 + 1];
-            float size = tb[i * 3 + 2];
-            blist.add(createBullet(x, y, size));
-        }
-        return blist;
-    }
-
 }

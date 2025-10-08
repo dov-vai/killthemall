@@ -213,7 +213,7 @@ public class PlayState extends State implements OMessageListener {
         }
 
         enemies = themeFactory.createEnemiesFromGWM(m);
-        bullets = themeFactory.createBulletsFromGWM(m);
+        bullets = OMessageParser.getBulletsFromGWM(m);
         players = OMessageParser.getPlayersFromGWM(m);
 
         if (player == null) return;

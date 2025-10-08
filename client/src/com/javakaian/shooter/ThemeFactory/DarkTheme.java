@@ -14,12 +14,6 @@ public class DarkTheme implements Theme {
     }
 
     @Override
-    public Color getBulletColor() {
-        return Color.YELLOW;
-    }
-
-
-    @Override
     public Color getTextColor() {
         return Color.WHITE;
     }

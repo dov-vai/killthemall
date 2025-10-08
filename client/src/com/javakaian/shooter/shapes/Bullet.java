@@ -9,8 +9,6 @@ public class Bullet {
     private Vector2 position;
     private float size;
     private boolean visible = true;
-    private Color color;
-
 
     public Bullet(float x, float y, float size) {
         this.position = new Vector2(x, y);
@@ -18,12 +16,7 @@ public class Bullet {
     }
 
     public void render(ShapeRenderer sr) {
-        sr.setColor(this.color);
         sr.rect(position.x, position.y, size, size);
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     public Vector2 getPosition() {

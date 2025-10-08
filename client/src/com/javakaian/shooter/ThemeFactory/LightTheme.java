@@ -15,11 +15,6 @@ public class LightTheme implements Theme {
     }
 
     @Override
-    public Color getBulletColor() {
-        return Color.SCARLET;
-    }
-
-    @Override
     public Color getTextColor() {
         return Color.BLACK;
     }

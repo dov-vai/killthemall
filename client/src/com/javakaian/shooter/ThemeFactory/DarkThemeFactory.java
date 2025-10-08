@@ -22,13 +22,6 @@ public class DarkThemeFactory extends ThemeFactory {
     }
 
     @Override
-    public Bullet createBullet(float x, float y, float size) {
-        Bullet b = new Bullet(x, y, size);
-        b.setColor(createTheme().getBulletColor());
-        return b;
-    }
-
-    @Override
     public AimLine createAimLine(Vector2 begin, Vector2 end) {
         Theme theme = createTheme();
 

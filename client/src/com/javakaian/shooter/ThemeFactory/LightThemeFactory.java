@@ -22,13 +22,6 @@ public class LightThemeFactory extends ThemeFactory {
     }
 
     @Override
-    public Bullet createBullet(float x, float y, float size) {
-        Bullet b = new Bullet(x, y, size);
-        b.setColor(createTheme().getBulletColor());
-        return b;
-    }
-
-    @Override
     public AimLine createAimLine(Vector2 begin, Vector2 end) {
         AimLine line = new AimLine(begin, end);
         line.setColor(createTheme().getAimLineColor());
