@@ -2,6 +2,7 @@ package com.javakaian.shooter.input;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
+import com.javakaian.shooter.utils.GameStats;
 import com.javakaian.states.PlayState;
 import com.javakaian.states.State.StateEnum;
 
@@ -37,6 +38,7 @@ public class PlayStateInput extends InputAdapter {
                 playState.shoot();
                 break;
             case Keys.M:
+                GameStats.getInstance().endSession();
                 playState.getSc().setState(StateEnum.MENU_STATE);
                 break;
             default:

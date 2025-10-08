@@ -84,6 +84,7 @@ public final class GameStats {
 		totalDistance += sessionDistanceTraveled;
 		float time = getTimeAliveSecondsUnsafe();
 		if (time > bestTimeSeconds) bestTimeSeconds = time;
+        save();
 	}
 
 	public synchronized void incrementDeaths() {
