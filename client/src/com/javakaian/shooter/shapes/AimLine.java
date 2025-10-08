@@ -12,6 +12,7 @@ public class AimLine {
 
     private Vector2 begin;
     private Vector2 end;
+    private Color color;
 
     private OrthographicCamera camera;
 
@@ -25,10 +26,12 @@ public class AimLine {
 
     public void render(ShapeRenderer sr) {
 
-        sr.setColor(Color.RED);
+        sr.setColor(color);
         sr.line(begin, end);
         sr.setColor(Color.WHITE);
     }
+
+    public void setColor(Color color) { this.color = color; }
 
     public void update(float deltaTime) {
 

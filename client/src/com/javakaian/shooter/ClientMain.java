@@ -17,6 +17,7 @@ public class ClientMain {
         config.setResizable(false);
         // config.x = 2500;
 
+
         String ip = null;
         if (arg.length == 0) {
             logger.debug("No arg has been passed. LOCALHOST ip.");

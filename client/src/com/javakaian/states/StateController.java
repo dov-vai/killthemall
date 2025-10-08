@@ -3,6 +3,7 @@ package com.javakaian.states;
 import com.badlogic.gdx.Gdx;
 import com.javakaian.states.State.StateEnum;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ public class StateController {
      * Ip address of the server
      */
     private String inetAddress;
+
+    MenuState menuState;
 
     public StateController(String ip) {
 
