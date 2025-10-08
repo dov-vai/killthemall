@@ -8,6 +8,7 @@ hs_err_pid*
 #new arch
 /client/build/
 /server/build/
+/shared/build/
 
 
 ## Robovm
@@ -123,3 +124,6 @@ Thumbs.db
 client/logs/
 server/logs/
 *.log
+logs
+
+.vscode
