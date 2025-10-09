@@ -32,7 +32,7 @@ public final class GameStats {
 	private float bestTimeSeconds;
 
 	private GameStats() {
-		prefs = Gdx.app.getPreferences(PREF_NAME);
+		prefs = Gdx.app != null ? Gdx.app.getPreferences(PREF_NAME) : null;
 		load();
 	}
 
@@ -41,6 +41,10 @@ public final class GameStats {
 	}
 
 	public synchronized void load() {
+		if (prefs == null && Gdx.app != null) {
+			prefs = Gdx.app.getPreferences(PREF_NAME);
+		}
+		if (prefs == null) return;
 		totalSessions = prefs.getInteger(KEY_TOTAL_SESSIONS, 0);
 		totalDeaths = prefs.getInteger(KEY_TOTAL_DEATHS, 0);
 		totalShots = prefs.getInteger(KEY_TOTAL_SHOTS, 0);
@@ -50,6 +54,7 @@ public final class GameStats {
 	}
 
 	public synchronized void save() {
+		if (prefs == null) return;
 		prefs.putInteger(KEY_TOTAL_SESSIONS, totalSessions);
 		prefs.putInteger(KEY_TOTAL_DEATHS, totalDeaths);
 		prefs.putInteger(KEY_TOTAL_SHOTS, totalShots);
