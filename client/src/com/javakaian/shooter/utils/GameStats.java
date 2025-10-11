@@ -3,6 +3,9 @@ package com.javakaian.shooter.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class GameStats {
 
 	private static final String PREF_NAME = "killthemall_stats";
@@ -31,6 +34,8 @@ public final class GameStats {
 	private float totalDistance;
 	private float bestTimeSeconds;
 
+	private final List<GameStatsListener> listeners = new ArrayList<>();
+
 	private GameStats() {
 		prefs = Gdx.app != null ? Gdx.app.getPreferences(PREF_NAME) : null;
 		load();
@@ -38,6 +43,14 @@ public final class GameStats {
 
 	public static GameStats getInstance() {
 		return INSTANCE;
+	}
+
+	public synchronized void addListener(GameStatsListener listener) {
+		if (listener != null && !listeners.contains(listener)) listeners.add(listener);
+	}
+
+	public synchronized void removeListener(GameStatsListener listener) {
+		listeners.remove(listener);
 	}
 
 	public synchronized void load() {
@@ -78,6 +91,9 @@ public final class GameStats {
 		sessionStartNanos = System.nanoTime();
 		sessionActive = true;
 		totalSessions++;
+		for (var l : listeners) {
+			try { l.onSessionStarted(totalSessions); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized void endSession() {
@@ -88,26 +104,46 @@ public final class GameStats {
 		totalDamage += sessionDamageTaken;
 		totalDistance += sessionDistanceTraveled;
 		float time = getTimeAliveSecondsUnsafe();
-		if (time > bestTimeSeconds) bestTimeSeconds = time;
+		boolean bestUpdated = false;
+		if (time > bestTimeSeconds) {
+			bestTimeSeconds = time;
+			bestUpdated = true;
+		}
         save();
+		for (var l : listeners) {
+			try { l.onSessionEnded(time, bestUpdated, sessionShotsFired, sessionDamageTaken, sessionDistanceTraveled); } catch (Exception ignored) {}
+			try { l.onTotalsChanged(totalSessions, totalDeaths, totalShots, totalDamage, totalDistance, bestTimeSeconds); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized void incrementDeaths() {
 		totalDeaths++;
+		for (var l : listeners) {
+			try { l.onDeathsChanged(totalDeaths); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized void incrementShotsFired() {
 		sessionShotsFired++;
+		for (var l : listeners) {
+			try { l.onShotsFiredChanged(sessionShotsFired, totalShots + sessionShotsFired); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized void addDamageTaken(float amount) {
 		if (amount <= 0) return;
 		sessionDamageTaken += amount;
+		for (var l : listeners) {
+			try { l.onDamageTakenChanged(sessionDamageTaken, totalDamage + sessionDamageTaken); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized void addDistanceTraveled(float amount) {
 		if (amount <= 0) return;
 		sessionDistanceTraveled += amount;
+		for (var l : listeners) {
+			try { l.onDistanceTraveledChanged(sessionDistanceTraveled, totalDistance + sessionDistanceTraveled); } catch (Exception ignored) {}
+		}
 	}
 
 	public synchronized float getTimeAliveSeconds() {
@@ -135,6 +171,9 @@ public final class GameStats {
 		totalDistance = 0f;
 		bestTimeSeconds = 0f;
 		save();
+		for (var l : listeners) {
+			try { l.onTotalsReset(); } catch (Exception ignored) {}
+		}
 	}
 }
 
