@@ -43,6 +43,10 @@ public class MenuStateInput extends InputAdapter {
                 menuState.getSc().setState(StateEnum.STATS_STATE);
                 break;
 
+            case Keys.A:
+                menuState.getSc().setState(StateEnum.ACHIEVEMENTS_STATE);
+                break;
+
             case Keys.Q:
                 menuState.quit();
                 break;

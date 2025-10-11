@@ -55,6 +55,7 @@ public class MenuState extends State {
         GameUtils.renderCenter("Mode: " + (darkMode ? "Dark" : "Light"), sb, smallFont, 0.45f);
         GameUtils.renderCenter("Space - Play", sb, smallFont, 0.5f);
         GameUtils.renderCenter("S - Statistics", sb, smallFont, 0.58f);
+        GameUtils.renderCenter("A - Achievements", sb, smallFont, 0.62f);
         GameUtils.renderCenter("Q - Quit", sb, smallFont, 0.66f);
         sb.end();
     }

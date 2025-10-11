@@ -128,3 +128,5 @@ server/logs/
 logs
 
 .vscode
+
+jars/

@@ -1,9 +1,9 @@
 package com.javakaian.states;
 
 import com.badlogic.gdx.Gdx;
+import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.states.State.StateEnum;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,13 +33,12 @@ public class StateController {
      */
     private String inetAddress;
 
-    MenuState menuState;
+    private AchievementManager achievementManager;
 
-    public StateController(String ip) {
-
+    public StateController(String ip, AchievementManager achievementManager) {
         this.inetAddress = ip;
         stateMap = new HashMap<>();
-
+        this.achievementManager = achievementManager;
     }
 
     /**
@@ -49,7 +48,6 @@ public class StateController {
      * @param stateEnum
      **/
     public void setState(StateEnum stateEnum) {
-
         currentState = stateMap.get(stateEnum.ordinal());
         if (currentState == null) {
             switch (stateEnum) {
@@ -65,7 +63,9 @@ public class StateController {
                 case STATS_STATE:
                     currentState = new StatsState(this);
                     break;
-
+                case ACHIEVEMENTS_STATE:
+                    currentState = new AchievementsState(this, achievementManager);
+                    break;
                 default:
                     currentState = new MenuState(this);
                     break;
@@ -73,7 +73,6 @@ public class StateController {
             stateMap.put(stateEnum.ordinal(), currentState);
         }
         Gdx.input.setInputProcessor(currentState.ip);
-
     }
 
     /**
@@ -110,6 +109,10 @@ public class StateController {
      */
     public String getInetAddress() {
         return inetAddress;
+    }
+
+    public AchievementManager getAchievementManager() {
+        return achievementManager;
     }
 
 }
