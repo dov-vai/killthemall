@@ -13,7 +13,7 @@ import com.javakaian.network.messages.*;
 import com.javakaian.network.messages.PositionMessage.Direction;
 import com.javakaian.shooter.OMessageListener;
 import com.javakaian.shooter.achievements.Achievement;
-import com.javakaian.shooter.achievements.AchievementListener;
+import com.javakaian.shooter.achievements.AchievementObserver;
 import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
 import com.javakaian.shooter.input.PlayStateInput;
@@ -22,6 +22,7 @@ import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
 import com.javakaian.shooter.utils.*;
+import com.javakaian.shooter.utils.stats.GameStats;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.List;
  *
  * @author oguz
  */
-public class PlayState extends State implements OMessageListener, AchievementListener {
+public class PlayState extends State implements OMessageListener, AchievementObserver {
 
     private ThemeFactory themeFactory;
     private Player player;

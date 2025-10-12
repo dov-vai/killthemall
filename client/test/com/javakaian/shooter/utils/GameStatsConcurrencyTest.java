@@ -1,5 +1,6 @@
 package com.javakaian.shooter.utils;
 
+import com.javakaian.shooter.utils.stats.GameStats;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

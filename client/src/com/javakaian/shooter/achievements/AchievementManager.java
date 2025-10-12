@@ -2,19 +2,19 @@ package com.javakaian.shooter.achievements;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.javakaian.shooter.utils.GameStats;
-import com.javakaian.shooter.utils.GameStatsListener;
+import com.javakaian.shooter.utils.stats.GameStats;
+import com.javakaian.shooter.utils.stats.StatsObserver;
+import com.javakaian.shooter.utils.stats.messages.*;
 
 import java.util.*;
 
-public class AchievementManager implements GameStatsListener {
+public class AchievementManager extends AchievementsObservable implements StatsObserver {
 
     private static final String PREF_NAME = "killthemall_achievements";
     private static final String KEY_UNLOCKED = "unlocked_ids";
 
     private final Map<String, Achievement> catalog = new LinkedHashMap<>();
     private final Set<String> unlocked = new LinkedHashSet<>();
-    private final List<AchievementListener> listeners = new ArrayList<>();
 
     private Preferences prefs;
 
@@ -47,22 +47,12 @@ public class AchievementManager implements GameStatsListener {
 
     public boolean isUnlocked(String id) { return unlocked.contains(id); }
 
-    public void addListener(AchievementListener l) {
-        if (l != null && !listeners.contains(l)) listeners.add(l);
-    }
-
-    public void removeListener(AchievementListener l) { listeners.remove(l); }
-
     private void unlock(String id) {
         if (unlocked.contains(id)) return;
         unlocked.add(id);
         save();
         Achievement a = catalog.get(id);
-        if (a != null) {
-            for (var l : listeners) {
-                try { l.onAchievementUnlocked(a); } catch (Exception ignored) {}
-            }
-        }
+        notify(a);
     }
 
     private void load() {
@@ -82,22 +72,13 @@ public class AchievementManager implements GameStatsListener {
     }
 
     @Override
-    public void onDeathsChanged(int totalDeaths) {
-        if (totalDeaths >= 1) unlock("first_blood");
-    }
-
-    @Override
-    public void onShotsFiredChanged(int sessionShots, int projectedTotalShots) {
-        if (projectedTotalShots >= 100) unlock("rookie_shooter");
-    }
-
-    @Override
-    public void onDistanceTraveledChanged(float sessionDistance, float projectedTotalDistance) {
-        if (projectedTotalDistance >= 5000f) unlock("marathon");
-    }
-
-    @Override
-    public void onSessionEnded(float sessionTimeSeconds, boolean bestTimeUpdated, int sessionShots, float sessionDamage, float sessionDistance) {
-        if (sessionTimeSeconds >= 60f) unlock("iron_man");
+    public void onStatsReceived(StatsMessage message) {
+        switch (message) {
+            case DeathsChangedMessage m when m.totalDeaths() >= 1 -> unlock("first_blood");
+            case ShotsFiredChangedMessage m when m.projectedTotalShots() >= 100 -> unlock("rookie_shooter");
+            case DistanceTraveledChangedMessage m when m.projectedTotalDistance() >= 5000f -> unlock("marathon");
+            case SessionEndedMessage m when m.sessionTimeSeconds() >= 60f -> unlock("iron_man");
+            default -> {}
+        }
     }
 }

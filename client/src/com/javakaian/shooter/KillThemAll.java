@@ -5,7 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.javakaian.states.State.StateEnum;
 import com.javakaian.states.StateController;
 import com.javakaian.shooter.achievements.AchievementManager;
-import com.javakaian.shooter.utils.GameStats;
+import com.javakaian.shooter.utils.stats.GameStats;
 
 public class KillThemAll extends ApplicationAdapter {
 

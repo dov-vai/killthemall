@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.javakaian.shooter.input.GameOverInput;
-import com.javakaian.shooter.utils.GameStats;
+import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.shooter.utils.GameUtils;
 
 /**
