@@ -2,7 +2,7 @@ package com.javakaian.shooter.input;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
-import com.javakaian.shooter.utils.GameStats;
+import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.states.PlayState;
 import com.javakaian.states.State.StateEnum;
 

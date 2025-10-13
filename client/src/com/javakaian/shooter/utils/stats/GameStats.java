@@ -1,9 +1,10 @@
-package com.javakaian.shooter.utils;
+package com.javakaian.shooter.utils.stats;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.javakaian.shooter.utils.stats.messages.*;
 
-public final class GameStats {
+public final class GameStats extends StatsObservable{
 
 	private static final String PREF_NAME = "killthemall_stats";
 	private static final String KEY_TOTAL_SESSIONS = "total_sessions";
@@ -39,6 +40,16 @@ public final class GameStats {
 	public static GameStats getInstance() {
 		return INSTANCE;
 	}
+
+    @Override
+    public synchronized void addListener(StatsObserver listener) {
+        super.addListener(listener);
+    }
+
+    @Override
+    public synchronized void removeListener(StatsObserver listener) {
+        super.removeListener(listener);
+    }
 
 	public synchronized void load() {
 		if (prefs == null && Gdx.app != null) {
@@ -78,6 +89,7 @@ public final class GameStats {
 		sessionStartNanos = System.nanoTime();
 		sessionActive = true;
 		totalSessions++;
+		notify(new SessionStartedMessage(totalSessions));
 	}
 
 	public synchronized void endSession() {
@@ -88,26 +100,36 @@ public final class GameStats {
 		totalDamage += sessionDamageTaken;
 		totalDistance += sessionDistanceTraveled;
 		float time = getTimeAliveSecondsUnsafe();
-		if (time > bestTimeSeconds) bestTimeSeconds = time;
+		boolean bestUpdated = false;
+		if (time > bestTimeSeconds) {
+			bestTimeSeconds = time;
+			bestUpdated = true;
+		}
         save();
+		notify(new SessionEndedMessage(time, bestUpdated, sessionShotsFired, sessionDamageTaken, sessionDistanceTraveled));
+		notify(new TotalsChangedMessage(totalSessions, totalDeaths, totalShots, totalDamage, totalDistance, bestTimeSeconds));
 	}
 
 	public synchronized void incrementDeaths() {
 		totalDeaths++;
+		notify(new DeathsChangedMessage(totalDeaths));
 	}
 
 	public synchronized void incrementShotsFired() {
 		sessionShotsFired++;
+		notify(new ShotsFiredChangedMessage(sessionShotsFired, totalShots + sessionShotsFired));
 	}
 
 	public synchronized void addDamageTaken(float amount) {
 		if (amount <= 0) return;
 		sessionDamageTaken += amount;
+		notify(new DamageTakenChangedMessage(sessionDamageTaken, totalDamage + sessionDamageTaken));
 	}
 
 	public synchronized void addDistanceTraveled(float amount) {
 		if (amount <= 0) return;
 		sessionDistanceTraveled += amount;
+		notify(new DistanceTraveledChangedMessage(sessionDistanceTraveled, totalDistance + sessionDistanceTraveled));
 	}
 
 	public synchronized float getTimeAliveSeconds() {
@@ -135,6 +157,7 @@ public final class GameStats {
 		totalDistance = 0f;
 		bestTimeSeconds = 0f;
 		save();
+		notify(new TotalsResetMessage());
 	}
 }
 

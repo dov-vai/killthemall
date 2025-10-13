@@ -7,10 +7,13 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.javakaian.models.Notification;
 import com.javakaian.network.OClient;
 import com.javakaian.network.messages.*;
 import com.javakaian.network.messages.PositionMessage.Direction;
 import com.javakaian.shooter.OMessageListener;
+import com.javakaian.shooter.achievements.Achievement;
+import com.javakaian.shooter.achievements.AchievementObserver;
 import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
 import com.javakaian.shooter.input.PlayStateInput;
@@ -19,6 +22,7 @@ import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
 import com.javakaian.shooter.utils.*;
+import com.javakaian.shooter.utils.stats.GameStats;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -29,7 +33,7 @@ import java.util.List;
  *
  * @author oguz
  */
-public class PlayState extends State implements OMessageListener {
+public class PlayState extends State implements OMessageListener, AchievementObserver {
 
     private ThemeFactory themeFactory;
     private Player player;
@@ -43,12 +47,16 @@ public class PlayState extends State implements OMessageListener {
     private BitmapFont healthFont;
     private float lastX, lastY;
 
+    private final List<Notification> notifications = new ArrayList<>();
+    private BitmapFont notifFont;
+
     public PlayState(StateController sc) {
         super(sc);
 
         themeFactory = ThemeFactory.getFactory(false); //fallback
 
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
 
         init();
         ip = new PlayStateInput(this);
@@ -109,7 +117,20 @@ public class PlayState extends State implements OMessageListener {
 
         sb.begin();
         GameUtils.renderCenter("HEALTH: " + player.getHealth(), sb, healthFont, 0.1f);
+
+        renderNotifications();
         sb.end();
+    }
+
+    private void renderNotifications() {
+        float startY = 0.12f;
+        float y = startY;
+        for (int i = 0; i < notifications.size(); i++) {
+            Notification n = notifications.get(i);
+            GameUtils.renderCenter(n.text, sb, notifFont, y);
+            y += 0.05f;
+            if (i >= 3) break; // show up to 4
+        }
     }
 
     private void followPlayer() {
@@ -137,6 +158,16 @@ public class PlayState extends State implements OMessageListener {
         }
 
         processInputs();
+
+        clearNotifications(deltaTime);
+    }
+
+    private void clearNotifications(float deltaTime) {
+        for (int i = notifications.size() - 1; i >= 0; i--) {
+            Notification n = notifications.get(i);
+            n.ttl -= deltaTime;
+            if (n.ttl <= 0) notifications.remove(i);
+        }
     }
 
     public void scrolled(float amountY) {
@@ -184,6 +215,7 @@ public class PlayState extends State implements OMessageListener {
         lastY = player.getPosition().y;
         GameStats.getInstance().resetSession();
         GameStats.getInstance().startSession();
+        sc.getAchievementManager().addListener(this);
     }
 
     @Override
@@ -243,6 +275,13 @@ public class PlayState extends State implements OMessageListener {
             client.sendTCP(m);
         }
         if (healthFont != null) healthFont.dispose();
+        if (notifFont != null) notifFont.dispose();
         GameStats.getInstance().endSession();
+        sc.getAchievementManager().removeListener(this);
+    }
+
+    @Override
+    public void onAchievementUnlocked(Achievement achievement) {
+        notifications.add(new Notification("Achievement Unlocked: " + achievement.getTitle(), 3.0f));
     }
 }

@@ -84,7 +84,7 @@ public abstract class State {
      */
     public enum StateEnum {
 
-        PLAY_STATE, MENU_STATE, GAME_OVER_STATE, PAUSE_STATE, STATS_STATE
+        PLAY_STATE, MENU_STATE, GAME_OVER_STATE, PAUSE_STATE, STATS_STATE, ACHIEVEMENTS_STATE
 
     }
 
