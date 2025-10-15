@@ -1,11 +1,17 @@
+// com.javakaian.shooter.ThemeFactory.DarkThemeFactory.java
+
 package com.javakaian.shooter.ThemeFactory;
 
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.shapes.AimLine;
-import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 
 public class DarkThemeFactory extends ThemeFactory {
+
+    public DarkThemeFactory() {
+        Theme theme = createTheme();
+        this.enemyPrototype = new Enemy(0, 0, 10, theme.getEnemyColor());
+    }
 
     @Override
     public Theme createTheme() {
@@ -14,11 +20,7 @@ public class DarkThemeFactory extends ThemeFactory {
 
     @Override
     public Enemy createEnemy(float x, float y) {
-        Theme theme = createTheme();
-
-        Enemy e = new Enemy(x, y, 10);
-        e.setColor(theme.getEnemyColor());
-        return e;
+        return cloneEnemy(x, y);
     }
 
     @Override

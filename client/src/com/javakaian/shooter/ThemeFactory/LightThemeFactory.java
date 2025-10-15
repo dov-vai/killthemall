@@ -7,6 +7,11 @@ import com.javakaian.shooter.shapes.Enemy;
 
 public class LightThemeFactory extends ThemeFactory {
 
+    public LightThemeFactory() {
+        Theme theme = createTheme();
+        this.enemyPrototype = new Enemy(0, 0, 10, theme.getEnemyColor());
+    }
+
     @Override
     public Theme createTheme() {
         return new LightTheme();
@@ -14,11 +19,7 @@ public class LightThemeFactory extends ThemeFactory {
 
     @Override
     public Enemy createEnemy(float x, float y) {
-        Theme theme = createTheme();
-
-        Enemy e = new Enemy(x, y, 10);
-        e.setColor(theme.getEnemyColor());
-        return e;
+        return cloneEnemy(x, y);
     }
 
     @Override
