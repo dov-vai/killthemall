@@ -10,6 +10,7 @@ import com.javakaian.shooter.factory.ConcreteBulletFactory;
 import com.javakaian.shooter.factory.BulletType;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.strategy.*;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
@@ -47,6 +48,10 @@ public class ServerWorld implements OMessageListener {
     //weapon system
     private WeaponDirector weaponDirector;
     private Map<Integer, Weapon> playerWeapons;
+    
+    // Strategy pattern - different enemy behaviors
+    private EnemyBehaviorStrategy[] behaviorStrategies;
+    private int strategyIndex = 0;
 
     public ServerWorld() {
 
@@ -62,6 +67,14 @@ public class ServerWorld implements OMessageListener {
         //weapon system
         weaponDirector = new WeaponDirector();
         playerWeapons = new HashMap<>();
+        
+        // Initialize behavior strategies
+        behaviorStrategies = new EnemyBehaviorStrategy[]{
+            new AggressiveBehavior(),
+            new DefensiveBehavior(),
+            new FlankingBehavior(),
+            new ErraticBehavior()
+        };
     }
 
     public void update(float deltaTime) {
@@ -73,7 +86,7 @@ public class ServerWorld implements OMessageListener {
 
         // update every object
         players.forEach(p -> p.update(deltaTime));
-        enemies.forEach(e -> e.update(deltaTime));
+        enemies.forEach(e -> e.update(deltaTime, players)); // Pass players for AI behavior
         bullets.forEach(b -> b.update(deltaTime));
 
         checkCollision();
@@ -99,8 +112,15 @@ public class ServerWorld implements OMessageListener {
             enemyTime = 0;
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
-            Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10);
+            
+            // Use strategy pattern - rotate through different behaviors
+            EnemyBehaviorStrategy strategy = behaviorStrategies[strategyIndex];
+            strategyIndex = (strategyIndex + 1) % behaviorStrategies.length;
+            
+            Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10, strategy);
             enemies.add(e);
+            
+            logger.debug("Spawned enemy with " + strategy.getStrategyName() + " behavior");
         }
     }
 
