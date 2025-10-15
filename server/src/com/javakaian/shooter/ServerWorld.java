@@ -256,41 +256,6 @@ public class ServerWorld implements OMessageListener {
             default -> weaponDirector.createAssaultRifle();
         };
     }
-    
-    // @Override
-    // public void weaponChangeReceived(WeaponChangeMessage m) {
-    //     giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
-        
-    //     players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-    //     .ifPresent(p -> {
-    //         if (p.getCurrentWeapon() != null) {
-    //             Weapon weapon = p.getCurrentWeapon();
-                
-    //             WeaponInfoMessage info = new WeaponInfoMessage();
-    //             info.setPlayerId(m.getPlayerId());
-    //             info.setWeaponName(weapon.getName());
-                
-    //             // Build components string (shows what Builder added)
-    //             StringBuilder components = new StringBuilder();
-    //             if (weapon.getBarrel() != null) components.append("Barrel, ");
-    //             if (weapon.getScope() != null) components.append("Scope, ");
-    //             if (weapon.getStock() != null) components.append("Stock, ");
-    //             if (weapon.getMagazine() != null) components.append("Magazine, ");
-    //             if (weapon.getGrip() != null) components.append("Grip");
-    //             info.setComponents(components.toString());
-                
-    //             // Build stats string (shows what Builder created)
-    //             String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
-    //                 weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
-    //             info.setStats(stats);
-                
-    //             server.sendToAllUDP(info);
-    //             logger.debug("Sent weapon info to player " + m.getPlayerId());
-    //         }
-    //     });
-        
-    //     logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
-    // }
 
     private void sendWeaponInfoToPlayer(int playerId) {
         players.stream().filter(p -> p.getId() == playerId).findFirst()
