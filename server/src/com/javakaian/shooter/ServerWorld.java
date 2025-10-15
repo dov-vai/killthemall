@@ -13,9 +13,18 @@ import com.javakaian.shooter.shapes.Player;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
+import com.javakaian.shooter.weapons.Weapon;
+import com.javakaian.shooter.weapons.Rifle;
+import com.javakaian.shooter.weapons.Shotgun;
+import com.javakaian.shooter.weapons.Sniper;
+import com.javakaian.shooter.builder.WeaponDirector;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServerWorld implements OMessageListener {
 
@@ -35,6 +44,10 @@ public class ServerWorld implements OMessageListener {
 
     private BulletFactory bulletFactory;
 
+    //weapon system
+    private WeaponDirector weaponDirector;
+    private Map<Integer, Weapon> playerWeapons;
+
     public ServerWorld() {
 
         server = new OServer(this);
@@ -46,6 +59,9 @@ public class ServerWorld implements OMessageListener {
 
         bulletFactory = new ConcreteBulletFactory();
 
+        //weapon system
+        weaponDirector = new WeaponDirector();
+        playerWeapons = new HashMap<>();
     }
 
     public void update(float deltaTime) {
@@ -103,7 +119,20 @@ public class ServerWorld implements OMessageListener {
             for (Player p : players) {
                 if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
                     b.setVisible(false);
-                    p.hit();
+
+                    players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
+                    .ifPresent(attacker -> {
+                        if (attacker.getCurrentWeapon() != null) {
+                            Weapon attackerWeapon = attacker.getCurrentWeapon();
+                            int weaponDamage = (int) attackerWeapon.getDamage();
+                            String weaponName = attackerWeapon.getName();
+                            
+                            System.out.println("Player " + p.getId() + " hit by " + weaponName + 
+                                " for " + weaponDamage + " damage");
+                            
+                            p.hit(weaponDamage);
+                        }
+                    });
                     if (!p.isAlive()) {
 
                         PlayerDiedMessage m = new PlayerDiedMessage();
@@ -124,6 +153,11 @@ public class ServerWorld implements OMessageListener {
         int id = idPool.getUserID();
         players.add(new Player(m.getX(), m.getY(), 50, id));
         logger.debug("Login Message recieved from : " + id);
+
+        giveWeaponToPlayer(id, "pistol");
+        sendWeaponInfoToPlayer(id);
+        logger.debug("Login Message recieved from : " + id + " with default weapon");        
+
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
     }
@@ -171,16 +205,94 @@ public class ServerWorld implements OMessageListener {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
         .ifPresent(p -> {
+            // default
+            BulletType bulletType = BulletType.STANDARD;
+
+            if (p.getCurrentWeapon() != null) {
+                Weapon weapon = p.getCurrentWeapon();
+                bulletType = getBulletTypeFromWeapon(weapon);
+                p.recordShot();
+            } else {
+                System.out.println("Player " + p.getId() + " fired default weapon -> " + bulletType + " bullet");
+            }
+            
             Bullet b = bulletFactory.createBullet(
-                BulletType.FAST, // could be STANDARD, FAST, HEAVY
+                bulletType,
                 p.getPosition().x + p.getBoundRect().width / 2,
                 p.getPosition().y + p.getBoundRect().height / 2,
                 m.getAngleDeg(),
                 m.getPlayerId()
             );
+            
             bullets.add(b);
         });
 
+    }
+    
+    // weapon system
+    private BulletType getBulletTypeFromWeapon(Weapon weapon) {
+        if (weapon instanceof Rifle) return BulletType.STANDARD;
+        if (weapon instanceof Shotgun) return BulletType.HEAVY;
+        if (weapon instanceof Sniper) return BulletType.FAST;
+        return BulletType.STANDARD;
+    }
+    
+    public void giveWeaponToPlayer(int playerId, String weaponConfig) {
+        players.stream().filter(p -> p.getId() == playerId).findFirst()
+        .ifPresent(p -> {
+            Weapon weapon = createWeaponByConfig(weaponConfig);
+            System.out.println("Created weapon: " + weapon.getName() + " with damage: " + weapon.getDamage());
+            
+            p.equipWeapon(weapon);
+            playerWeapons.put(playerId, weapon);
+        });
+    }
+    
+    private Weapon createWeaponByConfig(String config) {
+        return switch (config) {
+            case "assault_rifle" -> weaponDirector.createAssaultRifle();
+            case "combat_shotgun" -> weaponDirector.createCombatShotgun();
+            case "precision_sniper" -> weaponDirector.createPrecisionSniper();
+            default -> weaponDirector.createAssaultRifle();
+        };
+    }
+
+    private void sendWeaponInfoToPlayer(int playerId) {
+        players.stream().filter(p -> p.getId() == playerId).findFirst()
+        .ifPresent(p -> {
+            if (p.getCurrentWeapon() != null) {
+                Weapon weapon = p.getCurrentWeapon();
+                
+                WeaponInfoMessage info = new WeaponInfoMessage();
+                info.setPlayerId(playerId);
+                info.setWeaponName(weapon.getName());
+                
+                StringBuilder components = new StringBuilder();
+                if (weapon.getBarrel() != null) components.append(weapon.getBarrel()).append(", ");
+                if (weapon.getScope() != null && !weapon.getScope().equals("null")) components.append(weapon.getScope()).append(", ");
+                if (weapon.getStock() != null) components.append(weapon.getStock()).append(", ");
+                if (weapon.getMagazine() != null && !weapon.getMagazine().equals("null")) components.append(weapon.getMagazine()).append(", ");
+                if (weapon.getGrip() != null && !weapon.getGrip().equals("null")) components.append(weapon.getGrip());
+                
+                String componentsStr = components.toString().replaceAll(", $", "");
+                info.setComponents(componentsStr);
+                
+                String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
+                    weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
+                info.setStats(stats);
+                
+                server.sendToAllUDP(info);
+            }
+        });
+    }
+
+    @Override
+    public void weaponChangeReceived(WeaponChangeMessage m) {
+        giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
+        
+        sendWeaponInfoToPlayer(m.getPlayerId());
+        
+        logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
     }
 
 }

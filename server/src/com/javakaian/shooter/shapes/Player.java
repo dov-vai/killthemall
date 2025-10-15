@@ -2,6 +2,7 @@ package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.javakaian.shooter.weapons.Weapon;
 
 public class Player{
 
@@ -11,6 +12,10 @@ public class Player{
     private Rectangle boundRect;
     private boolean alive;
     private int health;
+
+    //weapon system
+    private Weapon currentWeapon;
+    //private float lastShotTime = 0;
 
     public Player(float x, float y, float size, int id) {
         this.position = new Vector2(x, y);
@@ -60,8 +65,8 @@ public class Player{
         this.health += 10;
     }
 
-    public void hit() {
-        this.health -= 10;
+    public void hit(int damage) {
+        this.health -= damage;
         if (this.health <= 0) {
             this.alive = false;
         }
@@ -73,6 +78,24 @@ public class Player{
 
     public void setVisible(boolean visible) {
         this.alive = visible;
+    }
+
+    //weapons system
+    public void equipWeapon(Weapon weapon) {
+        this.currentWeapon = weapon;
+        System.out.println("Player " + id + " equipped: " + weapon.getDescription());
+    }
+    
+    public boolean canShoot(float currentTime) {
+        return currentWeapon != null;
+    }
+    
+    public Weapon getCurrentWeapon() {
+        return currentWeapon;
+    }
+    
+    public void recordShot() {
+        System.out.println("Player " + id + " shot recorded");
     }
 
 }

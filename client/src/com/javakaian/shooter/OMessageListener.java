@@ -4,6 +4,7 @@ import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
 import com.javakaian.network.messages.PlayerDiedMessage;
+import com.javakaian.network.messages.WeaponInfoMessage;
 
 /**
  * Listener class. A class who wants to listen events like, login,logout etc.
@@ -42,5 +43,7 @@ public interface OMessageListener {
      * function.
      */
     void playerDiedReceived(PlayerDiedMessage m);
+
+    void weaponInfoReceived(WeaponInfoMessage m);
 
 }

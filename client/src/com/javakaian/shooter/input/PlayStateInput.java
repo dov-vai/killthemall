@@ -41,6 +41,15 @@ public class PlayStateInput extends InputAdapter {
                 GameStats.getInstance().endSession();
                 playState.getSc().setState(StateEnum.MENU_STATE);
                 break;
+            case Keys.NUM_1:
+                playState.requestWeaponChange("assault_rifle");
+                break;
+            case Keys.NUM_2:
+                playState.requestWeaponChange("combat_shotgun");
+                break;
+            case Keys.NUM_3:
+                playState.requestWeaponChange("precision_sniper");
+                break;
             default:
                 break;
         }

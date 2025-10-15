@@ -62,6 +62,9 @@ public class OClient {
 
                         OClient.this.game.playerDiedReceived(m);
                     }
+                    else if (object instanceof WeaponInfoMessage m) {
+                        OClient.this.game.weaponInfoReceived(m);
+                    }
 
                 });
 
@@ -83,6 +86,10 @@ public class OClient {
         this.client.getKryo().register(PositionMessage.Direction.class);
         this.client.getKryo().register(ShootMessage.class);
         this.client.getKryo().register(PlayerDiedMessage.class);
+
+        this.client.getKryo().register(WeaponChangeMessage.class);
+        this.client.getKryo().register(WeaponInfoMessage.class);
+        
         // primitive arrays
         this.client.getKryo().register(float[].class);
 

@@ -5,6 +5,7 @@ import com.javakaian.network.messages.LoginMessage;
 import com.javakaian.network.messages.LogoutMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.ShootMessage;
+import com.javakaian.network.messages.WeaponChangeMessage;
 
 public interface OMessageListener {
 
@@ -31,5 +32,10 @@ public interface OMessageListener {
      * @param m
      */
     void playerMovedReceived(PositionMessage m);
+
+    /**
+     * PlayerID and weapon configuration should be received.
+     */
+    void weaponChangeReceived(WeaponChangeMessage m);
 
 }
