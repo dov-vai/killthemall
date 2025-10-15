@@ -15,7 +15,7 @@ public class Player{
 
     //weapon system
     private Weapon currentWeapon;
-    private float lastShotTime = 0;
+    //private float lastShotTime = 0;
 
     public Player(float x, float y, float size, int id) {
         this.position = new Vector2(x, y);
@@ -65,8 +65,8 @@ public class Player{
         this.health += 10;
     }
 
-    public void hit() {
-        this.health -= 10;
+    public void hit(int damage) {
+        this.health -= damage;
         if (this.health <= 0) {
             this.alive = false;
         }

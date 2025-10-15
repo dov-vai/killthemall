@@ -119,7 +119,20 @@ public class ServerWorld implements OMessageListener {
             for (Player p : players) {
                 if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
                     b.setVisible(false);
-                    p.hit();
+
+                    players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
+                    .ifPresent(attacker -> {
+                        if (attacker.getCurrentWeapon() != null) {
+                            Weapon attackerWeapon = attacker.getCurrentWeapon();
+                            int weaponDamage = (int) attackerWeapon.getDamage();
+                            String weaponName = attackerWeapon.getName();
+                            
+                            System.out.println("Player " + p.getId() + " hit by " + weaponName + 
+                                " for " + weaponDamage + " damage");
+                            
+                            p.hit(weaponDamage);
+                        }
+                    });
                     if (!p.isAlive()) {
 
                         PlayerDiedMessage m = new PlayerDiedMessage();
