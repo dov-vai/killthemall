@@ -83,6 +83,9 @@ public class OClient {
         this.client.getKryo().register(PositionMessage.Direction.class);
         this.client.getKryo().register(ShootMessage.class);
         this.client.getKryo().register(PlayerDiedMessage.class);
+
+        this.client.getKryo().register(WeaponChangeMessage.class);
+        
         // primitive arrays
         this.client.getKryo().register(float[].class);
 

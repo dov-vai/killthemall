@@ -50,6 +50,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private final List<Notification> notifications = new ArrayList<>();
     private BitmapFont notifFont;
 
+    private String currentWeaponInfo = "Basic Rifle";
+
     public PlayState(StateController sc) {
         super(sc);
 
@@ -60,6 +62,18 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         init();
         ip = new PlayStateInput(this);
+    }
+
+    public void requestWeaponChange(String weaponConfig) {
+        if (player != null) {
+            WeaponChangeMessage message = new WeaponChangeMessage();
+            message.setPlayerId(player.getId());
+            message.setWeaponConfig(weaponConfig);
+            client.sendTCP(message);
+            
+            // current weapon display
+            currentWeaponInfo = weaponConfig.replace("_", " ").toUpperCase();
+        }
     }
 
     public void setThemeFactory(ThemeFactory factory) {
@@ -117,6 +131,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         sb.begin();
         GameUtils.renderCenter("HEALTH: " + player.getHealth(), sb, healthFont, 0.1f);
+
+        GameUtils.renderCenter("WEAPON: " + currentWeaponInfo, sb, healthFont, 0.05f);
+        GameUtils.renderCenter("Press 1-4 for different weapons", sb, healthFont, 0.95f);
 
         renderNotifications();
         sb.end();

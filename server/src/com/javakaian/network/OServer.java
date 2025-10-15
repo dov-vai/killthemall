@@ -109,6 +109,9 @@ public class OServer {
             } else if (message instanceof ShootMessage m) {
                 messageListener.shootReceived(m);
             }
+            else if (message instanceof WeaponChangeMessage m) {
+                messageListener.weaponChangeReceived(m);
+            }
 
         }
 
@@ -127,6 +130,9 @@ public class OServer {
         this.server.getKryo().register(PositionMessage.Direction.class);
         this.server.getKryo().register(ShootMessage.class);
         this.server.getKryo().register(PlayerDiedMessage.class);
+
+        this.server.getKryo().register(WeaponChangeMessage.class);
+
         // primitive arrays
         this.server.getKryo().register(float[].class);
     }
