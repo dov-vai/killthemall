@@ -44,14 +44,4 @@ public class WeaponDirector {
                 .addGrip()
                 .build();
     }
-    
-    public Weapon createBasicRifle() {
-        Rifle rifle = new Rifle();
-        RifleBuilder builder = new RifleBuilder();
-        
-        return builder.start(rifle)
-                .addBarrel()
-                .addStock()
-                .build();
-    }
 }

@@ -50,7 +50,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private final List<Notification> notifications = new ArrayList<>();
     private BitmapFont notifFont;
 
-    private String currentWeaponInfo = "Basic Rifle";
+    private String currentWeaponInfo = "Assault rifle";
+    private String currentWeaponComponents = "";
+    private String currentWeaponStats = "";
+    private BitmapFont weaponsFont;
 
     public PlayState(StateController sc) {
         super(sc);
@@ -59,9 +62,19 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
+        weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
 
         init();
         ip = new PlayStateInput(this);
+    }
+
+    @Override
+    public void weaponInfoReceived(WeaponInfoMessage m) {
+        if (player != null && m.getPlayerId() == player.getId()) {
+            currentWeaponInfo = m.getWeaponName();
+            currentWeaponComponents = m.getComponents();
+            currentWeaponStats = m.getStats();
+        }
     }
 
     public void requestWeaponChange(String weaponConfig) {
@@ -131,8 +144,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         sb.begin();
         GameUtils.renderCenter("HEALTH: " + player.getHealth(), sb, healthFont, 0.1f);
-
-        GameUtils.renderCenter("WEAPON: " + currentWeaponInfo, sb, healthFont, 0.05f);
+        
+        GameUtils.renderLeftAligned("WEAPON: " + currentWeaponInfo, sb, weaponsFont, 0.02f, 0.08f);
+        if (currentWeaponComponents != null && !currentWeaponComponents.isEmpty()) {
+            GameUtils.renderLeftAligned("Components: " + currentWeaponComponents, sb, weaponsFont, 0.02f, 0.11f);
+        }
+        if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
+            GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
+        }
         GameUtils.renderCenter("Press 1-4 for different weapons", sb, healthFont, 0.95f);
 
         renderNotifications();

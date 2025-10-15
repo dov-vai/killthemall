@@ -66,4 +66,10 @@ public class GameUtils {
 
     }
 
+    public static void renderLeftAligned(String text, SpriteBatch sb, BitmapFont font, float xPercent, float yPercent) {
+        float x = GameConstants.SCREEN_WIDTH * xPercent;
+        float y = GameConstants.SCREEN_HEIGHT * yPercent;
+        font.draw(sb, text, x, y);
+    }
+
 }

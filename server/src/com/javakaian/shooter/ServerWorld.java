@@ -154,7 +154,8 @@ public class ServerWorld implements OMessageListener {
         players.add(new Player(m.getX(), m.getY(), 50, id));
         logger.debug("Login Message recieved from : " + id);
 
-        giveWeaponToPlayer(id, "basic_rifle");
+        giveWeaponToPlayer(id, "pistol");
+        sendWeaponInfoToPlayer(id);
         logger.debug("Login Message recieved from : " + id + " with default weapon");        
 
         m.setPlayerId(id);
@@ -252,14 +253,80 @@ public class ServerWorld implements OMessageListener {
             case "assault_rifle" -> weaponDirector.createAssaultRifle();
             case "combat_shotgun" -> weaponDirector.createCombatShotgun();
             case "precision_sniper" -> weaponDirector.createPrecisionSniper();
-            case "basic_rifle" -> weaponDirector.createBasicRifle();
-            default -> weaponDirector.createBasicRifle();
+            default -> weaponDirector.createAssaultRifle();
         };
     }
     
+    // @Override
+    // public void weaponChangeReceived(WeaponChangeMessage m) {
+    //     giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
+        
+    //     players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+    //     .ifPresent(p -> {
+    //         if (p.getCurrentWeapon() != null) {
+    //             Weapon weapon = p.getCurrentWeapon();
+                
+    //             WeaponInfoMessage info = new WeaponInfoMessage();
+    //             info.setPlayerId(m.getPlayerId());
+    //             info.setWeaponName(weapon.getName());
+                
+    //             // Build components string (shows what Builder added)
+    //             StringBuilder components = new StringBuilder();
+    //             if (weapon.getBarrel() != null) components.append("Barrel, ");
+    //             if (weapon.getScope() != null) components.append("Scope, ");
+    //             if (weapon.getStock() != null) components.append("Stock, ");
+    //             if (weapon.getMagazine() != null) components.append("Magazine, ");
+    //             if (weapon.getGrip() != null) components.append("Grip");
+    //             info.setComponents(components.toString());
+                
+    //             // Build stats string (shows what Builder created)
+    //             String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
+    //                 weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
+    //             info.setStats(stats);
+                
+    //             server.sendToAllUDP(info);
+    //             logger.debug("Sent weapon info to player " + m.getPlayerId());
+    //         }
+    //     });
+        
+    //     logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
+    // }
+
+    private void sendWeaponInfoToPlayer(int playerId) {
+        players.stream().filter(p -> p.getId() == playerId).findFirst()
+        .ifPresent(p -> {
+            if (p.getCurrentWeapon() != null) {
+                Weapon weapon = p.getCurrentWeapon();
+                
+                WeaponInfoMessage info = new WeaponInfoMessage();
+                info.setPlayerId(playerId);
+                info.setWeaponName(weapon.getName());
+                
+                StringBuilder components = new StringBuilder();
+                if (weapon.getBarrel() != null) components.append(weapon.getBarrel()).append(", ");
+                if (weapon.getScope() != null && !weapon.getScope().equals("null")) components.append(weapon.getScope()).append(", ");
+                if (weapon.getStock() != null) components.append(weapon.getStock()).append(", ");
+                if (weapon.getMagazine() != null && !weapon.getMagazine().equals("null")) components.append(weapon.getMagazine()).append(", ");
+                if (weapon.getGrip() != null && !weapon.getGrip().equals("null")) components.append(weapon.getGrip());
+                
+                String componentsStr = components.toString().replaceAll(", $", "");
+                info.setComponents(componentsStr);
+                
+                String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
+                    weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
+                info.setStats(stats);
+                
+                server.sendToAllUDP(info);
+            }
+        });
+    }
+
     @Override
     public void weaponChangeReceived(WeaponChangeMessage m) {
         giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
+        
+        sendWeaponInfoToPlayer(m.getPlayerId());
+        
         logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
     }
 

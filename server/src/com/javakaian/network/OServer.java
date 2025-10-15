@@ -132,6 +132,7 @@ public class OServer {
         this.server.getKryo().register(PlayerDiedMessage.class);
 
         this.server.getKryo().register(WeaponChangeMessage.class);
+        this.server.getKryo().register(WeaponInfoMessage.class);
 
         // primitive arrays
         this.server.getKryo().register(float[].class);

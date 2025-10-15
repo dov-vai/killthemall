@@ -50,9 +50,6 @@ public class PlayStateInput extends InputAdapter {
             case Keys.NUM_3:
                 playState.requestWeaponChange("precision_sniper");
                 break;
-            case Keys.NUM_4:
-                playState.requestWeaponChange("basic_rifle");
-                break;
             default:
                 break;
         }
