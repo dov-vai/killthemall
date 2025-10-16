@@ -49,7 +49,6 @@ public class ServerWorld implements OMessageListener {
     private WeaponDirector weaponDirector;
     private Map<Integer, Weapon> playerWeapons;
     
-    // Strategy pattern - different enemy behaviors
     private EnemyBehaviorStrategy[] behaviorStrategies;
     private int strategyIndex = 0;
 
@@ -68,7 +67,6 @@ public class ServerWorld implements OMessageListener {
         weaponDirector = new WeaponDirector();
         playerWeapons = new HashMap<>();
         
-        // Initialize behavior strategies
         behaviorStrategies = new EnemyBehaviorStrategy[]{
             new AggressiveBehavior(),
             new DefensiveBehavior(),
@@ -113,7 +111,6 @@ public class ServerWorld implements OMessageListener {
             if (enemies.size() % 5 == 0)
                 logger.debug("Number of enemies : " + enemies.size());
             
-            // Use strategy pattern - rotate through different behaviors
             EnemyBehaviorStrategy strategy = behaviorStrategies[strategyIndex];
             strategyIndex = (strategyIndex + 1) % behaviorStrategies.length;
             

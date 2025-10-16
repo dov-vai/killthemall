@@ -25,7 +25,6 @@ public class Enemy{
     }
 
     public void update(float deltaTime, List<Player> players) {
-        // Use strategy pattern for AI behavior
         if (behaviorStrategy != null && players != null) {
             position = behaviorStrategy.behaveDifferently(position, players, deltaTime);
         }
