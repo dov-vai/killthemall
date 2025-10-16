@@ -2,7 +2,6 @@ package com.javakaian.shooter.ThemeFactory;
 
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.shapes.AimLine;
-import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 
 public class LightThemeFactory extends ThemeFactory {

@@ -31,18 +31,6 @@ public class Enemy implements Cloneable {
         return position;
     }
 
-    public void setPosition(Vector2 position) {
-        this.position = position;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
     public Color getColor() {
         return color;
     }

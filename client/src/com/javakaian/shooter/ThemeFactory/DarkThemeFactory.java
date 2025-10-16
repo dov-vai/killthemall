@@ -1,5 +1,3 @@
-// com.javakaian.shooter.ThemeFactory.DarkThemeFactory.java
-
 package com.javakaian.shooter.ThemeFactory;
 
 import com.badlogic.gdx.math.Vector2;
