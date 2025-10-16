@@ -1,7 +1,6 @@
 package com.javakaian.shooter.ThemeFactory;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.shapes.AimLine;
-import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.network.messages.*;
 
@@ -12,6 +11,7 @@ public abstract class ThemeFactory {
     public abstract Theme createTheme();
     public abstract Enemy createEnemy(float x, float y);
     public abstract AimLine createAimLine(Vector2 begin, Vector2 end);
+    protected Enemy enemyPrototype;
 
     public static ThemeFactory getFactory(boolean darkMode) {
         if (darkMode) {
@@ -32,4 +32,14 @@ public abstract class ThemeFactory {
         }
         return enemies;
     }
+
+    protected Enemy cloneEnemy(float x, float y) {
+        if (enemyPrototype == null)
+            throw new IllegalStateException("Enemy prototype not initialized");
+
+        Enemy clone = enemyPrototype.clone();
+        clone.getPosition().set(x, y);
+        return clone;
+    }
+
 }

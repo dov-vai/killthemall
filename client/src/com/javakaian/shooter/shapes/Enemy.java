@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 
-public class Enemy {
+public class Enemy implements Cloneable {
 
     private Vector2 position;
     private float size;
@@ -31,23 +31,23 @@ public class Enemy {
         return position;
     }
 
-    public void setPosition(Vector2 position) {
-        this.position = position;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
-
     public Color getColor() {
         return color;
     }
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    @Override
+    public Enemy clone() {
+        try {
+            Enemy copy = (Enemy) super.clone();
+            copy.position = new Vector2(this.position);
+            copy.color = new Color(this.color);
+            return copy;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }
