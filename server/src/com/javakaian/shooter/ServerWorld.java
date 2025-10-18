@@ -145,7 +145,7 @@ public class ServerWorld implements OMessageListener {
     private void spawnRandomSpike() {
         if (spikeSpawnTime >= 5.0f && spikes.size() < 5) {
             spikeSpawnTime = 0;
-            Spike spike = new Spike(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 15);
+            Spike spike = new Spike(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 30);
             spikes.add(spike);
             logger.debug("Spawned spike pickup. Total spikes: " + spikes.size());
         }

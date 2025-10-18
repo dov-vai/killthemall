@@ -20,28 +20,37 @@ public class PlacedSpike {
         sr.end();
         sr.begin(ShapeType.Filled);
         
-        // Draw spike as a triangle pointing in the rotation direction
         float centerX = position.x + size / 2;
         float centerY = position.y + size / 2;
+        float spikeHeight = size * 0.5f;
+        float spikeWidth = size * 0.25f;
+        float spacing = size * 0.3f;
         
-        // Convert rotation to radians
-        float angleRad = (float) Math.toRadians(rotation);
+        sr.setColor(new Color(0.4f, 0.2f, 0.1f, 1f)); // brown
         
-        // Calculate triangle points
-        float tipX = centerX + (float) Math.cos(angleRad) * size;
-        float tipY = centerY - (float) Math.sin(angleRad) * size;
+        // Left spike
+        float leftX = centerX - spacing;
+        sr.triangle(
+            leftX, centerY - spikeHeight / 2,
+            leftX - spikeWidth / 2, centerY + spikeHeight / 2,
+            leftX + spikeWidth / 2, centerY + spikeHeight / 2
+        );
         
-        float baseAngle1 = angleRad + (float) Math.toRadians(120);
-        float baseAngle2 = angleRad - (float) Math.toRadians(120);
+        // Middle spike
+        sr.triangle(
+            centerX, centerY - spikeHeight / 2,
+            centerX - spikeWidth / 2, centerY + spikeHeight / 2,
+            centerX + spikeWidth / 2, centerY + spikeHeight / 2
+        );
         
-        float base1X = centerX + (float) Math.cos(baseAngle1) * size * 0.6f;
-        float base1Y = centerY - (float) Math.sin(baseAngle1) * size * 0.6f;
+        // Right spike
+        float rightX = centerX + spacing;
+        sr.triangle(
+            rightX, centerY - spikeHeight / 2,
+            rightX - spikeWidth / 2, centerY + spikeHeight / 2,
+            rightX + spikeWidth / 2, centerY + spikeHeight / 2
+        );
         
-        float base2X = centerX + (float) Math.cos(baseAngle2) * size * 0.6f;
-        float base2Y = centerY - (float) Math.sin(baseAngle2) * size * 0.6f;
-        
-        sr.setColor(Color.RED);
-        sr.triangle(tipX, tipY, base1X, base1Y, base2X, base2Y);
         sr.setColor(Color.WHITE);
         
         sr.end();

@@ -28,7 +28,7 @@ public class PlaceSpikeCommand implements Command {
     public void execute() {
         if (player.hasSpikes()) {
             player.removeSpike();
-            placedSpike = new PlacedSpike(x, y, 20, rotation, player.getId());
+            placedSpike = new PlacedSpike(x, y, 35, rotation, player.getId());
             placedSpikes.add(placedSpike);
         }
     }
