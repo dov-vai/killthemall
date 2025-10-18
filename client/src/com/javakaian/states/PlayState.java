@@ -64,7 +64,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public PlayState(StateController sc) {
         super(sc);
 
-        themeFactory = ThemeFactory.getFactory(false); //fallback
+        themeFactory = ThemeFactory.getFactory(true); //fallback
 
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
@@ -306,7 +306,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     @Override
     public void gwmReceived(GameWorldMessage m) {
         if (themeFactory == null) {
-            themeFactory = ThemeFactory.getFactory(false);
+            themeFactory = ThemeFactory.getFactory(true);
             setThemeFactory(themeFactory);
         }
 

@@ -12,7 +12,7 @@ import com.javakaian.shooter.utils.*;
 public class MenuState extends State {
 
     private BitmapFont smallFont;
-    private boolean darkMode = false; // false = Light Mode
+    private boolean darkMode = true;
     private Theme currentTheme;
 
 
