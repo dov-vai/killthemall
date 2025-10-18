@@ -4,6 +4,8 @@ import com.javakaian.network.messages.GameWorldMessage;
 import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.shapes.Spike;
+import com.javakaian.shooter.shapes.PlacedSpike;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class MessageCreator {
      * Every objects in server like Enemies,Players,Bullets will be converted to the
      * float arrays and broadcasted.
      */
-    public static GameWorldMessage generateGWMMessage(List<Enemy> enemies, List<Bullet> bullets, List<Player> players) {
+    public static GameWorldMessage generateGWMMessage(List<Enemy> enemies, List<Bullet> bullets, List<Player> players, List<Spike> spikes, List<PlacedSpike> placedSpikes) {
 
         GameWorldMessage gwm = new GameWorldMessage();
         float[] coordinates = new float[enemies.size() * 2];
@@ -57,6 +59,29 @@ public class MessageCreator {
             barray[i * 3 + 2] = bullet.getSize();
         }
         gwm.setBullets(barray);
+        
+        float[] spikeArray = new float[spikes.size() * 3];
+        for (int i = 0; i < spikes.size(); i++) {
+            var spike = spikes.get(i);
+            var position = spike.getPosition();
+            
+            spikeArray[i * 3] = position.x;
+            spikeArray[i * 3 + 1] = position.y;
+            spikeArray[i * 3 + 2] = spike.getSize();
+        }
+        gwm.setSpikes(spikeArray);
+        
+        float[] placedSpikeArray = new float[placedSpikes.size() * 4];
+        for (int i = 0; i < placedSpikes.size(); i++) {
+            var placedSpike = placedSpikes.get(i);
+            var position = placedSpike.getPosition();
+            
+            placedSpikeArray[i * 4] = position.x;
+            placedSpikeArray[i * 4 + 1] = position.y;
+            placedSpikeArray[i * 4 + 2] = placedSpike.getSize();
+            placedSpikeArray[i * 4 + 3] = placedSpike.getRotation();
+        }
+        gwm.setPlacedSpikes(placedSpikeArray);
 
         return gwm;
     }

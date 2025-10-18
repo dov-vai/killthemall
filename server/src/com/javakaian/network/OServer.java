@@ -112,6 +112,12 @@ public class OServer {
             else if (message instanceof WeaponChangeMessage m) {
                 messageListener.weaponChangeReceived(m);
             }
+            else if (message instanceof PlaceSpikeMessage m) {
+                messageListener.placeSpikeReceived(m);
+            }
+            else if (message instanceof UndoSpikeMessage m) {
+                messageListener.undoSpikeReceived(m);
+            }
 
         }
 
@@ -133,6 +139,10 @@ public class OServer {
 
         this.server.getKryo().register(WeaponChangeMessage.class);
         this.server.getKryo().register(WeaponInfoMessage.class);
+        
+        this.server.getKryo().register(PlaceSpikeMessage.class);
+        this.server.getKryo().register(UndoSpikeMessage.class);
+        this.server.getKryo().register(InventoryUpdateMessage.class);
 
         // primitive arrays
         this.server.getKryo().register(float[].class);
