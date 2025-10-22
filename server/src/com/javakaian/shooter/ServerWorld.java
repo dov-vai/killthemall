@@ -36,8 +36,6 @@ public class ServerWorld implements OMessageListener {
 
     private List<Player> players;
     private List<Enemy> enemies;
-    private List<Enemy> killedEnemies = new ArrayList<>();
-
     private List<Bullet> bullets;
     private List<Spike> spikes;
     private List<PlacedSpike> placedSpikes;
@@ -181,7 +179,6 @@ public class ServerWorld implements OMessageListener {
                 if (b.isVisible() && e.getBoundRect().overlaps(b.getBoundRect())) {
                     b.setVisible(false);
                     e.setVisible(false);
-                    killedEnemies.add(e);
                 }
 
             }
