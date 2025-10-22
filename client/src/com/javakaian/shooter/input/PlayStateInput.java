@@ -74,6 +74,11 @@ public class PlayStateInput extends InputAdapter {
             case Keys.NUM_0:
                 // Reset attachments, keep current base
                 playState.resetAttachments();
+            case Keys.E:
+                playState.placeSpike();
+                break;
+            case Keys.U:
+                playState.undoSpike();
                 break;
             default:
                 break;
