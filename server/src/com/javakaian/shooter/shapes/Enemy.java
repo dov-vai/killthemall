@@ -6,7 +6,7 @@ import com.javakaian.shooter.strategy.EnemyBehaviorStrategy;
 
 import java.util.List;
 
-public class Enemy{
+public class Enemy implements Cloneable{
 
     private Vector2 position;
     private boolean visible = true;
@@ -36,6 +36,15 @@ public class Enemy{
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+    }
+
+    @Override
+    public Enemy clone() {
+        try {
+            return (Enemy) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public Vector2 getPosition() {
