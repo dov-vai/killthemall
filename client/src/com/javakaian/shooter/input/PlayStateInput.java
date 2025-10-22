@@ -50,6 +50,12 @@ public class PlayStateInput extends InputAdapter {
             case Keys.NUM_3:
                 playState.requestWeaponChange("precision_sniper");
                 break;
+            case Keys.E:
+                playState.placeSpike();
+                break;
+            case Keys.U:
+                playState.undoSpike();
+                break;
             default:
                 break;
         }

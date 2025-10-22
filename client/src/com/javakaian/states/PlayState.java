@@ -21,6 +21,8 @@ import com.javakaian.shooter.shapes.AimLine;
 import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.shapes.Spike;
+import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 
@@ -40,6 +42,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private List<Player> players;
     private List<Enemy> enemies;
     private List<Bullet> bullets;
+    private List<Spike> spikes;
+    private List<PlacedSpike> placedSpikes;
     private AimLine aimLine;
 
     private OClient client;
@@ -54,11 +58,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private String currentWeaponComponents = "";
     private String currentWeaponStats = "";
     private BitmapFont weaponsFont;
+    
+    private int spikeCount = 0;
 
     public PlayState(StateController sc) {
         super(sc);
 
-        themeFactory = ThemeFactory.getFactory(false); //fallback
+        themeFactory = ThemeFactory.getFactory(true); //fallback
 
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
@@ -88,6 +94,25 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             currentWeaponInfo = weaponConfig.replace("_", " ").toUpperCase();
         }
     }
+    
+    public void placeSpike() {
+        if (player != null && spikeCount > 0) {
+            PlaceSpikeMessage message = new PlaceSpikeMessage();
+            message.setPlayerId(player.getId());
+            // Get rotation from aimline
+            float rotation = (float) Math.toDegrees(aimLine.getAngle());
+            message.setRotation(rotation);
+            client.sendTCP(message);
+        }
+    }
+    
+    public void undoSpike() {
+        if (player != null) {
+            UndoSpikeMessage message = new UndoSpikeMessage();
+            message.setPlayerId(player.getId());
+            client.sendTCP(message);
+        }
+    }
 
     public void setThemeFactory(ThemeFactory factory) {
         this.themeFactory = factory;
@@ -111,6 +136,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         players = new ArrayList<>();
         enemies = new ArrayList<>();
         bullets = new ArrayList<>();
+        spikes = new ArrayList<>();
+        placedSpikes = new ArrayList<>();
 
         aimLine = themeFactory.createAimLine(new Vector2(0, 0), new Vector2(0, 0));
         aimLine.setCamera(camera);
@@ -136,6 +163,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         players.forEach(p -> p.render(sr));
         enemies.forEach(e -> e.render(sr));
         bullets.forEach(b -> b.render(sr));
+        spikes.forEach(s -> s.render(sr));
+        placedSpikes.forEach(ps -> ps.render(sr));
         sr.setColor(Color.BLUE);
         player.render(sr);
         aimLine.render(sr);
@@ -152,7 +181,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
             GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
         }
-        GameUtils.renderCenter("Press 1-4 for different weapons", sb, healthFont, 0.95f);
+        GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
+        GameUtils.renderCenter("Press 1-4 for different weapons | E to place spike | U to undo", sb, healthFont, 0.95f);
 
         renderNotifications();
         sb.end();
@@ -276,13 +306,15 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     @Override
     public void gwmReceived(GameWorldMessage m) {
         if (themeFactory == null) {
-            themeFactory = ThemeFactory.getFactory(false);
+            themeFactory = ThemeFactory.getFactory(true);
             setThemeFactory(themeFactory);
         }
 
         enemies = themeFactory.createEnemiesFromGWM(m);
         bullets = OMessageParser.getBulletsFromGWM(m);
         players = OMessageParser.getPlayersFromGWM(m);
+        spikes = OMessageParser.getSpikesFromGWM(m);
+        placedSpikes = OMessageParser.getPlacedSpikesFromGWM(m);
 
         if (player == null) return;
 
@@ -297,6 +329,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                     }
                 });
         players.removeIf(p -> p.getId() == player.getId());
+    }
+    
+    @Override
+    public void inventoryUpdateReceived(InventoryUpdateMessage m) {
+        if (player != null && m.getPlayerId() == player.getId()) {
+            spikeCount = m.getSpikeCount();
+        }
     }
 
     public void restart() {

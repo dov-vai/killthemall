@@ -10,7 +10,11 @@ import com.javakaian.shooter.factory.ConcreteBulletFactory;
 import com.javakaian.shooter.factory.BulletType;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.shapes.Spike;
+import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.strategy.*;
+import com.javakaian.shooter.command.Command;
+import com.javakaian.shooter.command.PlaceSpikeCommand;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
@@ -26,18 +30,22 @@ import java.util.List;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 public class ServerWorld implements OMessageListener {
 
     private List<Player> players;
     private List<Enemy> enemies;
     private List<Bullet> bullets;
+    private List<Spike> spikes;
+    private List<PlacedSpike> placedSpikes;
 
     private OServer server;
 
     private float deltaTime = 0;
 
     private float enemyTime = 0f;
+    private float spikeSpawnTime = 0f;
 
     private UserIdPool idPool;
 
@@ -51,6 +59,9 @@ public class ServerWorld implements OMessageListener {
     
     private EnemyBehaviorStrategy[] behaviorStrategies;
     private int strategyIndex = 0;
+    
+    // Command pattern for spike placement - stack to support multiple undos
+    private Map<Integer, Stack<Command>> playerSpikeCommands;
 
     public ServerWorld() {
 
@@ -58,6 +69,8 @@ public class ServerWorld implements OMessageListener {
         players = new ArrayList<>();
         enemies = new ArrayList<>();
         bullets = new ArrayList<>();
+        spikes = new ArrayList<>();
+        placedSpikes = new ArrayList<>();
 
         idPool = new UserIdPool();
 
@@ -66,6 +79,8 @@ public class ServerWorld implements OMessageListener {
         //weapon system
         weaponDirector = new WeaponDirector();
         playerWeapons = new HashMap<>();
+        
+        playerSpikeCommands = new HashMap<>();
         
         behaviorStrategies = new EnemyBehaviorStrategy[]{
             new AggressiveBehavior(),
@@ -79,6 +94,7 @@ public class ServerWorld implements OMessageListener {
 
         this.deltaTime = deltaTime;
         this.enemyTime += deltaTime;
+        this.spikeSpawnTime += deltaTime;
 
         server.parseMessage();
 
@@ -86,6 +102,8 @@ public class ServerWorld implements OMessageListener {
         players.forEach(p -> p.update(deltaTime));
         enemies.forEach(e -> e.update(deltaTime, players)); // Pass players for AI behavior
         bullets.forEach(b -> b.update(deltaTime));
+        spikes.forEach(s -> s.update(deltaTime));
+        placedSpikes.forEach(ps -> ps.update(deltaTime));
 
         checkCollision();
 
@@ -93,10 +111,13 @@ public class ServerWorld implements OMessageListener {
         players.removeIf(p -> !p.isAlive());
         enemies.removeIf(e -> !e.isVisible());
         bullets.removeIf(b -> !b.isVisible());
+        spikes.removeIf(s -> !s.isVisible());
+        placedSpikes.removeIf(ps -> !ps.isVisible());
 
         spawnRandomEnemy();
+        spawnRandomSpike();
 
-        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players);
+        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes);
         server.sendToAllUDP(m);
 
     }
@@ -118,6 +139,15 @@ public class ServerWorld implements OMessageListener {
             enemies.add(e);
             
             logger.debug("Spawned enemy with " + strategy.getStrategyName() + " behavior");
+        }
+    }
+    
+    private void spawnRandomSpike() {
+        if (spikeSpawnTime >= 5.0f && spikes.size() < 5) {
+            spikeSpawnTime = 0;
+            Spike spike = new Spike(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 30);
+            spikes.add(spike);
+            logger.debug("Spawned spike pickup. Total spikes: " + spikes.size());
         }
     }
 
@@ -160,6 +190,48 @@ public class ServerWorld implements OMessageListener {
                 }
             }
 
+        }
+        
+        // Check spike pickup collisions
+        for (Spike spike : spikes) {
+            for (Player player : players) {
+                if (spike.isVisible() && player.getBoundRect().overlaps(spike.getBoundRect())) {
+                    spike.setVisible(false);
+                    player.addSpike();
+                    
+                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                    inventoryMsg.setPlayerId(player.getId());
+                    inventoryMsg.setSpikeCount(player.getSpikeCount());
+                    server.sendToAllUDP(inventoryMsg);
+                    
+                    logger.debug("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
+                }
+            }
+        }
+        
+        // Check placed spike collisions with other players
+        for (PlacedSpike placedSpike : placedSpikes) {
+            for (Player player : players) {
+                // Don't damage the player who placed the spike
+                if (placedSpike.isVisible() && !placedSpike.isConsumed() && 
+                    player.getId() != placedSpike.getPlayerId() &&
+                    player.getBoundRect().overlaps(placedSpike.getBoundRect())) {
+                    
+                    placedSpike.setConsumed(true);
+                    placedSpike.setVisible(false);
+                    
+                    int spikeDamage = 20;
+                    player.hit(spikeDamage);
+                    
+                    logger.debug("Player " + player.getId() + " hit by spike for " + spikeDamage + " damage");
+                    
+                    if (!player.isAlive()) {
+                        PlayerDiedMessage m = new PlayerDiedMessage();
+                        m.setPlayerId(player.getId());
+                        server.sendToAllUDP(m);
+                    }
+                }
+            }
         }
 
     }
@@ -310,6 +382,62 @@ public class ServerWorld implements OMessageListener {
         sendWeaponInfoToPlayer(m.getPlayerId());
         
         logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
+    }
+    
+    @Override
+    public void placeSpikeReceived(PlaceSpikeMessage m) {
+        players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+        .ifPresent(player -> {
+            if (player.hasSpikes()) {
+                // Calculate position in front of player based on rotation
+                float distance = 60; // Place spike 60 units in front
+                float angleRad = (float) Math.toRadians(m.getRotation());
+                float x = player.getPosition().x + (float) Math.cos(angleRad) * distance;
+                float y = player.getPosition().y - (float) Math.sin(angleRad) * distance;
+                
+                PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikes, x, y, m.getRotation());
+                command.execute();
+                
+                playerSpikeCommands.computeIfAbsent(player.getId(), k -> new Stack<>()).push(command);
+                
+                InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                inventoryMsg.setPlayerId(player.getId());
+                inventoryMsg.setSpikeCount(player.getSpikeCount());
+                server.sendToAllUDP(inventoryMsg);
+                
+                logger.debug("Player " + player.getId() + " placed spike at (" + x + ", " + y + ") rotation: " + m.getRotation());
+            }
+        });
+    }
+    
+    @Override
+    public void undoSpikeReceived(UndoSpikeMessage m) {
+        Stack<Command> commandStack = playerSpikeCommands.get(m.getPlayerId());
+        
+        while (commandStack != null && !commandStack.isEmpty()) {
+            Command lastCommand = commandStack.pop();
+            
+            if (lastCommand.canUndo()) {
+                lastCommand.undo();
+                
+                players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+                .ifPresent(player -> {
+                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                    inventoryMsg.setPlayerId(player.getId());
+                    inventoryMsg.setSpikeCount(player.getSpikeCount());
+                    server.sendToAllUDP(inventoryMsg);
+                });
+                
+                logger.debug("Player " + m.getPlayerId() + " undid spike placement");
+                return;
+            } else {
+                logger.debug("Player " + m.getPlayerId() + " spike was consumed, skipping to previous spike");
+            }
+        }
+        
+        if (commandStack == null || commandStack.isEmpty()) {
+            logger.debug("Player " + m.getPlayerId() + " has no spikes to undo");
+        }
     }
 
 }
