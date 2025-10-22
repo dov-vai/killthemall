@@ -179,6 +179,7 @@ public class ServerWorld implements OMessageListener {
                 if (b.isVisible() && e.getBoundRect().overlaps(b.getBoundRect())) {
                     b.setVisible(false);
                     e.setVisible(false);
+                    players.stream().filter(p -> p.getId() == b.getId()).findFirst().ifPresent(Player::increaseHealth);
                 }
 
             }
