@@ -50,6 +50,30 @@ public class PlayStateInput extends InputAdapter {
             case Keys.NUM_3:
                 playState.requestWeaponChange("precision_sniper");
                 break;
+            // Attachments toggles
+            case Keys.NUM_4:
+                // Toggle scope attachment
+                playState.requestAttachmentChange("scope:4x ACOG:150");
+                break;
+            case Keys.NUM_5:
+                // Toggle extended magazine
+                playState.requestAttachmentChange("mag:15");
+                break;
+            case Keys.NUM_6:
+                // Toggle grip
+                playState.requestAttachmentChange("grip:Tactical:0.5");
+                break;
+            case Keys.NUM_7:
+                // Toggle silencer
+                playState.requestAttachmentChange("silencer:Silenced Barrel:2");
+                break;
+            case Keys.NUM_8:
+                // Toggle damage boost
+                playState.requestAttachmentChange("dmg:5");
+                break;
+            case Keys.NUM_0:
+                // Reset attachments, keep current base
+                playState.resetAttachments();
             case Keys.E:
                 playState.placeSpike();
                 break;
