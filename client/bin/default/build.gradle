@@ -1,0 +1,66 @@
+sourceCompatibility = JavaVersion.VERSION_21
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+        resources {
+            srcDirs = ['test/resources']
+        }
+    }
+}
+
+project.ext.mainClassName = "com.javakaian.shooter.ClientMain"
+
+eclipse.project.name = appName + "-client"
+
+libsDirName = '../../jars/'
+
+tasks.register('run', JavaExec) {
+    dependsOn classes
+    mainClass = 'com.javakaian.shooter.ClientMain'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.projectDir
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+                'Main-Class': 'com.javakaian.shooter.ClientMain'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+ }
+
+dependencies {
+    testImplementation(platform('org.junit:junit-bom:6.0.0'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
