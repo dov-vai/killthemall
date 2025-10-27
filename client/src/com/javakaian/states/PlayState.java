@@ -26,6 +26,11 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.shooter.logger.ConsoleGameLoggerAdapter;
+import com.javakaian.shooter.logger.FileGameLoggerAdapter;
+import com.javakaian.shooter.logger.GameLogEntry;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +66,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     
     private int spikeCount = 0;
 
+    // Adapter pattern - unified game logger
+    private IGameLogger gameLogger;
+
     public PlayState(StateController sc) {
         super(sc);
 
@@ -69,6 +77,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
         weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+
+        gameLogger = new ConsoleGameLoggerAdapter();
 
         init();
         ip = new PlayStateInput(this);
@@ -92,6 +102,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             
             // current weapon display
             currentWeaponInfo = weaponConfig.replace("_", " ").toUpperCase();
+
+            GameLogEntry weaponChangeEvent = new GameLogEntry(
+                System.currentTimeMillis(),
+                "WEAPON_CHANGE",
+                "Player " + player.getId() + " changed weapon to " + currentWeaponInfo,
+                "INFO"
+            );
+            gameLogger.logEvent(weaponChangeEvent);
         }
     }
     
@@ -103,6 +121,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             float rotation = (float) Math.toDegrees(aimLine.getAngle());
             message.setRotation(rotation);
             client.sendTCP(message);
+
+            GameLogEntry spikeEvent = new GameLogEntry(
+                System.currentTimeMillis(),
+                "SPIKE_PLACED",
+                "Player " + player.getId() + " placed spike at rotation " + String.format("%.2f", rotation) + "°",
+                "INFO"
+            );
+            gameLogger.logEvent(spikeEvent);
         }
     }
     
@@ -250,6 +276,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         m.setAngleDeg(aimLine.getAngle());
         GameStats.getInstance().incrementShotsFired();
         client.sendUDP(m);
+
+        GameLogEntry shootEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_SHOOT",
+            "Player " + player.getId() + " fired at angle " + String.format("%.2f", Math.toDegrees(aimLine.getAngle())) + "°",
+            "DEBUG"
+        );
+        gameLogger.logEvent(shootEvent);
     }
 
     private void processInputs() {
@@ -282,6 +316,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         GameStats.getInstance().resetSession();
         GameStats.getInstance().startSession();
         sc.getAchievementManager().addListener(this);
+
+        GameLogEntry loginEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_LOGIN",
+            "Player " + m.getPlayerId() + " joined at position (" + m.getX() + ", " + m.getY() + ")",
+            "INFO"
+        );
+        gameLogger.logEvent(loginEvent);
     }
 
     @Override
@@ -293,6 +335,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void playerDiedReceived(PlayerDiedMessage m) {
         if (player.getId() != m.getPlayerId())
             return;
+
+        GameLogEntry deathEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_DEATH",
+            "Player " + player.getId() + " died. Time alive: " + GameStats.getInstance().getTimeAliveSeconds() + "s",
+            "WARN"
+        );
+        gameLogger.logEvent(deathEvent);
 
         LogoutMessage mm = new LogoutMessage();
         mm.setPlayerId(player.getId());
