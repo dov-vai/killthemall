@@ -64,9 +64,10 @@ public class Player{
     }
 
     public void increaseHealth() {
-        if (this.health == 100)
+        if (this.health >= 100)
             return;
         this.health += 10;
+        if (this.health > 100 ) this.health = 100;
     }
 
     public void hit(int damage) {
