@@ -44,7 +44,13 @@ public class RifleBuilder implements IBuilder {
 
     @Override
     public Weapon build() {
-        return rifle;
+        if(rifle.getBarrel() != null && rifle.getGrip() != null
+        && rifle.getMagazine() != null) {
+            return rifle;
+        }
+        else {
+            return null;
+        }
     }
 
     @Override

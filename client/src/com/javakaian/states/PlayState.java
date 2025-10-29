@@ -26,6 +26,8 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 
+import com.javakaian.shooter.logger.*;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     
     private int spikeCount = 0;
 
+    // Adapter pattern - unified game logger
+    private IGameLogger gameLogger;
+    private SimpleLogDisplay logDisplay;
+
     // Track current base weapon and active attachments to send full config to server
     private String currentBaseConfig = "assault_rifle";
     private final List<String> activeAttachments = new ArrayList<>();
@@ -73,6 +79,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
         weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+
+        gameLogger = new ConsoleGameLoggerAdapter();
+        logDisplay = new SimpleLogDisplay();
 
         init();
         ip = new PlayStateInput(this);
@@ -100,6 +109,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             
             // current weapon display
             currentWeaponInfo = weaponConfig.replace("_", " ").toUpperCase();
+
+            GameLogEntry weaponChangeEvent = new GameLogEntry(
+                System.currentTimeMillis(),
+                "WEAPON_CHANGE",
+                "Player " + player.getId() + " changed weapon to " + currentWeaponInfo,
+                "INFO"
+            );
+            gameLogger.logEvent(weaponChangeEvent);
         }
     }
     
@@ -111,6 +128,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             float rotation = (float) Math.toDegrees(aimLine.getAngle());
             message.setRotation(rotation);
             client.sendTCP(message);
+
+            GameLogEntry spikeEvent = new GameLogEntry(
+                System.currentTimeMillis(),
+                "SPIKE_PLACED",
+                "Player " + player.getId() + " placed spike at rotation " + String.format("%.2f", rotation) + "°",
+                "INFO"
+            );
+            gameLogger.logEvent(spikeEvent);
         }
     }
     
@@ -229,10 +254,15 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
         }
         GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
-        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo", sb, healthFont, 0.95f);
+        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo | L: Logs", sb, healthFont, 0.95f);
 
         renderNotifications();
         sb.end();
+
+        // Render log display if visible
+        if (logDisplay != null && logDisplay.isVisible()) {
+            logDisplay.render(sb);
+        }
     }
 
     private void renderNotifications() {
@@ -273,6 +303,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         processInputs();
 
         clearNotifications(deltaTime);
+
+        // Update log display
+        if (logDisplay != null) {
+            logDisplay.update(deltaTime);
+        }
     }
 
     private void clearNotifications(float deltaTime) {
@@ -291,12 +326,26 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
     }
 
+    public void toggleLogDisplay() {
+        if (logDisplay != null) {
+            logDisplay.toggle();
+        }
+    }
+
     public void shoot() {
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
         GameStats.getInstance().incrementShotsFired();
         client.sendUDP(m);
+
+        GameLogEntry shootEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_SHOOT",
+            "Player " + player.getId() + " fired at angle " + String.format("%.2f", Math.toDegrees(aimLine.getAngle())) + "°",
+            "DEBUG"
+        );
+        gameLogger.logEvent(shootEvent);
     }
 
     private void processInputs() {
@@ -329,6 +378,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         GameStats.getInstance().resetSession();
         GameStats.getInstance().startSession();
         sc.getAchievementManager().addListener(this);
+
+        GameLogEntry loginEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_LOGIN",
+            "Player " + m.getPlayerId() + " joined at position (" + m.getX() + ", " + m.getY() + ")",
+            "INFO"
+        );
+        gameLogger.logEvent(loginEvent);
     }
 
     @Override
@@ -340,6 +397,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void playerDiedReceived(PlayerDiedMessage m) {
         if (player.getId() != m.getPlayerId())
             return;
+
+        GameLogEntry deathEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "PLAYER_DEATH",
+            "Player " + player.getId() + " died. Time alive: " + GameStats.getInstance().getTimeAliveSeconds() + "s",
+            "WARN"
+        );
+        gameLogger.logEvent(deathEvent);
 
         LogoutMessage mm = new LogoutMessage();
         mm.setPlayerId(player.getId());
@@ -398,6 +463,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
         if (healthFont != null) healthFont.dispose();
         if (notifFont != null) notifFont.dispose();
+        if (logDisplay != null) logDisplay.dispose();
         GameStats.getInstance().endSession();
         sc.getAchievementManager().removeListener(this);
     }

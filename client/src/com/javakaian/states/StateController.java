@@ -4,6 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.states.State.StateEnum;
 
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.shooter.logger.FileGameLoggerAdapter;
+import com.javakaian.shooter.logger.GameLogEntry;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,10 +39,22 @@ public class StateController {
 
     private AchievementManager achievementManager;
 
+    private IGameLogger gameLogger;
+
     public StateController(String ip, AchievementManager achievementManager) {
         this.inetAddress = ip;
         stateMap = new HashMap<>();
         this.achievementManager = achievementManager;
+
+        gameLogger = new FileGameLoggerAdapter("logs/state-transitions.log");
+
+        GameLogEntry initEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "CONTROLLER_INIT",
+            "StateController initialized for server: " + ip,
+            "INFO"
+        );
+        gameLogger.logEvent(initEvent);
     }
 
     /**
@@ -48,7 +64,12 @@ public class StateController {
      * @param stateEnum
      **/
     public void setState(StateEnum stateEnum) {
+        String previousState = (currentState != null) ? currentState.getClass().getSimpleName() : "None";
+
         currentState = stateMap.get(stateEnum.ordinal());
+
+        boolean isNewState = (currentState == null);
+        
         if (currentState == null) {
             switch (stateEnum) {
                 case PLAY_STATE:
@@ -73,6 +94,16 @@ public class StateController {
             stateMap.put(stateEnum.ordinal(), currentState);
         }
         Gdx.input.setInputProcessor(currentState.ip);
+
+        String newState = currentState.getClass().getSimpleName();
+        GameLogEntry stateChangeEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "STATE_CHANGE",
+            "State transition: " + previousState + " -> " + newState + 
+            (isNewState ? " (newly created)" : " (existing)"),
+            "INFO"
+        );
+        gameLogger.logEvent(stateChangeEvent);
     }
 
     /**
@@ -94,6 +125,14 @@ public class StateController {
      * Calls the dispose method of each state in the hashmap.
      */
     public void dispose() {
+        GameLogEntry disposeEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "CONTROLLER_DISPOSE",
+            "StateController disposing " + stateMap.size() + " states",
+            "INFO"
+        );
+        gameLogger.logEvent(disposeEvent);
+
         stateMap.forEach((k, v) -> v.dispose());
     }
 

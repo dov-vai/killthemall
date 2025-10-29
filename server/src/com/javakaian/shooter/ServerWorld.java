@@ -363,6 +363,7 @@ public class ServerWorld implements OMessageListener {
             );
             
             bullets.add(b);
+
         });
 
     }
@@ -528,6 +529,7 @@ public class ServerWorld implements OMessageListener {
         giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
         
         sendWeaponInfoToPlayer(m.getPlayerId());
+
         
         logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
     }
