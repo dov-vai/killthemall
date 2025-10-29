@@ -26,10 +26,7 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 
-import com.javakaian.shooter.logger.IGameLogger;
-import com.javakaian.shooter.logger.ConsoleGameLoggerAdapter;
-import com.javakaian.shooter.logger.FileGameLoggerAdapter;
-import com.javakaian.shooter.logger.GameLogEntry;
+import com.javakaian.shooter.logger.*;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -68,7 +65,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
     // Adapter pattern - unified game logger
     private IGameLogger gameLogger;
-    
+    private SimpleLogDisplay logDisplay;
+
     // Track current base weapon and active attachments to send full config to server
     private String currentBaseConfig = "assault_rifle";
     private final List<String> activeAttachments = new ArrayList<>();
@@ -83,6 +81,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
 
         gameLogger = new ConsoleGameLoggerAdapter();
+        logDisplay = new SimpleLogDisplay();
 
         init();
         ip = new PlayStateInput(this);
@@ -255,10 +254,15 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
         }
         GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
-        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo", sb, healthFont, 0.95f);
+        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo | L: Logs", sb, healthFont, 0.95f);
 
         renderNotifications();
         sb.end();
+
+        // Render log display if visible
+        if (logDisplay != null && logDisplay.isVisible()) {
+            logDisplay.render(sb);
+        }
     }
 
     private void renderNotifications() {
@@ -299,6 +303,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         processInputs();
 
         clearNotifications(deltaTime);
+
+        // Update log display
+        if (logDisplay != null) {
+            logDisplay.update(deltaTime);
+        }
     }
 
     private void clearNotifications(float deltaTime) {
@@ -314,6 +323,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             camera.zoom += 0.2F;
         } else if (camera.zoom >= 0.4) {
             camera.zoom -= 0.2F;
+        }
+    }
+
+    public void toggleLogDisplay() {
+        if (logDisplay != null) {
+            logDisplay.toggle();
         }
     }
 
@@ -448,6 +463,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
         if (healthFont != null) healthFont.dispose();
         if (notifFont != null) notifFont.dispose();
+        if (logDisplay != null) logDisplay.dispose();
         GameStats.getInstance().endSession();
         sc.getAchievementManager().removeListener(this);
     }

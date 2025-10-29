@@ -25,5 +25,7 @@ public class ConsoleGameLoggerAdapter implements IGameLogger {
         
         // Delegate to the adaptee
         consoleLogger.printLog(simpleEntry);
+
+        LogCapture.getInstance().addLog(fullMessage);
     }
 }
