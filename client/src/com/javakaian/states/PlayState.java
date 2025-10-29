@@ -61,6 +61,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     
     private int spikeCount = 0;
 
+    // Track current base weapon and active attachments to send full config to server
+    private String currentBaseConfig = "assault_rifle";
+    private final List<String> activeAttachments = new ArrayList<>();
+
     public PlayState(StateController sc) {
         super(sc);
 
@@ -85,6 +89,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
     public void requestWeaponChange(String weaponConfig) {
         if (player != null) {
+            // Set base config and clear attachments on base change
+            currentBaseConfig = extractBaseConfig(weaponConfig);
+            activeAttachments.clear();
+
             WeaponChangeMessage message = new WeaponChangeMessage();
             message.setPlayerId(player.getId());
             message.setWeaponConfig(weaponConfig);
@@ -112,6 +120,45 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             message.setPlayerId(player.getId());
             client.sendTCP(message);
         }
+    }
+
+    // Toggle attachment by spec, then send combined config: base+att1+att2...
+    public void requestAttachmentChange(String attachmentSpec) {
+        if (player == null) return;
+        toggleAttachment(attachmentSpec);
+        sendCombinedConfig();
+    }
+
+    public void resetAttachments() {
+        if (player == null) return;
+        activeAttachments.clear();
+        sendCombinedConfig();
+    }
+
+    private void toggleAttachment(String spec) {
+        if (activeAttachments.contains(spec)) {
+            activeAttachments.remove(spec);
+        } else {
+            activeAttachments.add(spec);
+        }
+    }
+
+    private void sendCombinedConfig() {
+        StringBuilder cfg = new StringBuilder(currentBaseConfig);
+        for (String att : activeAttachments) {
+            cfg.append("+").append(att);
+        }
+        WeaponChangeMessage message = new WeaponChangeMessage();
+        message.setPlayerId(player.getId());
+        message.setWeaponConfig(cfg.toString());
+        client.sendTCP(message);
+    }
+
+    private String extractBaseConfig(String full) {
+        if (full == null || full.isEmpty()) return "assault_rifle";
+        int idx = full.indexOf('+');
+        if (idx < 0) return full;
+        return full.substring(0, idx);
     }
 
     public void setThemeFactory(ThemeFactory factory) {
@@ -182,7 +229,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
         }
         GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
-        GameUtils.renderCenter("Press 1-4 for different weapons | E to place spike | U to undo", sb, healthFont, 0.95f);
+        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo", sb, healthFont, 0.95f);
 
         renderNotifications();
         sb.end();
