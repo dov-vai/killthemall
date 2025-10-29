@@ -117,7 +117,6 @@ public class ServerWorld implements OMessageListener {
 
         // update object list. Remove necessary
         players.removeIf(p -> !p.isAlive());
-        enemies.removeIf(e -> !e.isVisible());
         bullets.removeIf(b -> !b.isVisible());
         spikes.removeIf(s -> !s.isVisible());
         placedSpikes.removeIf(ps -> !ps.isVisible());
@@ -156,17 +155,36 @@ public class ServerWorld implements OMessageListener {
      * lessthan 15.
      */
     private void spawnRandomEnemy() {
-        if (enemyTime >= 0.4 && enemies.size() <= 15) {
+        if (enemyTime >= 0.4 && enemies.stream().filter(Enemy::isVisible).count() <= 15) {
             enemyTime = 0;
-            if (enemies.size() % 5 == 0)
-                logger.debug("Number of enemies : " + enemies.size());
-            
+
             EnemyBehaviorStrategy strategy = behaviorStrategies[strategyIndex];
             strategyIndex = (strategyIndex + 1) % behaviorStrategies.length;
-            
-            Enemy e = new Enemy(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 10, strategy);
-            enemies.add(e);
-            
+
+            boolean respawned = false;
+
+            for (int i = 0; i < enemies.size(); i++) {
+                Enemy e = enemies.get(i);
+                if (!e.isVisible()) {
+                    Enemy cloned = e.clone();
+                    cloned.setPosition(new Vector2(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000)));
+                    cloned.setBehaviorStrategy(strategy);
+                    cloned.setVisible(true);
+
+                    enemies.set(i, cloned);
+                    respawned = true;
+                }
+            }
+
+            if (!respawned) {
+                Enemy newEnemy = new Enemy(
+                        new SecureRandom().nextInt(1000),
+                        new SecureRandom().nextInt(1000),
+                        10,
+                        strategy
+                );
+                enemies.add(newEnemy);
+            }
             logger.debug("Spawned enemy with " + strategy.getStrategyName() + " behavior");
         }
     }
@@ -180,6 +198,7 @@ public class ServerWorld implements OMessageListener {
         }
     }
 
+
     private void checkCollision() {
 
         for (Bullet b : bullets) {
@@ -191,6 +210,7 @@ public class ServerWorld implements OMessageListener {
                     e.setVisible(false);
                     players.stream().filter(p -> p.getId() == b.getId()).findFirst().ifPresent(Player::increaseHealth);
                 }
+
             }
             for (Player p : players) {
                 if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
