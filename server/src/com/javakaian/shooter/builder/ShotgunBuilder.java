@@ -43,7 +43,13 @@ public class ShotgunBuilder implements IBuilder {
 
     @Override
     public Weapon build() {
-        return shotgun;
+        if(shotgun.getBarrel() != null && shotgun.getGrip() != null
+        && shotgun.getStock() != null) {
+            return shotgun;
+        }
+        else {
+            return null;
+        }
     }
 
     @Override

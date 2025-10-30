@@ -80,6 +80,10 @@ public class PlayStateInput extends InputAdapter {
             case Keys.U:
                 playState.undoSpike();
                 break;
+            case Keys.L:
+                // Toggle log display window
+                playState.toggleLogDisplay();
+                break;
             default:
                 break;
         }
