@@ -349,8 +349,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         
         // Use Bridge Pattern for shooting
         Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-        Vector2 worldPos = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0)).cpy();
-        Vector2 target = new Vector2(worldPos.x, worldPos.y);
+        com.badlogic.gdx.math.Vector3 worldPos3D = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0));
+        Vector2 target = new Vector2(worldPos3D.x, worldPos3D.y);
         
         // Execute weapon control (handles aiming and firing based on control mode)
         weaponControl.execute(target, player);
