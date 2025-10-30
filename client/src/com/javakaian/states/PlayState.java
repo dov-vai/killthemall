@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.javakaian.models.Notification;
@@ -24,7 +23,9 @@ import com.javakaian.shooter.shapes.Player;
 import com.javakaian.shooter.shapes.Spike;
 import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
-import com.javakaian.shooter.utils.stats.GameStats;
+import com.javakaian.shooter.utils.Subsystems.StatAction;
+import com.javakaian.shooter.utils.Subsystems.StatType;
+import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -45,6 +46,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private List<Spike> spikes;
     private List<PlacedSpike> placedSpikes;
     private AimLine aimLine;
+    GameManagerFacade stats = GameManagerFacade.getInstance();
+
 
     private OClient client;
 
@@ -202,34 +205,33 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         if (player == null) return;
 
+        followPlayer();
         Color bg = themeFactory.createTheme().getBackgroundColor();
         ScreenUtils.clear(bg.r, bg.g, bg.b, 1);
 
-        sr.begin(ShapeType.Line);
-        sr.setColor(Color.RED);
-        players.forEach(p -> p.render(sr));
-        enemies.forEach(e -> e.render(sr));
-        bullets.forEach(b -> b.render(sr));
-        spikes.forEach(s -> s.render(sr));
-        placedSpikes.forEach(ps -> ps.render(sr));
-        sr.setColor(Color.BLUE);
-        player.render(sr);
-        aimLine.render(sr);
-        followPlayer();
-        sr.end();
+        GameManagerFacade gm = GameManagerFacade.getInstance();
+        gm.renderGameObjects(sr, players, enemies, bullets, spikes, placedSpikes, player, aimLine);
 
         sb.begin();
-        GameUtils.renderCenter("HEALTH: " + player.getHealth(), sb, healthFont, 0.1f);
-        
-        GameUtils.renderLeftAligned("WEAPON: " + currentWeaponInfo, sb, weaponsFont, 0.02f, 0.08f);
+        gm.renderText(sb, healthFont, "HEALTH: " + player.getHealth(), TextAlignment.CENTER, 0f, 0.1f);
+        gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f, 0.08f);
+
         if (currentWeaponComponents != null && !currentWeaponComponents.isEmpty()) {
-            GameUtils.renderLeftAligned("Components: " + currentWeaponComponents, sb, weaponsFont, 0.02f, 0.11f);
+            gm.renderText(sb, weaponsFont, "Components: " + currentWeaponComponents, TextAlignment.LEFT, 0.02f, 0.11f);
         }
         if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
-            GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
+            gm.renderText(sb, weaponsFont, currentWeaponStats, TextAlignment.LEFT, 0.02f, 0.14f);
         }
-        GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
-        GameUtils.renderCenter("1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo", sb, healthFont, 0.95f);
+
+        gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, 0.17f);
+        gm.renderText(
+                sb,
+                healthFont,
+                "1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo",
+                TextAlignment.CENTER,
+                0f,
+                0.95f
+        );
 
         renderNotifications();
         sb.end();
@@ -265,7 +267,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         float dy = y - lastY;
         float dist = (float) Math.sqrt(dx * dx + dy * dy);
         if (dist > 0) {
-            GameStats.getInstance().addDistanceTraveled(dist);
+            stats.stats(StatAction.SET, StatType.TOTAL_DISTANCE, dist);
             lastX = x;
             lastY = y;
         }
@@ -295,7 +297,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
-        GameStats.getInstance().incrementShotsFired();
+        stats.stats(StatAction.SET, StatType.TOTAL_SHOTS);
         client.sendUDP(m);
     }
 
@@ -326,8 +328,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         player.setId(m.getPlayerId());
         lastX = player.getPosition().x;
         lastY = player.getPosition().y;
-        GameStats.getInstance().resetSession();
-        GameStats.getInstance().startSession();
+        stats.startSession();
         sc.getAchievementManager().addListener(this);
     }
 
@@ -345,8 +346,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         mm.setPlayerId(player.getId());
         client.sendTCP(mm);
         client.close();
-        GameStats.getInstance().incrementDeaths();
-        GameStats.getInstance().endSession();
+        stats.endSession();
         this.getSc().setState(StateEnum.GAME_OVER_STATE);
     }
 
@@ -372,7 +372,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                     player = p;
                     float newHealth = player.getHealth();
                     if (newHealth < oldHealth) {
-                        GameStats.getInstance().addDamageTaken(oldHealth - newHealth);
+                        stats.stats(StatAction.SET, StatType.TOTAL_DAMAGE, oldHealth - newHealth);
                     }
                 });
         players.removeIf(p -> p.getId() == player.getId());
@@ -398,7 +398,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
         if (healthFont != null) healthFont.dispose();
         if (notifFont != null) notifFont.dispose();
-        GameStats.getInstance().endSession();
+        stats.endSession();
         sc.getAchievementManager().removeListener(this);
     }
 
