@@ -56,6 +56,30 @@ public class PlayStateInput extends InputAdapter {
             case Keys.U:
                 playState.undoSpike();
                 break;
+            // Bridge Pattern: Control Mode switches
+            case Keys.F1:
+                playState.switchControlMode("manual");
+                break;
+            case Keys.F2:
+                playState.switchControlMode("autoaim");
+                break;
+            // Bridge Pattern: Firing Mode switches
+            case Keys.F3:
+                playState.switchFiringMode("semiauto");
+                break;
+            case Keys.F4:
+                playState.switchFiringMode("burst");
+                break;
+            case Keys.F5:
+                playState.switchFiringMode("fullauto");
+                break;
+            // Bridge Pattern: Special actions
+            case Keys.Q:
+                playState.useSpecialAction();
+                break;
+            case Keys.R:
+                playState.reloadWeapon();
+                break;
             default:
                 break;
         }

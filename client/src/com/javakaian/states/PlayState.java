@@ -25,6 +25,7 @@ import com.javakaian.shooter.shapes.Spike;
 import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
+import com.javakaian.shooter.bridge.*;  // Bridge pattern classes
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -60,6 +61,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private BitmapFont weaponsFont;
     
     private int spikeCount = 0;
+    
+    // Bridge Pattern: Weapon Control System
+    private WeaponControl weaponControl;
+    private String currentControlMode = "Manual";
+    private String currentFiringMode = "Semi-Auto";
 
     public PlayState(StateController sc) {
         super(sc);
@@ -69,6 +75,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
         notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
         weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+
+        // Initialize Bridge Pattern: Default to Manual Control with Semi-Auto Firing
+        weaponControl = new ManualControl(new SemiAutoFiring());
+        currentControlMode = "Manual";
+        currentFiringMode = "Semi-Auto";
 
         init();
         ip = new PlayStateInput(this);
@@ -111,6 +122,83 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             UndoSpikeMessage message = new UndoSpikeMessage();
             message.setPlayerId(player.getId());
             client.sendTCP(message);
+        }
+    }
+    
+    /**
+     * Bridge Pattern: Switch control mode (abstraction)
+     */
+    public void switchControlMode(String mode) {
+        FiringMechanism currentFiring = weaponControl != null ? 
+            weaponControl.getFiringMechanism() : new SemiAutoFiring();
+        
+        switch (mode.toLowerCase()) {
+            case "manual":
+                weaponControl = new ManualControl(currentFiring);
+                currentControlMode = "Manual";
+                notifications.add(new Notification("Control: Manual Mode", 2.0f));
+                break;
+            case "autoaim":
+                weaponControl = new AutoAimControl(currentFiring);
+                currentControlMode = "Auto-Aim";
+                notifications.add(new Notification("Control: Auto-Aim Mode", 2.0f));
+                break;
+            default:
+                break;
+        }
+    }
+    
+    /**
+     * Bridge Pattern: Switch firing mechanism (implementation)
+     */
+    public void switchFiringMode(String mode) {
+        if (weaponControl == null) return;
+        
+        FiringMechanism newFiring = null;
+        switch (mode.toLowerCase()) {
+            case "semiauto":
+                newFiring = new SemiAutoFiring();
+                currentFiringMode = "Semi-Auto";
+                notifications.add(new Notification("Firing: Semi-Auto", 2.0f));
+                break;
+            case "burst":
+                newFiring = new BurstFiring();
+                currentFiringMode = "Burst";
+                notifications.add(new Notification("Firing: Burst (3 rounds)", 2.0f));
+                break;
+            case "fullauto":
+                newFiring = new FullAutoFiring();
+                currentFiringMode = "Full-Auto";
+                notifications.add(new Notification("Firing: Full-Auto", 2.0f));
+                break;
+            default:
+                break;
+        }
+        
+        if (newFiring != null) {
+            weaponControl.setFiringMechanism(newFiring);
+        }
+    }
+    
+    /**
+     * Bridge Pattern: Use weapon control's special action
+     */
+    public void useSpecialAction() {
+        if (weaponControl != null && player != null) {
+            weaponControl.specialAction();
+            String action = weaponControl instanceof ManualControl ? 
+                "Precision Mode Toggled" : "Target Lock Toggled";
+            notifications.add(new Notification("Special: " + action, 2.0f));
+        }
+    }
+    
+    /**
+     * Bridge Pattern: Reload weapon
+     */
+    public void reloadWeapon() {
+        if (weaponControl != null) {
+            weaponControl.reload();
+            notifications.add(new Notification("Reloading...", 1.5f));
         }
     }
 
@@ -182,7 +270,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             GameUtils.renderLeftAligned(currentWeaponStats, sb, weaponsFont, 0.02f, 0.14f);
         }
         GameUtils.renderLeftAligned("SPIKES: " + spikeCount, sb, weaponsFont, 0.02f, 0.17f);
+        
+        // Display Bridge Pattern info
+        GameUtils.renderLeftAligned("CONTROL: " + currentControlMode, sb, weaponsFont, 0.02f, 0.20f);
+        GameUtils.renderLeftAligned("FIRING: " + currentFiringMode, sb, weaponsFont, 0.02f, 0.23f);
+        
         GameUtils.renderCenter("Press 1-4 for different weapons | E to place spike | U to undo", sb, healthFont, 0.95f);
+        GameUtils.renderCenter("F1-F2: Control Mode | F3-F6: Firing Mode | R: Reload | Q: Special Action", sb, healthFont, 0.98f);
 
         renderNotifications();
         sb.end();
@@ -211,6 +305,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             return;
         aimLine.setBegin(player.getCenter());
         aimLine.update(deltaTime);
+        
+        // Update Bridge Pattern weapon control
+        if (weaponControl != null) {
+            weaponControl.update(deltaTime);
+        }
+        
         // track distance traveled
         float x = player.getPosition().x;
         float y = player.getPosition().y;
@@ -245,6 +345,17 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     public void shoot() {
+        if (player == null || weaponControl == null) return;
+        
+        // Use Bridge Pattern for shooting
+        Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+        Vector2 worldPos = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0)).cpy();
+        Vector2 target = new Vector2(worldPos.x, worldPos.y);
+        
+        // Execute weapon control (handles aiming and firing based on control mode)
+        weaponControl.execute(target, player);
+        
+        // Send shoot message to server
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
