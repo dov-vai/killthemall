@@ -253,7 +253,16 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         gm.renderText(
                 sb,
                 healthFont,
-                "1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments | E to place spike | U to undo | L: Logs",
+                "1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments",
+                TextAlignment.CENTER,
+                0f,
+                0.90f
+        );
+
+        gm.renderText(
+                sb,
+                healthFont,
+                "E to place spike | U to undo | L: Logs",
                 TextAlignment.CENTER,
                 0f,
                 0.95f
@@ -270,7 +279,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void renderNotifications() {
-        float startY = 0.12f;
+        float startY = 0.15f;
         float y = startY;
         for (int i = 0; i < notifications.size(); i++) {
             Notification n = notifications.get(i);
