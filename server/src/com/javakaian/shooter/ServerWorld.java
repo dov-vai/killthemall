@@ -69,6 +69,8 @@ public class ServerWorld implements OMessageListener {
     
     // Command pattern for spike placement - stack to support multiple undos
     private Map<Integer, Stack<Command>> playerSpikeCommands;
+    // Map KryoNet connection ID -> player ID for cleanup on disconnect
+    private Map<Integer, Integer> connectionToPlayerId;
 
     public ServerWorld() {
 
@@ -88,6 +90,7 @@ public class ServerWorld implements OMessageListener {
         playerWeapons = new HashMap<>();
         
         playerSpikeCommands = new HashMap<>();
+        connectionToPlayerId = new HashMap<>();
         
         behaviorStrategies = new EnemyBehaviorStrategy[]{
             new AggressiveBehavior(),
@@ -298,17 +301,39 @@ public class ServerWorld implements OMessageListener {
 
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
+        // Track which player ID belongs to this connection for proper cleanup on disconnect
+        connectionToPlayerId.put(con.getID(), id);
     }
 
     @Override
     public void logoutReceived(LogoutMessage m) {
 
-        players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst().ifPresent(p -> {
+        removePlayerById(m.getPlayerId());
+        logger.debug("Logout Message recieved from : " + m.getPlayerId() + " Size: " + players.size());
+
+    }
+
+    @Override
+    public void disconnected(Connection con) {
+        Integer playerId = connectionToPlayerId.remove(con.getID());
+        if (playerId != null) {
+            removePlayerById(playerId);
+            logger.debug("Disconnected connection id: " + con.getID() + " mapped to player: " + playerId);
+        } else {
+            logger.debug("Disconnected connection id: " + con.getID() + " had no mapped player");
+        }
+    }
+
+    private void removePlayerById(int playerId) {
+        players.stream().filter(p -> p.getId() == playerId).findFirst().ifPresent(p -> {
             players.remove(p);
             idPool.putUserIDBack(p.getId());
         });
-        logger.debug("Logout Message recieved from : " + m.getPlayerId() + " Size: " + players.size());
-
+        // Clean up per-player auxiliary state
+        playerWeapons.remove(playerId);
+        playerSpikeCommands.remove(playerId);
+        // Also drop reverse mapping if exists (in case called from logout)
+        connectionToPlayerId.values().removeIf(id -> id == playerId);
     }
 
     @Override

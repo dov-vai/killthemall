@@ -50,4 +50,10 @@ public interface OMessageListener {
      */
     void undoSpikeReceived(UndoSpikeMessage m);
 
+    /**
+     * Invoked when a network connection is closed unexpectedly or normally.
+     * Implementations should clean up any player state associated with this connection.
+     */
+    void disconnected(Connection con);
+
 }
