@@ -239,17 +239,20 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         gm.renderGameObjects(sr, players, enemies, bullets, spikes, placedSpikes, player, aimLine);
 
         sb.begin();
-        gm.renderText(sb, healthFont, "HEALTH: " + player.getHealth(), TextAlignment.CENTER, 0f, 0.1f);
-        gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f, 0.08f);
+        gm.renderText(sb, healthFont, "HEALTH: " + player.getHealth(), TextAlignment.CENTER, 0f, 0.05f);
+
+        float baseEquipmentY = 0.05f;
+
+        gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f,  baseEquipmentY + 0.08f);
 
         if (currentWeaponComponents != null && !currentWeaponComponents.isEmpty()) {
-            gm.renderText(sb, weaponsFont, "Components: " + currentWeaponComponents, TextAlignment.LEFT, 0.02f, 0.11f);
+            gm.renderText(sb, weaponsFont, "Components: " + currentWeaponComponents, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
         }
         if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
-            gm.renderText(sb, weaponsFont, currentWeaponStats, TextAlignment.LEFT, 0.02f, 0.14f);
+            gm.renderText(sb, weaponsFont, currentWeaponStats, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.14f);
         }
 
-        gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, 0.17f);
+        gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.17f);
         gm.renderText(
                 sb,
                 healthFont,
