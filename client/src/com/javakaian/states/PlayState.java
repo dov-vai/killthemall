@@ -390,21 +390,38 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 "WEAPON: " + currentBridgeWeapon.getName(), 
                 TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.08f);
             
+            // Display equipped attachments
+            if (!activeAttachments.isEmpty()) {
+                StringBuilder attachmentsList = new StringBuilder("ATTACHMENTS: ");
+                for (int i = 0; i < activeAttachments.size(); i++) {
+                    String spec = activeAttachments.get(i);
+                    String[] parts = spec.split(":");
+                    String attachmentName = parts.length > 0 ? parts[0].toUpperCase() : "?";
+                    attachmentsList.append(attachmentName);
+                    if (i < activeAttachments.size() - 1) {
+                        attachmentsList.append(", ");
+                    }
+                }
+                gm.renderText(sb, weaponsFont, 
+                    attachmentsList.toString(), 
+                    TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
+            }
+            
             gm.renderText(sb, weaponsFont, 
                 "MODE: " + currentFiringMode.getDescription(), 
-                TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.11f : baseEquipmentY + 0.14f);
             
             gm.renderText(sb, weaponsFont, 
                 "AMMO: " + currentBridgeWeapon.getCurrentAmmo() + "/" + 
                 currentBridgeWeapon.getAmmoCapacity(), 
-                TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.14f);
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.14f : baseEquipmentY + 0.17f);
             
             gm.renderText(sb, weaponsFont, 
                 String.format("DMG: %.0f | RNG: %.0f | RATE: %.2f", 
                     currentBridgeWeapon.getDamage(),
                     currentBridgeWeapon.getRange(),
                     currentBridgeWeapon.getEffectiveFireRate()),
-                TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.17f);
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.17f : baseEquipmentY + 0.20f);
         } else {
             gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f,  baseEquipmentY + 0.08f);
 
