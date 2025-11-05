@@ -87,8 +87,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private float burstShotTimer = 0;
     private static final float BURST_DELAY = 0.1f; // Delay between burst shots
     private float autoFireTimer = 0;
-    private float currentFireRate = 0.1f; // Dynamic fire rate from server (updated via WeaponInfoMessage)
-    private float currentBulletSize = 1.0f; // Dynamic bullet size from server (updated via WeaponInfoMessage)
+    private static final float AUTO_FIRE_RATE = 0.1f; // Time between auto shots
 
     public PlayState(StateController sc) {
         super(sc);
@@ -116,20 +115,6 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             currentWeaponInfo = m.getWeaponName();
             currentWeaponComponents = m.getComponents();
             currentWeaponStats = m.getStats();
-            
-            // Update fire rate and bullet size from server
-            currentFireRate = m.getFireRate();
-            currentBulletSize = m.getBulletSize();
-            
-            // Calculate actual auto fire delay (lower fire rate = slower shooting)
-            // Invert the relationship: higher fireRate value = faster shooting = lower delay
-            float baseDelay = 0.1f;
-            if (currentFireRate > 0) {
-                // Drastic change: divide delay by fire rate (so 5.0 fire rate = 0.02s delay = 50 shots/sec)
-                baseDelay = baseDelay / currentFireRate;
-            }
-            
-            System.out.println("==> CLIENT: Updated fire rate=" + currentFireRate + ", delay=" + baseDelay + ", bulletSize=" + currentBulletSize);
         }
     }
 
@@ -529,9 +514,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 if (autoFireTimer <= 0) {
                     System.out.println("==> FULL AUTO: Firing! Ammo: " + currentBridgeWeapon.getCurrentAmmo());
                     shootSingle();
-                    // Use dynamic fire rate from server (affected by decorators)
-                    float fireDelay = 0.1f / Math.max(0.5f, currentFireRate); // Ensure we don't divide by zero or get too fast
-                    autoFireTimer = fireDelay;
+                    autoFireTimer = AUTO_FIRE_RATE;
                 }
             } else {
                 // Out of ammo, stop shooting

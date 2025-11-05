@@ -4,7 +4,7 @@ import com.javakaian.shooter.weapons.Weapon;
 
 /**
  * Concrete Decorator: increases ammo capacity with an extended magazine.
- * Significantly reduces fire rate due to extra weight.
+ * Slightly reduces fire rate due to extra weight.
  */
 public class ExtendedMagazineAttachment extends WeaponAttachment {
 
@@ -22,8 +22,8 @@ public class ExtendedMagazineAttachment extends WeaponAttachment {
     
     @Override
     public float getFireRate() {
-        // Much slower fire rate due to heavier magazine (divide by 2 for drastic effect)
-        return Math.max(0.1f, baseWeapon.getFireRate() / 2.0f);
+        // Slightly slower fire rate due to heavier magazine
+        return Math.max(0.1f, baseWeapon.getFireRate() - 0.05f);
     }
     
     @Override
@@ -42,6 +42,6 @@ public class ExtendedMagazineAttachment extends WeaponAttachment {
 
     @Override
     public String getDescription() {
-        return baseWeapon.getDescription() + String.format(" + Mag(+%d ammo, -50%% fire rate - HEAVY)", extraAmmo);
+        return baseWeapon.getDescription() + String.format(" + Mag(+%d ammo, -0.05 fire rate)", extraAmmo);
     }
 }

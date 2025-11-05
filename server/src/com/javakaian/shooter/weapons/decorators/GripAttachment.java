@@ -18,8 +18,8 @@ public class GripAttachment extends WeaponAttachment {
 
     @Override
     public float getFireRate() {
-        // MASSIVE fire rate boost for full auto - multiply by 10 for drastic effect!
-        return baseWeapon.getFireRate() + (bonusFireRate * 10.0f);
+        // Much faster fire rate for full auto
+        return baseWeapon.getFireRate() + bonusFireRate;
     }
     
     @Override
@@ -38,6 +38,6 @@ public class GripAttachment extends WeaponAttachment {
 
     @Override
     public String getDescription() {
-        return baseWeapon.getDescription() + String.format(" + Grip(%s, +%.1f fire rate - FULL AUTO BOOST)", gripName, bonusFireRate * 10.0f);
+        return baseWeapon.getDescription() + String.format(" + Grip(%s, +%.1f fire rate - FULL AUTO BOOST)", gripName, bonusFireRate);
     }
 }
