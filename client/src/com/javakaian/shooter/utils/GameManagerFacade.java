@@ -1,5 +1,6 @@
 package com.javakaian.shooter.utils;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -87,6 +88,11 @@ public class GameManagerFacade {
         }
         return 0;
     }
+
+    public BitmapFont generateBitmapFont(int size, Color color) {
+        return GameUtils.generateBitmapFont(size, color);
+    }
+
 
 
 }

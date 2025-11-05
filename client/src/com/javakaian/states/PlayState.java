@@ -30,6 +30,9 @@ import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.logger.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 
+// Bridge Pattern imports
+import com.javakaian.shooter.weapons.bridge.*;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,17 +78,32 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private String currentBaseConfig = "assault_rifle";
     private final List<String> activeAttachments = new ArrayList<>();
 
+    // Bridge Pattern - Weapon system
+    private BridgeWeapon currentBridgeWeapon;
+    private BridgeWeapon unwrappedWeapon; // Base weapon without decorators
+    private FiringMechanism currentFiringMode;
+    private boolean isShooting = false;
+    private int burstShotsRemaining = 0;
+    private float burstShotTimer = 0;
+    private static final float BURST_DELAY = 0.1f; // Delay between burst shots
+    private float autoFireTimer = 0;
+    private static final float AUTO_FIRE_RATE = 0.1f; // Time between auto shots
+
     public PlayState(StateController sc) {
         super(sc);
 
         themeFactory = ThemeFactory.getFactory(true); //fallback
 
-        healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
-        notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
-        weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        notifFont = GameManagerFacade.getInstance().generateBitmapFont(24, Color.GOLD);
+        weaponsFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GRAY);
 
         gameLogger = new ConsoleGameLoggerAdapter();
         logDisplay = new SimpleLogDisplay();
+
+        // Initialize Bridge Pattern weapons
+        currentFiringMode = new SingleShotMechanism();
+        currentBridgeWeapon = new AssaultRifle(currentFiringMode);
 
         init();
         ip = new PlayStateInput(this);
@@ -106,6 +124,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             currentBaseConfig = extractBaseConfig(weaponConfig);
             activeAttachments.clear();
 
+            // Bridge Pattern - Update local weapon
+            updateBridgeWeapon(weaponConfig);
+
             WeaponChangeMessage message = new WeaponChangeMessage();
             message.setPlayerId(player.getId());
             message.setWeaponConfig(weaponConfig);
@@ -121,6 +142,41 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 "INFO"
             );
             gameLogger.logEvent(weaponChangeEvent);
+
+            // Show notification
+            notifications.add(new Notification(
+                "Equipped: " + currentBridgeWeapon.getName() + 
+                " [" + currentFiringMode.getDescription() + "]",
+                2.0f
+            ));
+        }
+    }
+
+    // Bridge Pattern - Update weapon based on config
+    private void updateBridgeWeapon(String weaponConfig) {
+        String baseWeapon = extractBaseConfig(weaponConfig);
+        
+        switch (baseWeapon) {
+            case "assault_rifle":
+                unwrappedWeapon = new AssaultRifle(currentFiringMode);
+                break;
+            case "combat_shotgun":
+                unwrappedWeapon = new TacticalShotgun(currentFiringMode);
+                break;
+            case "precision_sniper":
+                unwrappedWeapon = new PrecisionSniper(currentFiringMode);
+                break;
+            default:
+                unwrappedWeapon = new AssaultRifle(currentFiringMode);
+                break;
+        }
+        
+        // Set current weapon to unwrapped (will be wrapped with decorators if attachments exist)
+        currentBridgeWeapon = unwrappedWeapon;
+        
+        // Reapply any active decorators
+        if (!activeAttachments.isEmpty()) {
+            applyDecoratorsToCurrentWeapon();
         }
     }
     
@@ -155,13 +211,98 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void requestAttachmentChange(String attachmentSpec) {
         if (player == null) return;
         toggleAttachment(attachmentSpec);
+        
+        // Apply decorators to Bridge weapon
+        applyDecoratorsToCurrentWeapon();
+        
         sendCombinedConfig();
     }
 
     public void resetAttachments() {
         if (player == null) return;
         activeAttachments.clear();
+        
+        // Reset to unwrapped weapon
+        if (unwrappedWeapon != null) {
+            currentBridgeWeapon = unwrappedWeapon;
+        }
+        
         sendCombinedConfig();
+    }
+    
+    // Apply decorators based on active attachments
+    private void applyDecoratorsToCurrentWeapon() {
+        if (unwrappedWeapon == null) return;
+        
+        // Start with base weapon
+        BridgeWeapon weapon = unwrappedWeapon;
+        
+        // Apply each active attachment as a decorator
+        for (String spec : activeAttachments) {
+            weapon = applyDecorator(weapon, spec);
+        }
+        
+        currentBridgeWeapon = weapon;
+        
+        // Show notification
+        if (!activeAttachments.isEmpty()) {
+            notifications.add(new Notification(
+                "Attachments: " + activeAttachments.size() + " active",
+                1.5f
+            ));
+        }
+    }
+    
+    // Apply a single decorator based on spec
+    private BridgeWeapon applyDecorator(BridgeWeapon weapon, String spec) {
+        // Parse spec format: "type:name:value" or "type:value"
+        String[] parts = spec.split(":");
+        if (parts.length == 0) return weapon;
+        
+        String type = parts[0];
+        
+        switch (type) {
+            case "scope":
+                // scope:4x ACOG:150
+                if (parts.length >= 3) {
+                    String scopeName = parts[1];
+                    float rangeBonus = Float.parseFloat(parts[2]);
+                    return new ScopeDecorator(weapon, scopeName, rangeBonus);
+                }
+                break;
+            case "mag":
+                // mag:15
+                if (parts.length >= 2) {
+                    int extraAmmo = Integer.parseInt(parts[1]);
+                    return new ExtendedMagDecorator(weapon, extraAmmo);
+                }
+                break;
+            case "grip":
+                // grip:Tactical:0.5
+                if (parts.length >= 3) {
+                    String gripName = parts[1];
+                    float fireRateBonus = Float.parseFloat(parts[2]);
+                    return new GripDecorator(weapon, gripName, fireRateBonus);
+                }
+                break;
+            case "silencer":
+                // silencer:Silenced Barrel:2
+                if (parts.length >= 3) {
+                    String barrelName = parts[1];
+                    float damagePenalty = Float.parseFloat(parts[2]);
+                    return new SilencerDecorator(weapon, barrelName, damagePenalty);
+                }
+                break;
+            case "dmg":
+                // dmg:5
+                if (parts.length >= 2) {
+                    float damageBonus = Float.parseFloat(parts[1]);
+                    return new DamageBoostDecorator(weapon, damageBonus);
+                }
+                break;
+        }
+        
+        return weapon;
     }
 
     private void toggleAttachment(String spec) {
@@ -201,7 +342,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
 
         if (healthFont != null) healthFont.dispose();
-        healthFont = GameUtils.generateBitmapFont(20, theme.getTextColor());
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, theme.getTextColor());
     }
 
 
@@ -243,20 +384,60 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         float baseEquipmentY = 0.05f;
 
-        gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f,  baseEquipmentY + 0.08f);
+        // Bridge Pattern - Display weapon info
+        if (currentBridgeWeapon != null) {
+            gm.renderText(sb, weaponsFont, 
+                "WEAPON: " + currentBridgeWeapon.getName(), 
+                TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.08f);
+            
+            // Display equipped attachments
+            if (!activeAttachments.isEmpty()) {
+                StringBuilder attachmentsList = new StringBuilder("ATTACHMENTS: ");
+                for (int i = 0; i < activeAttachments.size(); i++) {
+                    String spec = activeAttachments.get(i);
+                    String[] parts = spec.split(":");
+                    String attachmentName = parts.length > 0 ? parts[0].toUpperCase() : "?";
+                    attachmentsList.append(attachmentName);
+                    if (i < activeAttachments.size() - 1) {
+                        attachmentsList.append(", ");
+                    }
+                }
+                gm.renderText(sb, weaponsFont, 
+                    attachmentsList.toString(), 
+                    TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
+            }
+            
+            gm.renderText(sb, weaponsFont, 
+                "MODE: " + currentFiringMode.getDescription(), 
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.11f : baseEquipmentY + 0.14f);
+            
+            gm.renderText(sb, weaponsFont, 
+                "AMMO: " + currentBridgeWeapon.getCurrentAmmo() + "/" + 
+                currentBridgeWeapon.getAmmoCapacity(), 
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.14f : baseEquipmentY + 0.17f);
+            
+            gm.renderText(sb, weaponsFont, 
+                String.format("DMG: %.0f | RNG: %.0f | RATE: %.2f", 
+                    currentBridgeWeapon.getDamage(),
+                    currentBridgeWeapon.getRange(),
+                    currentBridgeWeapon.getEffectiveFireRate()),
+                TextAlignment.LEFT, 0.02f, activeAttachments.isEmpty() ? baseEquipmentY + 0.17f : baseEquipmentY + 0.20f);
+        } else {
+            gm.renderText(sb, weaponsFont, "WEAPON: " + currentWeaponInfo, TextAlignment.LEFT, 0.02f,  baseEquipmentY + 0.08f);
 
-        if (currentWeaponComponents != null && !currentWeaponComponents.isEmpty()) {
-            gm.renderText(sb, weaponsFont, "Components: " + currentWeaponComponents, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
-        }
-        if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
-            gm.renderText(sb, weaponsFont, currentWeaponStats, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.14f);
+            if (currentWeaponComponents != null && !currentWeaponComponents.isEmpty()) {
+                gm.renderText(sb, weaponsFont, "Components: " + currentWeaponComponents, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.11f);
+            }
+            if (currentWeaponStats != null && !currentWeaponStats.isEmpty()) {
+                gm.renderText(sb, weaponsFont, currentWeaponStats, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.14f);
+            }
         }
 
-        gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.17f);
+        gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.20f);
         gm.renderText(
                 sb,
                 healthFont,
-                "1-3: Weapons | 4: Scope | 5: Mag | 6: Grip | 7: Silencer | 8: Dmg | 0: Reset attachments",
+                "1-3: Weapons | 4-8: Attachments | 0: Reset | B: Fire Mode | R: Reload",
                 TextAlignment.CENTER,
                 0f,
                 0.90f
@@ -265,7 +446,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         gm.renderText(
                 sb,
                 healthFont,
-                "E to place spike | U to undo | L: Logs",
+                "E: Place Spike | U: Undo | L: Logs | SPACE: Shoot",
                 TextAlignment.CENTER,
                 0f,
                 0.95f
@@ -282,11 +463,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void renderNotifications() {
+        GameManagerFacade gm = GameManagerFacade.getInstance();
         float startY = 0.15f;
         float y = startY;
         for (int i = 0; i < notifications.size(); i++) {
             Notification n = notifications.get(i);
-            GameUtils.renderCenter(n.text, sb, notifFont, y);
+            gm.renderText(sb, notifFont, n.text, TextAlignment.CENTER, 0f, y);
             y += 0.05f;
             if (i >= 3) break; // show up to 4
         }
@@ -314,6 +496,32 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             stats.stats(StatAction.SET, StatType.TOTAL_DISTANCE, dist);
             lastX = x;
             lastY = y;
+        }
+
+        // Bridge Pattern - Handle burst fire
+        if (burstShotsRemaining > 0) {
+            burstShotTimer -= deltaTime;
+            if (burstShotTimer <= 0) {
+                shootSingle();
+                burstShotsRemaining--;
+                burstShotTimer = BURST_DELAY;
+            }
+        }
+        
+        // Bridge Pattern - Handle full auto continuous fire
+        if (isShooting && currentFiringMode instanceof FullAutoMechanism) {
+            if (currentBridgeWeapon != null && currentBridgeWeapon.getCurrentAmmo() > 0) {
+                autoFireTimer -= deltaTime;
+                if (autoFireTimer <= 0) {
+                    System.out.println("==> FULL AUTO: Firing! Ammo: " + currentBridgeWeapon.getCurrentAmmo());
+                    shootSingle();
+                    autoFireTimer = AUTO_FIRE_RATE;
+                }
+            } else {
+                // Out of ammo, stop shooting
+                System.out.println("==> FULL AUTO: Out of ammo, stopping!");
+                isShooting = false;
+            }
         }
 
         processInputs();
@@ -348,7 +556,90 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
     }
 
+    // Bridge Pattern - Cycle firing mode
+    public void cycleFiringMode() {
+        if (currentBridgeWeapon == null) return;
+        
+        // Cycle through modes: Single -> Burst -> Full Auto -> Charged -> Single
+        if (currentFiringMode instanceof SingleShotMechanism) {
+            currentFiringMode = new BurstFireMechanism();
+        } else if (currentFiringMode instanceof BurstFireMechanism) {
+            currentFiringMode = new FullAutoMechanism();
+        } else if (currentFiringMode instanceof FullAutoMechanism) {
+            currentFiringMode = new ChargedShotMechanism();
+        } else {
+            currentFiringMode = new SingleShotMechanism();
+        }
+        
+        currentBridgeWeapon.switchFiringMode(currentFiringMode);
+        
+        // Show notification
+        notifications.add(new Notification(
+            "Firing Mode: " + currentFiringMode.getDescription(),
+            2.5f
+        ));
+        
+        System.out.println("==> Switched to: " + currentFiringMode.getDescription());
+    }
+
+    // Bridge Pattern - Reload weapon
+    public void reloadBridgeWeapon() {
+        if (currentBridgeWeapon != null) {
+            currentBridgeWeapon.reload();
+            notifications.add(new Notification("Reloaded!", 1.5f));
+        }
+    }
+
+    // Bridge Pattern - Shoot with firing mechanism behavior
     public void shoot() {
+        if (currentBridgeWeapon == null || player == null) return;
+        
+        // Check ammo
+        if (currentBridgeWeapon.getCurrentAmmo() <= 0) {
+            System.out.println("Out of ammo! Press R to reload.");
+            return;
+        }
+        
+        // Handle different firing mechanisms
+        if (currentFiringMode instanceof SingleShotMechanism) {
+            // Single shot - fire once
+            shootSingle();
+            currentBridgeWeapon.fire(); // Client-side feedback
+            
+        } else if (currentFiringMode instanceof BurstFireMechanism) {
+            // Burst fire - queue 3 shots
+            if (burstShotsRemaining == 0) { // Only start new burst if not already bursting
+                BurstFireMechanism burst = (BurstFireMechanism) currentFiringMode;
+                burstShotsRemaining = burst.getBurstCount();
+                burstShotTimer = 0; // Fire first shot immediately
+                currentBridgeWeapon.fire(); // Client-side feedback
+            }
+            
+        } else if (currentFiringMode instanceof FullAutoMechanism) {
+            // Full auto - start continuous fire
+            if (!isShooting) {
+                isShooting = true;
+                autoFireTimer = 0; // Fire immediately
+                shootSingle(); // First shot
+                currentBridgeWeapon.fire(); // Client-side feedback
+                System.out.println("==> FULL AUTO: Started continuous fire! isShooting=" + isShooting);
+            }
+            
+        } else if (currentFiringMode instanceof ChargedShotMechanism) {
+            // Charged shot - start charging
+            currentBridgeWeapon.fire(); // This starts charging
+        }
+    }
+    
+    // Helper method to send a single shot to server
+    private void shootSingle() {
+        if (player == null) return;
+        
+        // Decrement ammo from bridge weapon
+        if (currentBridgeWeapon != null) {
+            currentBridgeWeapon.decrementAmmo(1);
+        }
+        
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
@@ -362,6 +653,43 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         //     "DEBUG"
         // );
         // gameLogger.logEvent(shootEvent);
+    }
+    
+    // Bridge Pattern - Stop shooting (for full auto and charged shot)
+    public void stopShooting() {
+        if (currentBridgeWeapon == null) return;
+        
+        if (currentFiringMode instanceof FullAutoMechanism) {
+            System.out.println("==> FULL AUTO: Stopped! isShooting was: " + isShooting);
+            isShooting = false;
+            currentBridgeWeapon.stopFiring();
+        } else if (currentFiringMode instanceof ChargedShotMechanism) {
+            // Release charged shot
+            currentBridgeWeapon.stopFiring();
+            shootSingle(); // Fire the charged shot
+        }
+    }
+    
+    // Get bullet size multiplier from decorators
+    public float getBulletSizeMultiplier() {
+        if (currentBridgeWeapon == null) return 1.0f;
+        
+        // Check if weapon has decorator-specific bullet size
+        if (currentBridgeWeapon instanceof SilencerDecorator) {
+            return ((SilencerDecorator) currentBridgeWeapon).getBulletSizeMultiplier();
+        } else if (currentBridgeWeapon instanceof DamageBoostDecorator) {
+            return ((DamageBoostDecorator) currentBridgeWeapon).getBulletSizeMultiplier();
+        }
+        
+        return 1.0f; // Default size
+    }
+    
+    // Get current weapon damage (includes decorator modifications)
+    public float getCurrentWeaponDamage() {
+        if (currentBridgeWeapon != null) {
+            return currentBridgeWeapon.getDamage();
+        }
+        return 0f;
     }
 
     private void processInputs() {

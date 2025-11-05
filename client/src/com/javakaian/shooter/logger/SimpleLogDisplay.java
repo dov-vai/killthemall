@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.javakaian.shooter.utils.GameConstants;
+import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.GameUtils;
 
 import java.util.List;
@@ -35,8 +36,8 @@ public class SimpleLogDisplay {
         this.visible = false;
         
         // Create readable fonts
-        this.titleFont = GameUtils.generateBitmapFont(20, Color.GOLD);
-        this.font = GameUtils.generateBitmapFont(14, Color.WHITE);
+        this.titleFont = GameManagerFacade.getInstance().generateBitmapFont(20, Color.GOLD);
+        this.font = GameManagerFacade.getInstance().generateBitmapFont(14, Color.WHITE);
         
         this.shapeRenderer = new ShapeRenderer();
         
