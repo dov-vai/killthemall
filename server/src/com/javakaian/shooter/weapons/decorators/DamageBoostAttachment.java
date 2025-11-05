@@ -3,7 +3,7 @@ package com.javakaian.shooter.weapons.decorators;
 import com.javakaian.shooter.weapons.Weapon;
 
 /**
- * Concrete Decorator: boosts damage output and increases bullet size.
+ * Concrete Decorator: boosts damage output and increases bullet size DRAMATICALLY.
  */
 public class DamageBoostAttachment extends WeaponAttachment {
 
@@ -21,15 +21,15 @@ public class DamageBoostAttachment extends WeaponAttachment {
     
     @Override
     public float getBulletSize() {
-        // Bigger bullets with more damage (120% size)
+        // MUCH bigger bullets with more damage (300% size = 3x bigger!)
         float baseSize = (baseWeapon instanceof WeaponAttachment) 
                 ? ((WeaponAttachment) baseWeapon).getBulletSize() 
                 : 1.0f;
-        return baseSize * 1.2f;
+        return baseSize * 3.0f; // Triple the size for drastic visual effect!
     }
 
     @Override
     public String getDescription() {
-        return baseWeapon.getDescription() + String.format(" + Damage(+%.0f, 120%% bullet size)", bonusDamage);
+        return baseWeapon.getDescription() + String.format(" + Damage(+%.0f, 300%% bullet size - HUGE BULLETS)", bonusDamage);
     }
 }

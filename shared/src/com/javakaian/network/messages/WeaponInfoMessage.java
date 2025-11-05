@@ -5,6 +5,8 @@ public class WeaponInfoMessage {
     private String weaponName;
     private String components;
     private String stats;
+    private float fireRate;
+    private float bulletSize;
     
     public WeaponInfoMessage() {}
     
@@ -20,4 +22,10 @@ public class WeaponInfoMessage {
     
     public String getStats() { return stats; }
     public void setStats(String stats) { this.stats = stats; }
+    
+    public float getFireRate() { return fireRate; }
+    public void setFireRate(float fireRate) { this.fireRate = fireRate; }
+    
+    public float getBulletSize() { return bulletSize; }
+    public void setBulletSize(float bulletSize) { this.bulletSize = bulletSize; }
 }
