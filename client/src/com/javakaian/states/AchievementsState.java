@@ -9,6 +9,7 @@ import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.shooter.input.AchievementsStateInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.GameUtils;
+import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 
 import java.util.List;
 
@@ -29,20 +30,26 @@ public class AchievementsState extends State {
         Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        GameManagerFacade gm = GameManagerFacade.getInstance();
+
         sb.begin();
-        GameUtils.renderCenter("Achievements", sb, bitmapFont, 0.15f);
+
+        gm.renderText(sb, bitmapFont, "Achievements", TextAlignment.CENTER, 0f, 0.15f);
+
         List<Achievement> unlocked = achievementManager.getUnlocked();
         if (unlocked.isEmpty()) {
-            GameUtils.renderCenter("No achievements yet", sb, smallFont, 0.30f);
+            gm.renderText(sb, smallFont, "No achievements yet", TextAlignment.CENTER, 0f, 0.30f);
         } else {
             float y = 0.28f;
             for (Achievement a : unlocked) {
-                GameUtils.renderCenter(a.getTitle() + " - " + a.getDescription(), sb, smallFont, y);
+                gm.renderText(sb, smallFont, a.getTitle() + " - " + a.getDescription(), TextAlignment.CENTER, 0f, y);
                 y += 0.06f;
                 if (y > 0.85f) break; // avoid overflow
             }
         }
-        GameUtils.renderCenter("ESC - Back", sb, smallFont, 0.9f);
+
+        gm.renderText(sb, smallFont, "ESC - Back", TextAlignment.CENTER, 0f, 0.9f);
+
         sb.end();
     }
 

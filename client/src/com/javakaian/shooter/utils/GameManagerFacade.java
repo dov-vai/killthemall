@@ -90,7 +90,7 @@ public class GameManagerFacade {
     }
 
     public BitmapFont generateBitmapFont(int size, Color color) {
-        return GameManagerFacade.getInstance().generateBitmapFont(size, color);
+        return GameUtils.generateBitmapFont(size, color);
     }
 
 

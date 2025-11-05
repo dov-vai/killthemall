@@ -282,11 +282,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void renderNotifications() {
+        GameManagerFacade gm = GameManagerFacade.getInstance();
         float startY = 0.15f;
         float y = startY;
         for (int i = 0; i < notifications.size(); i++) {
             Notification n = notifications.get(i);
-            GameUtils.renderCenter(n.text, sb, notifFont, y);
+            gm.renderText(sb, notifFont, n.text, TextAlignment.CENTER, 0f, y);
             y += 0.05f;
             if (i >= 3) break; // show up to 4
         }
