@@ -23,10 +23,10 @@ public class GameUtils {
      **/
     public static BitmapFont generateBitmapFont(int size, Color color) {
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Warungasem.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.flip = true;
-        parameter.size = size;
+        parameter.size = 2 * size; // fixup because font is very small
         parameter.color = color;
         parameter.magFilter = TextureFilter.Linear;
         parameter.minFilter = TextureFilter.Linear;

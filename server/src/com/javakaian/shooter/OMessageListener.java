@@ -6,6 +6,8 @@ import com.javakaian.network.messages.LogoutMessage;
 import com.javakaian.network.messages.PositionMessage;
 import com.javakaian.network.messages.ShootMessage;
 import com.javakaian.network.messages.WeaponChangeMessage;
+import com.javakaian.network.messages.PlaceSpikeMessage;
+import com.javakaian.network.messages.UndoSpikeMessage;
 
 public interface OMessageListener {
 
@@ -37,5 +39,21 @@ public interface OMessageListener {
      * PlayerID and weapon configuration should be received.
      */
     void weaponChangeReceived(WeaponChangeMessage m);
+    
+    /**
+     * Player wants to place a spike
+     */
+    void placeSpikeReceived(PlaceSpikeMessage m);
+    
+    /**
+     * Player wants to undo their last spike placement
+     */
+    void undoSpikeReceived(UndoSpikeMessage m);
+
+    /**
+     * Invoked when a network connection is closed unexpectedly or normally.
+     * Implementations should clean up any player state associated with this connection.
+     */
+    void disconnected(Connection con);
 
 }

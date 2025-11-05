@@ -40,6 +40,10 @@ public class OServer {
      * Connection queue to store connections
      */
     private Queue<Connection> connectionQueue;
+    /**
+     * Queue to store disconnected connections to be processed on the game loop thread.
+     */
+    private Queue<Connection> disconnectedQueue;
 
     private Logger logger = Logger.getLogger(OServer.class);
 
@@ -57,6 +61,7 @@ public class OServer {
 
         messageQueue = new LinkedList<>();
         connectionQueue = new LinkedList<>();
+        disconnectedQueue = new LinkedList<>();
 
         server.addListener(new Listener() {
 
@@ -66,6 +71,12 @@ public class OServer {
                 messageQueue.add(object);
                 connectionQueue.add(connection);
 
+            }
+
+            @Override
+            public void disconnected(Connection connection) {
+                // Queue disconnections to be processed safely in parseMessage
+                disconnectedQueue.add(connection);
             }
         });
         server.start();
@@ -91,7 +102,7 @@ public class OServer {
         if (connectionQueue.isEmpty() || messageQueue.isEmpty())
             return;
 
-        for (int i = 0; i < messageQueue.size(); i++) {
+        for (int i = 0, n = messageQueue.size(); i < n; i++) {
 
             Connection con = connectionQueue.poll();
             Object message = messageQueue.poll();
@@ -112,7 +123,19 @@ public class OServer {
             else if (message instanceof WeaponChangeMessage m) {
                 messageListener.weaponChangeReceived(m);
             }
+            else if (message instanceof PlaceSpikeMessage m) {
+                messageListener.placeSpikeReceived(m);
+            }
+            else if (message instanceof UndoSpikeMessage m) {
+                messageListener.undoSpikeReceived(m);
+            }
 
+        }
+
+        // Process disconnect events after messages to ensure consistent state updates
+        while (!disconnectedQueue.isEmpty()) {
+            Connection dc = disconnectedQueue.poll();
+            messageListener.disconnected(dc);
         }
 
     }
@@ -133,6 +156,10 @@ public class OServer {
 
         this.server.getKryo().register(WeaponChangeMessage.class);
         this.server.getKryo().register(WeaponInfoMessage.class);
+        
+        this.server.getKryo().register(PlaceSpikeMessage.class);
+        this.server.getKryo().register(UndoSpikeMessage.class);
+        this.server.getKryo().register(InventoryUpdateMessage.class);
 
         // primitive arrays
         this.server.getKryo().register(float[].class);

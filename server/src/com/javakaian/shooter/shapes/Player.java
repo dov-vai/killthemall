@@ -16,6 +16,9 @@ public class Player{
     //weapon system
     private Weapon currentWeapon;
     //private float lastShotTime = 0;
+    
+    //spike inventory
+    private int spikeCount;
 
     public Player(float x, float y, float size, int id) {
         this.position = new Vector2(x, y);
@@ -24,6 +27,7 @@ public class Player{
         this.boundRect = new Rectangle(x, y, this.size, this.size);
         this.alive = true;
         this.health = 100;
+        this.spikeCount = 0;
     }
 
     public void update(float deltaTime) {
@@ -60,9 +64,10 @@ public class Player{
     }
 
     public void increaseHealth() {
-        if (this.health == 100)
+        if (this.health >= 100)
             return;
         this.health += 10;
+        if (this.health > 100 ) this.health = 100;
     }
 
     public void hit(int damage) {
@@ -96,6 +101,25 @@ public class Player{
     
     public void recordShot() {
         System.out.println("Player " + id + " shot recorded");
+    }
+    
+    //spike inventory system
+    public int getSpikeCount() {
+        return spikeCount;
+    }
+    
+    public void addSpike() {
+        this.spikeCount++;
+    }
+    
+    public boolean hasSpikes() {
+        return spikeCount > 0;
+    }
+    
+    public void removeSpike() {
+        if (spikeCount > 0) {
+            spikeCount--;
+        }
     }
 
 }

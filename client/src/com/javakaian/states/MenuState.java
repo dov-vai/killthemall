@@ -8,17 +8,36 @@ import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
 import com.javakaian.shooter.input.MenuStateInput;
 import com.javakaian.shooter.utils.*;
+import com.javakaian.shooter.utils.Subsystems.TextAlignment;
+
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.shooter.logger.ConsoleGameLoggerAdapter;
+import com.javakaian.shooter.logger.GameLogEntry;
 
 public class MenuState extends State {
 
     private BitmapFont smallFont;
-    private boolean darkMode = false; // false = Light Mode
+    private boolean darkMode = true;
     private Theme currentTheme;
+
+    private IGameLogger gameLogger;
 
 
     public MenuState(StateController sc) {
         super(sc);
         ip = new MenuStateInput(this);
+
+        gameLogger = new ConsoleGameLoggerAdapter();
+        
+        // Log menu state creation
+        GameLogEntry menuEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "MENU_OPENED",
+            "Main menu opened",
+            "INFO"
+        );
+        gameLogger.logEvent(menuEvent);
+
         applyTheme();
     }
 
@@ -29,6 +48,14 @@ public class MenuState extends State {
     public void toggleDarkMode() {
         darkMode = !darkMode;
         applyTheme();
+
+        GameLogEntry themeEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "THEME_CHANGE",
+            "Theme changed to " + (darkMode ? "Dark Mode" : "Light Mode"),
+            "INFO"
+        );
+        gameLogger.logEvent(themeEvent);
     }
 
     private void applyTheme() {
@@ -49,16 +76,20 @@ public class MenuState extends State {
         Gdx.gl.glClearColor(bg.r, bg.g, bg.b, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        GameManagerFacade gm = GameManagerFacade.getInstance();
+
         sb.begin();
-        GameUtils.renderCenter("KillThemAll", sb, bitmapFont);
-        GameUtils.renderCenter("Select dark-light mode with right arrow key", sb, smallFont, 0.4f);
-        GameUtils.renderCenter("Mode: " + (darkMode ? "Dark" : "Light"), sb, smallFont, 0.45f);
-        GameUtils.renderCenter("Space - Play", sb, smallFont, 0.5f);
-        GameUtils.renderCenter("S - Statistics", sb, smallFont, 0.58f);
-        GameUtils.renderCenter("A - Achievements", sb, smallFont, 0.62f);
-        GameUtils.renderCenter("Q - Quit", sb, smallFont, 0.66f);
+        gm.renderText(sb, bitmapFont, "KillThemAll", TextAlignment.CENTER, 0f, 0.3f);
+        gm.renderText(sb, smallFont, "Select dark-light mode with right arrow key", TextAlignment.CENTER, 0f, 0.4f);
+        gm.renderText(sb, smallFont, "Mode: " + (darkMode ? "Dark" : "Light"), TextAlignment.CENTER, 0f, 0.45f);
+        gm.renderText(sb, smallFont, "Space - Play", TextAlignment.CENTER, 0f, 0.5f);
+        gm.renderText(sb, smallFont, "S - Statistics", TextAlignment.CENTER, 0f, 0.58f);
+        gm.renderText(sb, smallFont, "A - Achievements", TextAlignment.CENTER, 0f, 0.62f);
+        gm.renderText(sb, smallFont, "Q - Quit", TextAlignment.CENTER, 0f, 0.66f);
         sb.end();
+
     }
+
 
     @Override
     public void update(float deltaTime) {
@@ -66,6 +97,14 @@ public class MenuState extends State {
     }
 
     public void quit() {
+        GameLogEntry exitEvent = new GameLogEntry(
+            System.currentTimeMillis(),
+            "APP_EXIT",
+            "User quit the application from menu",
+            "INFO"
+        );
+        gameLogger.logEvent(exitEvent);
+
         Gdx.app.exit();
     }
 
