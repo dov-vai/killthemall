@@ -398,10 +398,17 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         
         // Bridge Pattern - Handle full auto continuous fire
         if (isShooting && currentFiringMode instanceof FullAutoMechanism) {
-            autoFireTimer -= deltaTime;
-            if (autoFireTimer <= 0) {
-                shootSingle();
-                autoFireTimer = AUTO_FIRE_RATE;
+            if (currentBridgeWeapon != null && currentBridgeWeapon.getCurrentAmmo() > 0) {
+                autoFireTimer -= deltaTime;
+                if (autoFireTimer <= 0) {
+                    System.out.println("==> FULL AUTO: Firing! Ammo: " + currentBridgeWeapon.getCurrentAmmo());
+                    shootSingle();
+                    autoFireTimer = AUTO_FIRE_RATE;
+                }
+            } else {
+                // Out of ammo, stop shooting
+                System.out.println("==> FULL AUTO: Out of ammo, stopping!");
+                isShooting = false;
             }
         }
 
@@ -503,6 +510,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 autoFireTimer = 0; // Fire immediately
                 shootSingle(); // First shot
                 currentBridgeWeapon.fire(); // Client-side feedback
+                System.out.println("==> FULL AUTO: Started continuous fire! isShooting=" + isShooting);
             }
             
         } else if (currentFiringMode instanceof ChargedShotMechanism) {
@@ -514,6 +522,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     // Helper method to send a single shot to server
     private void shootSingle() {
         if (player == null) return;
+        
+        // Decrement ammo from bridge weapon
+        if (currentBridgeWeapon != null) {
+            currentBridgeWeapon.decrementAmmo(1);
+        }
         
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
@@ -537,6 +550,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (currentBridgeWeapon == null) return;
         
         if (currentFiringMode instanceof FullAutoMechanism) {
+            System.out.println("==> FULL AUTO: Stopped! isShooting was: " + isShooting);
             isShooting = false;
             currentBridgeWeapon.stopFiring();
         } else if (currentFiringMode instanceof ChargedShotMechanism) {

@@ -141,4 +141,12 @@ public abstract class BridgeWeapon {
         this.ammoCapacity = ammoCapacity;
         this.currentAmmo = ammoCapacity;
     }
+    
+    // Manually decrement ammo (for full auto and burst)
+    public void decrementAmmo(int amount) {
+        currentAmmo -= amount;
+        if (currentAmmo < 0) {
+            currentAmmo = 0;
+        }
+    }
 }
