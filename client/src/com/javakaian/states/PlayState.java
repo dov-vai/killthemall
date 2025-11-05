@@ -80,9 +80,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         themeFactory = ThemeFactory.getFactory(true); //fallback
 
-        healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
-        notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
-        weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        notifFont = GameManagerFacade.getInstance().generateBitmapFont(24, Color.GOLD);
+        weaponsFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GRAY);
 
         gameLogger = new ConsoleGameLoggerAdapter();
         logDisplay = new SimpleLogDisplay();
@@ -201,7 +201,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
 
         if (healthFont != null) healthFont.dispose();
-        healthFont = GameUtils.generateBitmapFont(20, theme.getTextColor());
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, theme.getTextColor());
     }
 
 

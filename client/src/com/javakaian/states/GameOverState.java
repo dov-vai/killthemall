@@ -22,7 +22,7 @@ public class GameOverState extends State {
     public GameOverState(StateController sc) {
         super(sc);
         ip = new GameOverInput(this);
-        smallFont = GameUtils.generateBitmapFont(32, Color.WHITE);
+        smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, Color.WHITE);
 
     }
 

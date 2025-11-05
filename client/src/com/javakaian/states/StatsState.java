@@ -18,7 +18,7 @@ public class StatsState extends State {
 
 	public StatsState(StateController sc) {
 		super(sc);
-		smallFont = GameUtils.generateBitmapFont(28, Color.WHITE);
+		smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
 		ip = new StatsStateInput(this);
 	}
 

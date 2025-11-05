@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.javakaian.shooter.achievements.Achievement;
 import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.shooter.input.AchievementsStateInput;
+import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.GameUtils;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class AchievementsState extends State {
     public AchievementsState(StateController sc, AchievementManager achievementManager) {
         super(sc);
         this.achievementManager = achievementManager;
-        smallFont = GameUtils.generateBitmapFont(28, Color.WHITE);
+        smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
         ip = new AchievementsStateInput(this);
     }
 

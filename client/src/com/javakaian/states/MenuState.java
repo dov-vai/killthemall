@@ -65,8 +65,8 @@ public class MenuState extends State {
         if (smallFont != null) smallFont.dispose();
         if (bitmapFont != null) bitmapFont.dispose();
 
-        bitmapFont = GameUtils.generateBitmapFont(64, currentTheme.getTextColor());
-        smallFont = GameUtils.generateBitmapFont(32, currentTheme.getTextColor());
+        bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(64, currentTheme.getTextColor());
+        smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, currentTheme.getTextColor());
     }
 
 
