@@ -68,9 +68,6 @@ public class PlayStateInput extends InputAdapter {
                 playState.switchFiringMode("semiauto");
                 break;
             case Keys.F4:
-                playState.switchFiringMode("burst");
-                break;
-            case Keys.F5:
                 playState.switchFiringMode("fullauto");
                 break;
             // Bridge Pattern: Special actions
@@ -79,6 +76,19 @@ public class PlayStateInput extends InputAdapter {
                 break;
             case Keys.R:
                 playState.reloadWeapon();
+                break;
+            // Decorator Pattern: Apply visual buffs
+            case Keys.NUM_7:
+                playState.applyDecorator("speed");
+                break;
+            case Keys.NUM_8:
+                playState.applyDecorator("shield");
+                break;
+            case Keys.NUM_9:
+                playState.applyDecorator("power");
+                break;
+            case Keys.NUM_0:
+                playState.removeDecorator();
                 break;
             default:
                 break;

@@ -26,6 +26,7 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
 import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.shooter.bridge.*;  // Bridge pattern classes
+import com.javakaian.shooter.decorator.*;  // Decorator pattern classes
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -67,6 +68,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private String currentControlMode = "Manual";
     private String currentFiringMode = "Semi-Auto";
     private boolean isFiring = false; // Track if player is holding fire button
+    
+    // Decorator Pattern: Player appearance modifications
+    private PlayerDecorator playerDecorator;
 
     public PlayState(StateController sc) {
         super(sc);
@@ -162,11 +166,6 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 currentFiringMode = "Semi-Auto";
                 notifications.add(new Notification("Firing: Semi-Auto", 2.0f));
                 break;
-            case "burst":
-                newFiring = new BurstFiring();
-                currentFiringMode = "Burst";
-                notifications.add(new Notification("Firing: Burst (3 rounds)", 2.0f));
-                break;
             case "fullauto":
                 newFiring = new FullAutoFiring();
                 currentFiringMode = "Full-Auto";
@@ -201,6 +200,38 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             weaponControl.reload();
             notifications.add(new Notification("Reloading...", 1.5f));
         }
+    }
+    
+    /**
+     * Decorator Pattern: Apply visual enhancement to player
+     */
+    public void applyDecorator(String type) {
+        if (player == null) return;
+        
+        switch (type.toLowerCase()) {
+            case "speed":
+                playerDecorator = new SpeedBoostDecorator(player);
+                notifications.add(new Notification("Speed Boost Active!", 2.0f));
+                break;
+            case "shield":
+                playerDecorator = new ShieldDecorator(player);
+                notifications.add(new Notification("Shield Active!", 2.0f));
+                break;
+            case "power":
+                playerDecorator = new PowerDecorator(player);
+                notifications.add(new Notification("Power Boost Active!", 2.0f));
+                break;
+            default:
+                break;
+        }
+    }
+    
+    /**
+     * Decorator Pattern: Remove all decorators
+     */
+    public void removeDecorator() {
+        playerDecorator = null;
+        notifications.add(new Notification("Buff Removed", 1.5f));
     }
 
     public void setThemeFactory(ThemeFactory factory) {
@@ -255,7 +286,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         spikes.forEach(s -> s.render(sr));
         placedSpikes.forEach(ps -> ps.render(sr));
         sr.setColor(Color.BLUE);
-        player.render(sr);
+        
+        // Use decorator for rendering if active, otherwise render normally
+        if (playerDecorator != null) {
+            playerDecorator.render(sr);
+        } else {
+            player.render(sr);
+        }
+        
         aimLine.render(sr);
         followPlayer();
         sr.end();
@@ -280,8 +318,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
         GameUtils.renderLeftAligned("FIRING: " + ammoInfo, sb, weaponsFont, 0.02f, 0.23f);
         
+        // Display Decorator Pattern info
+        if (playerDecorator != null) {
+            GameUtils.renderLeftAligned("BUFF: " + playerDecorator.getDecorationType(), sb, weaponsFont, 0.02f, 0.26f);
+        }
+        
         GameUtils.renderCenter("Press 1-4 for different weapons | E to place spike | U to undo", sb, healthFont, 0.95f);
-        GameUtils.renderCenter("F1-F2: Control Mode | F3-F5: Firing Mode | R: Reload | Q: Special Action", sb, healthFont, 0.98f);
+        GameUtils.renderCenter("F1-F2: Control Mode | F3: Semi-Auto | F4: Full-Auto | R: Reload | Q: Special", sb, healthFont, 0.98f);
 
         renderNotifications();
         sb.end();
@@ -358,29 +401,35 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (player == null || weaponControl == null) return;
         
         // Use Bridge Pattern for shooting
-        Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
-        com.badlogic.gdx.math.Vector3 worldPos3D = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0));
-        Vector2 target = new Vector2(worldPos3D.x, worldPos3D.y);
+        Vector2 target;
         
-        // For auto-aim, check if we should aim at nearest enemy
+        // For auto-aim, find and aim at nearest enemy
         if (weaponControl instanceof AutoAimControl && !enemies.isEmpty()) {
             Enemy nearestEnemy = findNearestEnemy();
             if (nearestEnemy != null) {
-                target = nearestEnemy.getPosition();
-                // Update aim line to point at enemy
-                aimLine.setEnd(target);
+                target = nearestEnemy.getPosition().cpy();
+            } else {
+                // No enemy in range, use mouse position
+                Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+                com.badlogic.gdx.math.Vector3 worldPos3D = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0));
+                target = new Vector2(worldPos3D.x, worldPos3D.y);
             }
+        } else {
+            // Manual control - use mouse position
+            Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            com.badlogic.gdx.math.Vector3 worldPos3D = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0));
+            target = new Vector2(worldPos3D.x, worldPos3D.y);
         }
         
         // Execute weapon control (handles aiming and firing based on control mode)
         weaponControl.execute(target, player);
         
-        // Send shoot message to server
+        // Send shoot message to server with correct angle
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         
-        // Calculate angle from player to target
-        Vector2 direction = new Vector2(target).sub(player.getPosition());
+        // Calculate angle from player center to target
+        Vector2 direction = new Vector2(target).sub(player.getCenter());
         float angle = (float) Math.atan2(direction.y, direction.x);
         m.setAngleDeg(angle);
         
