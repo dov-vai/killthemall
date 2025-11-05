@@ -35,7 +35,7 @@ public class PlayStateInput extends InputAdapter {
 
         switch (keycode) {
             case Keys.SPACE:
-                playState.shoot();
+                playState.startFiring();
                 break;
             case Keys.M:
                 GameStats.getInstance().endSession();
@@ -84,6 +84,18 @@ public class PlayStateInput extends InputAdapter {
                 break;
         }
 
+        return true;
+    }
+    
+    @Override
+    public boolean keyUp(int keycode) {
+        switch (keycode) {
+            case Keys.SPACE:
+                playState.stopFiring();
+                break;
+            default:
+                break;
+        }
         return true;
     }
 

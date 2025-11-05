@@ -66,6 +66,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private WeaponControl weaponControl;
     private String currentControlMode = "Manual";
     private String currentFiringMode = "Semi-Auto";
+    private boolean isFiring = false; // Track if player is holding fire button
 
     public PlayState(StateController sc) {
         super(sc);
@@ -273,10 +274,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         
         // Display Bridge Pattern info
         GameUtils.renderLeftAligned("CONTROL: " + currentControlMode, sb, weaponsFont, 0.02f, 0.20f);
-        GameUtils.renderLeftAligned("FIRING: " + currentFiringMode, sb, weaponsFont, 0.02f, 0.23f);
+        String ammoInfo = currentFiringMode;
+        if (weaponControl != null && weaponControl.getFiringMechanism() != null) {
+            ammoInfo += " [" + weaponControl.getFiringMechanism().getAmmoCount() + " rounds]";
+        }
+        GameUtils.renderLeftAligned("FIRING: " + ammoInfo, sb, weaponsFont, 0.02f, 0.23f);
         
         GameUtils.renderCenter("Press 1-4 for different weapons | E to place spike | U to undo", sb, healthFont, 0.95f);
-        GameUtils.renderCenter("F1-F2: Control Mode | F3-F6: Firing Mode | R: Reload | Q: Special Action", sb, healthFont, 0.98f);
+        GameUtils.renderCenter("F1-F2: Control Mode | F3-F5: Firing Mode | R: Reload | Q: Special Action", sb, healthFont, 0.98f);
 
         renderNotifications();
         sb.end();
@@ -309,6 +314,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         // Update Bridge Pattern weapon control
         if (weaponControl != null) {
             weaponControl.update(deltaTime);
+            
+            // Handle continuous firing for full-auto
+            if (isFiring && weaponControl.getFiringMechanism().canFire()) {
+                shoot();
+            }
         }
         
         // track distance traveled
@@ -352,15 +362,56 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         com.badlogic.gdx.math.Vector3 worldPos3D = camera.unproject(new com.badlogic.gdx.math.Vector3(mousePos.x, mousePos.y, 0));
         Vector2 target = new Vector2(worldPos3D.x, worldPos3D.y);
         
+        // For auto-aim, check if we should aim at nearest enemy
+        if (weaponControl instanceof AutoAimControl && !enemies.isEmpty()) {
+            Enemy nearestEnemy = findNearestEnemy();
+            if (nearestEnemy != null) {
+                target = nearestEnemy.getPosition();
+                // Update aim line to point at enemy
+                aimLine.setEnd(target);
+            }
+        }
+        
         // Execute weapon control (handles aiming and firing based on control mode)
         weaponControl.execute(target, player);
         
         // Send shoot message to server
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
-        m.setAngleDeg(aimLine.getAngle());
+        
+        // Calculate angle from player to target
+        Vector2 direction = new Vector2(target).sub(player.getPosition());
+        float angle = (float) Math.atan2(direction.y, direction.x);
+        m.setAngleDeg(angle);
+        
         GameStats.getInstance().incrementShotsFired();
         client.sendUDP(m);
+    }
+    
+    public void startFiring() {
+        isFiring = true;
+        shoot(); // Fire immediately on press
+    }
+    
+    public void stopFiring() {
+        isFiring = false;
+    }
+    
+    private Enemy findNearestEnemy() {
+        if (player == null || enemies.isEmpty()) return null;
+        
+        Enemy nearest = null;
+        float minDistance = Float.MAX_VALUE;
+        
+        for (Enemy enemy : enemies) {
+            float distance = player.getPosition().dst(enemy.getPosition());
+            if (distance < minDistance && distance < 500) { // Auto-aim range
+                minDistance = distance;
+                nearest = enemy;
+            }
+        }
+        
+        return nearest;
     }
 
     private void processInputs() {
