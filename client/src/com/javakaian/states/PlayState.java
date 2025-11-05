@@ -81,6 +81,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     // Bridge Pattern - Weapon system
     private BridgeWeapon currentBridgeWeapon;
     private FiringMechanism currentFiringMode;
+    private boolean isShooting = false;
+    private int burstShotsRemaining = 0;
+    private float burstShotTimer = 0;
+    private static final float BURST_DELAY = 0.1f; // Delay between burst shots
+    private float autoFireTimer = 0;
+    private static final float AUTO_FIRE_RATE = 0.1f; // Time between auto shots
 
     public PlayState(StateController sc) {
         super(sc);
@@ -380,6 +386,25 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             lastY = y;
         }
 
+        // Bridge Pattern - Handle burst fire
+        if (burstShotsRemaining > 0) {
+            burstShotTimer -= deltaTime;
+            if (burstShotTimer <= 0) {
+                shootSingle();
+                burstShotsRemaining--;
+                burstShotTimer = BURST_DELAY;
+            }
+        }
+        
+        // Bridge Pattern - Handle full auto continuous fire
+        if (isShooting && currentFiringMode instanceof FullAutoMechanism) {
+            autoFireTimer -= deltaTime;
+            if (autoFireTimer <= 0) {
+                shootSingle();
+                autoFireTimer = AUTO_FIRE_RATE;
+            }
+        }
+
         processInputs();
 
         clearNotifications(deltaTime);
@@ -446,12 +471,50 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
     }
 
+    // Bridge Pattern - Shoot with firing mechanism behavior
     public void shoot() {
-        // Bridge Pattern - Fire weapon with current mechanism
-        if (currentBridgeWeapon != null) {
-            currentBridgeWeapon.fire();
+        if (currentBridgeWeapon == null || player == null) return;
+        
+        // Check ammo
+        if (currentBridgeWeapon.getCurrentAmmo() <= 0) {
+            System.out.println("Out of ammo! Press R to reload.");
+            return;
         }
-
+        
+        // Handle different firing mechanisms
+        if (currentFiringMode instanceof SingleShotMechanism) {
+            // Single shot - fire once
+            shootSingle();
+            currentBridgeWeapon.fire(); // Client-side feedback
+            
+        } else if (currentFiringMode instanceof BurstFireMechanism) {
+            // Burst fire - queue 3 shots
+            if (burstShotsRemaining == 0) { // Only start new burst if not already bursting
+                BurstFireMechanism burst = (BurstFireMechanism) currentFiringMode;
+                burstShotsRemaining = burst.getBurstCount();
+                burstShotTimer = 0; // Fire first shot immediately
+                currentBridgeWeapon.fire(); // Client-side feedback
+            }
+            
+        } else if (currentFiringMode instanceof FullAutoMechanism) {
+            // Full auto - start continuous fire
+            if (!isShooting) {
+                isShooting = true;
+                autoFireTimer = 0; // Fire immediately
+                shootSingle(); // First shot
+                currentBridgeWeapon.fire(); // Client-side feedback
+            }
+            
+        } else if (currentFiringMode instanceof ChargedShotMechanism) {
+            // Charged shot - start charging
+            currentBridgeWeapon.fire(); // This starts charging
+        }
+    }
+    
+    // Helper method to send a single shot to server
+    private void shootSingle() {
+        if (player == null) return;
+        
         ShootMessage m = new ShootMessage();
         m.setPlayerId(player.getId());
         m.setAngleDeg(aimLine.getAngle());
@@ -467,6 +530,20 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             "DEBUG"
         );
         gameLogger.logEvent(shootEvent);
+    }
+    
+    // Bridge Pattern - Stop shooting (for full auto and charged shot)
+    public void stopShooting() {
+        if (currentBridgeWeapon == null) return;
+        
+        if (currentFiringMode instanceof FullAutoMechanism) {
+            isShooting = false;
+            currentBridgeWeapon.stopFiring();
+        } else if (currentFiringMode instanceof ChargedShotMechanism) {
+            // Release charged shot
+            currentBridgeWeapon.stopFiring();
+            shootSingle(); // Fire the charged shot
+        }
     }
 
     private void processInputs() {

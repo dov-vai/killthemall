@@ -31,8 +31,8 @@ public class PlayStateInput extends InputAdapter {
      * a configuration system
      */
     private void setupDefaultKeyBindings() {
-        // Basic actions
-        keyBindingManager.bindKey(Keys.SPACE, new ShootCommand(playState));
+        // Basic actions - SPACE removed, handled in keyDown/keyUp for hold functionality
+        // keyBindingManager.bindKey(Keys.SPACE, new ShootCommand(playState));
         keyBindingManager.bindKey(Keys.M, new ReturnToMenuCommand(playState));
         
         // Weapon selection
@@ -110,11 +110,25 @@ public class PlayStateInput extends InputAdapter {
                 // Undo spike (server-side undo, separate from client command undo)
                 playState.undoSpike();
                 break;
+            case Keys.SPACE:
+                // Start shooting (for full auto and charged shot)
+                playState.shoot();
+                break;
             default:
                 break;
         }
 
         return true;
+    }
+    
+    @Override
+    public boolean keyUp(int keycode) {
+        // Handle key release for continuous firing modes
+        if (keycode == Keys.SPACE) {
+            playState.stopShooting();
+            return true;
+        }
+        return false;
     }
     
     /**
