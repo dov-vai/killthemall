@@ -19,9 +19,18 @@ public class GripDecorator extends BridgeWeapon {
         // Copy base stats
         this.damage = baseWeapon.getDamage();
         this.range = baseWeapon.getRange();
-        this.baseFireRate = baseWeapon.getBaseFireRate() + fireRateBonus; // FASTER
+        this.baseFireRate = baseWeapon.getBaseFireRate(); // Will apply conditionally
         this.ammoCapacity = baseWeapon.getAmmoCapacity();
         this.currentAmmo = baseWeapon.getCurrentAmmo();
+    }
+    
+    @Override
+    public float getEffectiveFireRate() {
+        // Only apply fire rate bonus in Full Auto mode
+        if (firingMechanism instanceof FullAutoMechanism) {
+            return (baseWeapon.getBaseFireRate() + fireRateBonus) * firingMechanism.getFireRateMultiplier();
+        }
+        return baseWeapon.getEffectiveFireRate();
     }
     
     @Override

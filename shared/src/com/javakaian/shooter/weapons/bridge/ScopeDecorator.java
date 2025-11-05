@@ -19,9 +19,18 @@ public class ScopeDecorator extends BridgeWeapon {
         // Copy base stats
         this.damage = baseWeapon.getDamage();
         this.range = baseWeapon.getRange() + rangeBonus; // Bonus range
-        this.baseFireRate = Math.max(0.1f, baseWeapon.getBaseFireRate() - 0.1f); // Slower
+        this.baseFireRate = baseWeapon.getBaseFireRate(); // Will apply conditionally
         this.ammoCapacity = baseWeapon.getAmmoCapacity();
         this.currentAmmo = baseWeapon.getCurrentAmmo();
+    }
+    
+    @Override
+    public float getEffectiveFireRate() {
+        // Only apply fire rate penalty in Full Auto mode
+        if (firingMechanism instanceof FullAutoMechanism) {
+            return Math.max(0.1f, baseWeapon.getBaseFireRate() - 0.1f) * firingMechanism.getFireRateMultiplier();
+        }
+        return baseWeapon.getEffectiveFireRate();
     }
     
     @Override

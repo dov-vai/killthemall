@@ -17,11 +17,20 @@ public class SilencerDecorator extends BridgeWeapon {
         this.damagePenalty = Math.abs(damagePenalty);
         
         // Copy base stats with modifications
-        this.damage = Math.max(1.0f, baseWeapon.getDamage() - damagePenalty); // LESS damage
+        this.damage = Math.max(1.0f, baseWeapon.getDamage() - damagePenalty); // LESS damage (always applied)
         this.range = baseWeapon.getRange();
-        this.baseFireRate = baseWeapon.getBaseFireRate() + 0.3f; // FASTER
+        this.baseFireRate = baseWeapon.getBaseFireRate(); // Will apply conditionally
         this.ammoCapacity = baseWeapon.getAmmoCapacity();
         this.currentAmmo = baseWeapon.getCurrentAmmo();
+    }
+    
+    @Override
+    public float getEffectiveFireRate() {
+        // Only apply fire rate bonus in Full Auto mode
+        if (firingMechanism instanceof FullAutoMechanism) {
+            return (baseWeapon.getBaseFireRate() + 0.3f) * firingMechanism.getFireRateMultiplier();
+        }
+        return baseWeapon.getEffectiveFireRate();
     }
     
     @Override
