@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.javakaian.shooter.utils.GameConstants;
+import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.GameUtils;
 
 /**
@@ -46,7 +47,7 @@ public abstract class State {
         sr.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
 
-        bitmapFont = GameUtils.generateBitmapFont(70, Color.WHITE);
+        bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(70, Color.WHITE);
         glyphLayout = new GlyphLayout();
 
     }

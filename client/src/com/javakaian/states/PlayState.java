@@ -94,9 +94,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         themeFactory = ThemeFactory.getFactory(true); //fallback
 
-        healthFont = GameUtils.generateBitmapFont(20, themeFactory.createTheme().getTextColor());
-        notifFont = GameUtils.generateBitmapFont(24, Color.GOLD);
-        weaponsFont = GameUtils.generateBitmapFont(14, Color.GRAY);
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        notifFont = GameManagerFacade.getInstance().generateBitmapFont(24, Color.GOLD);
+        weaponsFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GRAY);
 
         gameLogger = new ConsoleGameLoggerAdapter();
         logDisplay = new SimpleLogDisplay();
@@ -342,7 +342,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
 
         if (healthFont != null) healthFont.dispose();
-        healthFont = GameUtils.generateBitmapFont(20, theme.getTextColor());
+        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, theme.getTextColor());
     }
 
 
@@ -463,11 +463,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void renderNotifications() {
+        GameManagerFacade gm = GameManagerFacade.getInstance();
         float startY = 0.15f;
         float y = startY;
         for (int i = 0; i < notifications.size(); i++) {
             Notification n = notifications.get(i);
-            GameUtils.renderCenter(n.text, sb, notifFont, y);
+            gm.renderText(sb, notifFont, n.text, TextAlignment.CENTER, 0f, y);
             y += 0.05f;
             if (i >= 3) break; // show up to 4
         }
