@@ -61,6 +61,7 @@ public class ServerWorld implements OMessageListener {
     //weapon system
     private WeaponDirector weaponDirector;
     private Map<Integer, Weapon> playerWeapons;
+    private float gameTime = 0f;
     
     private EnemyBehaviorStrategy[] behaviorStrategies;
     private int strategyIndex = 0;
@@ -104,6 +105,7 @@ public class ServerWorld implements OMessageListener {
 
         this.deltaTime = deltaTime;
         this.enemyTime += deltaTime;
+        this.gameTime += deltaTime;
         this.strategySwitchTimer += deltaTime;
         this.spikeSpawnTime += deltaTime;
 
@@ -368,27 +370,48 @@ public class ServerWorld implements OMessageListener {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
         .ifPresent(p -> {
-            // default
-            BulletType bulletType = BulletType.STANDARD;
-
+            // MODIFIED: Check if player can shoot based on fire rate
             if (p.getCurrentWeapon() != null) {
+                
+                // Check fire rate cooldown
+                if (!p.canShoot(gameTime)) {
+                    System.out.println("Player " + p.getId() + " weapon on cooldown");
+                    return; // Can't shoot yet - fire rate too fast
+                }
+                
                 Weapon weapon = p.getCurrentWeapon();
-                bulletType = getBulletTypeFromWeapon(weapon);
-                p.recordShot();
+                BulletType bulletType = getBulletTypeFromWeapon(weapon);
+                
+                System.out.println("Player " + p.getId() + " fired " + weapon.getName() + 
+                                " (Fire Rate: " + weapon.getFireRate() + ")");
+                
+                // Create bullet
+                Bullet b = bulletFactory.createBullet(
+                    bulletType,
+                    p.getPosition().x + p.getBoundRect().width / 2,
+                    p.getPosition().y + p.getBoundRect().height / 2,
+                    m.getAngleDeg(),
+                    m.getPlayerId()
+                );
+                
+                bullets.add(b);
+                p.recordShot(gameTime); // Record shot time
+                
             } else {
-                System.out.println("Player " + p.getId() + " fired default weapon -> " + bulletType + " bullet");
+                // No weapon, use default
+                BulletType bulletType = BulletType.STANDARD;
+                System.out.println("Player " + p.getId() + " fired default weapon");
+                
+                Bullet b = bulletFactory.createBullet(
+                    bulletType,
+                    p.getPosition().x + p.getBoundRect().width / 2,
+                    p.getPosition().y + p.getBoundRect().height / 2,
+                    m.getAngleDeg(),
+                    m.getPlayerId()
+                );
+                
+                bullets.add(b);
             }
-            
-            Bullet b = bulletFactory.createBullet(
-                bulletType,
-                p.getPosition().x + p.getBoundRect().width / 2,
-                p.getPosition().y + p.getBoundRect().height / 2,
-                m.getAngleDeg(),
-                m.getPlayerId()
-            );
-            
-            bullets.add(b);
-
         });
 
     }

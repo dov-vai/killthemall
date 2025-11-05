@@ -20,7 +20,6 @@ public abstract class Weapon {
         this.ammoCapacity = 30;
     }
 
-    // Getters and setters
     public void setBarrel(String barrel) { this.barrel = barrel; }
     public void setScope(String scope) { this.scope = scope; }
     public void setStock(String stock) { this.stock = stock; }

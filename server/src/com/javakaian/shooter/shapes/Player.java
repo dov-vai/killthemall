@@ -15,7 +15,7 @@ public class Player{
 
     //weapon system
     private Weapon currentWeapon;
-    //private float lastShotTime = 0;
+    private float lastShotTime = 0;
     
     //spike inventory
     private int spikeCount;
@@ -88,19 +88,32 @@ public class Player{
     //weapons system
     public void equipWeapon(Weapon weapon) {
         this.currentWeapon = weapon;
+        this.lastShotTime = 0;
         System.out.println("Player " + id + " equipped: " + weapon.getDescription());
     }
     
     public boolean canShoot(float currentTime) {
-        return currentWeapon != null;
+        if (currentWeapon == null) return false;
+        
+        float timeSinceLastShot = currentTime - lastShotTime;
+        float requiredCooldown = 1.0f / currentWeapon.getFireRate();
+        
+        boolean canShoot = timeSinceLastShot >= requiredCooldown;
+        
+        System.out.println("Player " + id + " canShoot check: time=" + currentTime + 
+                        " lastShot=" + lastShotTime + " timeSince=" + timeSinceLastShot + 
+                        " required=" + requiredCooldown + " result=" + canShoot);
+        
+        return canShoot;
     }
     
     public Weapon getCurrentWeapon() {
         return currentWeapon;
     }
     
-    public void recordShot() {
-        System.out.println("Player " + id + " shot recorded");
+    public void recordShot(float currentTime) {
+        this.lastShotTime = currentTime;
+        System.out.println("Player " + id + " shot recorded at time " + currentTime);
     }
     
     //spike inventory system

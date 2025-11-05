@@ -1,0 +1,45 @@
+sourceCompatibility = JavaVersion.VERSION_21
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src/resources']
+        }
+    }
+}
+
+eclipse.project.name = appName + "-server"
+
+
+libsDirName = '../../jars/'
+
+tasks.register('run', JavaExec) {
+    dependsOn classes
+    mainClass = 'com.javakaian.shooter.ServerMain'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.projectDir
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    manifest {
+        attributes(
+                'Main-Class': 'com.javakaian.shooter.ServerMain'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+ }

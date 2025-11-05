@@ -646,15 +646,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         stats.stats(StatAction.SET, StatType.TOTAL_SHOTS);
         client.sendUDP(m);
 
-        GameLogEntry shootEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "PLAYER_SHOOT",
-            "Player " + player.getId() + " fired " + 
-            (currentBridgeWeapon != null ? currentBridgeWeapon.getName() : "weapon") +
-            " at angle " + String.format("%.2f", Math.toDegrees(aimLine.getAngle())) + "°",
-            "DEBUG"
-        );
-        gameLogger.logEvent(shootEvent);
+        // GameLogEntry shootEvent = new GameLogEntry(
+        //     System.currentTimeMillis(),
+        //     "PLAYER_SHOOT",
+        //     "Player " + player.getId() + " fired at angle " + String.format("%.2f", Math.toDegrees(aimLine.getAngle())) + "°",
+        //     "DEBUG"
+        // );
+        // gameLogger.logEvent(shootEvent);
     }
     
     // Bridge Pattern - Stop shooting (for full auto and charged shot)
