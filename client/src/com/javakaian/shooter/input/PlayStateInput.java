@@ -53,6 +53,33 @@ public class PlayStateInput extends InputAdapter {
         // Utility
         keyBindingManager.bindKey(Keys.L, new ToggleLogDisplayCommand(playState));
         
+        // Bridge Pattern - Firing mode control (using Command pattern)
+        keyBindingManager.bindKey(Keys.B, new InputCommand() {
+            @Override
+            public void execute() {
+                playState.cycleFiringMode();
+            }
+            @Override
+            public void undo() {}
+            @Override
+            public boolean canUndo() { return false; }
+            @Override
+            public String getDescription() { return "Cycle Firing Mode"; }
+        });
+        
+        keyBindingManager.bindKey(Keys.R, new InputCommand() {
+            @Override
+            public void execute() {
+                playState.reloadBridgeWeapon();
+            }
+            @Override
+            public void undo() {}
+            @Override
+            public boolean canUndo() { return false; }
+            @Override
+            public String getDescription() { return "Reload Weapon"; }
+        });
+        
         // Note: Keys.NUM_0 for reset attachments and Keys.U for undo spike are handled separately below
         // Note: Ctrl+Z for undo is handled automatically by KeyBindingManager
     }
