@@ -80,6 +80,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
     // Bridge Pattern - Weapon system
     private BridgeWeapon currentBridgeWeapon;
+    private BridgeWeapon unwrappedWeapon; // Base weapon without decorators
     private FiringMechanism currentFiringMode;
     private boolean isShooting = false;
     private int burstShotsRemaining = 0;
@@ -157,17 +158,25 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         
         switch (baseWeapon) {
             case "assault_rifle":
-                currentBridgeWeapon = new AssaultRifle(currentFiringMode);
+                unwrappedWeapon = new AssaultRifle(currentFiringMode);
                 break;
             case "combat_shotgun":
-                currentBridgeWeapon = new TacticalShotgun(currentFiringMode);
+                unwrappedWeapon = new TacticalShotgun(currentFiringMode);
                 break;
             case "precision_sniper":
-                currentBridgeWeapon = new PrecisionSniper(currentFiringMode);
+                unwrappedWeapon = new PrecisionSniper(currentFiringMode);
                 break;
             default:
-                currentBridgeWeapon = new AssaultRifle(currentFiringMode);
+                unwrappedWeapon = new AssaultRifle(currentFiringMode);
                 break;
+        }
+        
+        // Set current weapon to unwrapped (will be wrapped with decorators if attachments exist)
+        currentBridgeWeapon = unwrappedWeapon;
+        
+        // Reapply any active decorators
+        if (!activeAttachments.isEmpty()) {
+            applyDecoratorsToCurrentWeapon();
         }
     }
     
@@ -202,13 +211,98 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void requestAttachmentChange(String attachmentSpec) {
         if (player == null) return;
         toggleAttachment(attachmentSpec);
+        
+        // Apply decorators to Bridge weapon
+        applyDecoratorsToCurrentWeapon();
+        
         sendCombinedConfig();
     }
 
     public void resetAttachments() {
         if (player == null) return;
         activeAttachments.clear();
+        
+        // Reset to unwrapped weapon
+        if (unwrappedWeapon != null) {
+            currentBridgeWeapon = unwrappedWeapon;
+        }
+        
         sendCombinedConfig();
+    }
+    
+    // Apply decorators based on active attachments
+    private void applyDecoratorsToCurrentWeapon() {
+        if (unwrappedWeapon == null) return;
+        
+        // Start with base weapon
+        BridgeWeapon weapon = unwrappedWeapon;
+        
+        // Apply each active attachment as a decorator
+        for (String spec : activeAttachments) {
+            weapon = applyDecorator(weapon, spec);
+        }
+        
+        currentBridgeWeapon = weapon;
+        
+        // Show notification
+        if (!activeAttachments.isEmpty()) {
+            notifications.add(new Notification(
+                "Attachments: " + activeAttachments.size() + " active",
+                1.5f
+            ));
+        }
+    }
+    
+    // Apply a single decorator based on spec
+    private BridgeWeapon applyDecorator(BridgeWeapon weapon, String spec) {
+        // Parse spec format: "type:name:value" or "type:value"
+        String[] parts = spec.split(":");
+        if (parts.length == 0) return weapon;
+        
+        String type = parts[0];
+        
+        switch (type) {
+            case "scope":
+                // scope:4x ACOG:150
+                if (parts.length >= 3) {
+                    String scopeName = parts[1];
+                    float rangeBonus = Float.parseFloat(parts[2]);
+                    return new ScopeDecorator(weapon, scopeName, rangeBonus);
+                }
+                break;
+            case "mag":
+                // mag:15
+                if (parts.length >= 2) {
+                    int extraAmmo = Integer.parseInt(parts[1]);
+                    return new ExtendedMagDecorator(weapon, extraAmmo);
+                }
+                break;
+            case "grip":
+                // grip:Tactical:0.5
+                if (parts.length >= 3) {
+                    String gripName = parts[1];
+                    float fireRateBonus = Float.parseFloat(parts[2]);
+                    return new GripDecorator(weapon, gripName, fireRateBonus);
+                }
+                break;
+            case "silencer":
+                // silencer:Silenced Barrel:2
+                if (parts.length >= 3) {
+                    String barrelName = parts[1];
+                    float damagePenalty = Float.parseFloat(parts[2]);
+                    return new SilencerDecorator(weapon, barrelName, damagePenalty);
+                }
+                break;
+            case "dmg":
+                // dmg:5
+                if (parts.length >= 2) {
+                    float damageBonus = Float.parseFloat(parts[1]);
+                    return new DamageBoostDecorator(weapon, damageBonus);
+                }
+                break;
+        }
+        
+        return weapon;
     }
 
     private void toggleAttachment(String spec) {
@@ -558,6 +652,28 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             currentBridgeWeapon.stopFiring();
             shootSingle(); // Fire the charged shot
         }
+    }
+    
+    // Get bullet size multiplier from decorators
+    public float getBulletSizeMultiplier() {
+        if (currentBridgeWeapon == null) return 1.0f;
+        
+        // Check if weapon has decorator-specific bullet size
+        if (currentBridgeWeapon instanceof SilencerDecorator) {
+            return ((SilencerDecorator) currentBridgeWeapon).getBulletSizeMultiplier();
+        } else if (currentBridgeWeapon instanceof DamageBoostDecorator) {
+            return ((DamageBoostDecorator) currentBridgeWeapon).getBulletSizeMultiplier();
+        }
+        
+        return 1.0f; // Default size
+    }
+    
+    // Get current weapon damage (includes decorator modifications)
+    public float getCurrentWeaponDamage() {
+        if (currentBridgeWeapon != null) {
+            return currentBridgeWeapon.getDamage();
+        }
+        return 0f;
     }
 
     private void processInputs() {
