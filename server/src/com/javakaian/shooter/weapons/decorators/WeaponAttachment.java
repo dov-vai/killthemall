@@ -47,6 +47,13 @@ public abstract class WeaponAttachment extends Weapon {
     public Weapon getWrapped() {
         return baseWeapon;
     }
+    
+    /**
+     * Get bullet size multiplier (default 1.0, decorators can override)
+     */
+    public float getBulletSize() {
+        return 1.0f;
+    }
 
     // Delegate behavior – concrete decorators can add before/after actions
     @Override

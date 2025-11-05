@@ -3,7 +3,7 @@ package com.javakaian.shooter.weapons.decorators;
 import com.javakaian.shooter.weapons.Weapon;
 
 /**
- * Concrete Decorator: adds a scope to improve range.
+ * Concrete Decorator: adds a scope to improve range and slightly reduce fire rate (heavier).
  */
 public class ScopeAttachment extends WeaponAttachment {
 
@@ -20,6 +20,21 @@ public class ScopeAttachment extends WeaponAttachment {
     public float getRange() {
         return baseWeapon.getRange() + bonusRange;
     }
+    
+    @Override
+    public float getFireRate() {
+        // Slightly slower fire rate (heavier optic)
+        return Math.max(0.1f, baseWeapon.getFireRate() - 0.1f);
+    }
+    
+    @Override
+    public float getBulletSize() {
+        // No change to bullet size
+        float baseSize = (baseWeapon instanceof WeaponAttachment) 
+                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+                : 1.0f;
+        return baseSize;
+    }
 
     @Override
     public String getScope() {
@@ -28,6 +43,6 @@ public class ScopeAttachment extends WeaponAttachment {
 
     @Override
     public String getDescription() {
-        return baseWeapon.getDescription() + String.format(" + Scope(%s, +%.0f range)", scopeName, bonusRange);
+        return baseWeapon.getDescription() + String.format(" + Scope(%s, +%.0f range, -0.1 fire rate)", scopeName, bonusRange);
     }
 }
