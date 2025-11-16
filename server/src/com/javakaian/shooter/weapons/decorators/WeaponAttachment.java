@@ -1,5 +1,7 @@
 package com.javakaian.shooter.weapons.decorators;
 
+import com.javakaian.shooter.ServerWorld;
+import com.javakaian.shooter.shapes.Player;
 import com.javakaian.shooter.weapons.Weapon;
 
 /**
@@ -59,6 +61,22 @@ public abstract class WeaponAttachment extends Weapon {
     @Override
     public void shoot() {
         baseWeapon.shoot();
+    }
+    
+    // Delegate Template Method hooks to the wrapped weapon by default
+    @Override
+    public int getProjectileCount() {
+        return baseWeapon.getProjectileCount();
+    }
+    
+    @Override
+    public float getSpreadAngleInRadians() {
+        return baseWeapon.getSpreadAngleInRadians();
+    }
+    
+    @Override
+    public void createProjectile(ServerWorld world, Player owner, float angleRad) {
+        baseWeapon.createProjectile(world, owner, angleRad);
     }
 
     // Extendable description – append attachment-specific details in subclasses

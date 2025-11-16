@@ -19,9 +19,6 @@ import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
 import com.javakaian.shooter.weapons.Weapon;
-import com.javakaian.shooter.weapons.Rifle;
-import com.javakaian.shooter.weapons.Shotgun;
-import com.javakaian.shooter.weapons.Sniper;
 import com.javakaian.shooter.builder.WeaponDirector;
 import com.javakaian.shooter.weapons.decorators.DamageBoostAttachment;
 import com.javakaian.shooter.weapons.decorators.ExtendedMagazineAttachment;
@@ -379,55 +376,41 @@ public class ServerWorld implements OMessageListener {
                     return; // Can't shoot yet - fire rate too fast
                 }
                 
-                Weapon weapon = p.getCurrentWeapon();
-                BulletType bulletType = getBulletTypeFromWeapon(weapon);
-                
-                System.out.println("Player " + p.getId() + " fired " + weapon.getName() + 
-                                " (Fire Rate: " + weapon.getFireRate() + ")");
-                
-                // Create bullet
-                Bullet b = bulletFactory.createBullet(
-                    bulletType,
-                    p.getPosition().x + p.getBoundRect().width / 2,
-                    p.getPosition().y + p.getBoundRect().height / 2,
-                    m.getAngleDeg(),
-                    m.getPlayerId()
-                );
-                
-                bullets.add(b);
-                p.recordShot(gameTime); // Record shot time
+				Weapon weapon = p.getCurrentWeapon();
+				
+				System.out.println("Player " + p.getId() + " fired " + weapon.getName() + 
+								" (Fire Rate: " + weapon.getFireRate() + ")");
+				
+				// Use Template Method on the weapon
+				weapon.fireWeapon(this, p, m.getAngleDeg());
+				
+				// Record shot time for cooldowns
+				p.recordShot(gameTime);
                 
             } else {
                 // No weapon, use default
-                BulletType bulletType = BulletType.STANDARD;
                 System.out.println("Player " + p.getId() + " fired default weapon");
                 
-                Bullet b = bulletFactory.createBullet(
-                    bulletType,
-                    p.getPosition().x + p.getBoundRect().width / 2,
-                    p.getPosition().y + p.getBoundRect().height / 2,
-                    m.getAngleDeg(),
-                    m.getPlayerId()
-                );
-                
-                bullets.add(b);
+				createBullet(BulletType.STANDARD, p, m.getAngleDeg());
             }
         });
 
     }
-    
-    // weapon system
-    private BulletType getBulletTypeFromWeapon(Weapon weapon) {
-        // Unwrap decorators to inspect the base weapon type
-        Weapon base = weapon;
-        while (base instanceof com.javakaian.shooter.weapons.decorators.WeaponAttachment wa) {
-            base = wa.getWrapped();
-        }
-        if (base instanceof Rifle) return BulletType.STANDARD;
-        if (base instanceof Shotgun) return BulletType.HEAVY;
-        if (base instanceof Sniper) return BulletType.FAST;
-        return BulletType.STANDARD;
-    }
+	
+	/**
+	 * Helper for weapons to spawn bullets consistently.
+	 */
+	public void createBullet(BulletType type, Player owner, float angleRad) {
+		Bullet b = bulletFactory.createBullet(
+			type,
+			owner.getPosition().x + owner.getBoundRect().width / 2,
+			owner.getPosition().y + owner.getBoundRect().height / 2,
+			angleRad,
+			owner.getId()
+		);
+		bullets.add(b);
+	}
+	
     
     public void giveWeaponToPlayer(int playerId, String weaponConfig) {
         players.stream().filter(p -> p.getId() == playerId).findFirst()

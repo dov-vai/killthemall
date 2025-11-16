@@ -1,8 +1,27 @@
 package com.javakaian.shooter.weapons;
 
+import com.javakaian.shooter.ServerWorld;
+import com.javakaian.shooter.factory.BulletType;
+import com.javakaian.shooter.shapes.Player;
+
 public class Sniper extends Weapon {
     public Sniper() {
         super("Sniper Rifle");
+    }
+
+    @Override
+    public int getProjectileCount() {
+        return 1;
+    }
+
+    @Override
+    public float getSpreadAngleInRadians() {
+        return 0f;
+    }
+
+    @Override
+    public void createProjectile(ServerWorld world, Player owner, float angleRad) {
+        world.createBullet(BulletType.FAST, owner, angleRad);
     }
 
     @Override
