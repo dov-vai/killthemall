@@ -9,26 +9,26 @@ import com.javakaian.states.State.StateEnum;
  */
 public class NavigateToStatsCommand implements InputCommand {
     private final MenuState menuState;
-    
+
     public NavigateToStatsCommand(MenuState menuState) {
         this.menuState = menuState;
     }
-    
+
     @Override
     public void execute() {
         menuState.getSc().setState(StateEnum.STATS_STATE);
     }
-    
+
     @Override
     public void undo() {
         // Not undoable
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Navigate to Stats";

@@ -18,12 +18,12 @@ public class DamageBoostAttachment extends WeaponAttachment {
     public float getDamage() {
         return Math.max(0f, baseWeapon.getDamage() + bonusDamage);
     }
-    
+
     @Override
     public float getBulletSize() {
         // Bigger bullets with more damage (120% size)
-        float baseSize = (baseWeapon instanceof WeaponAttachment) 
-                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+        float baseSize = (baseWeapon instanceof WeaponAttachment)
+                ? ((WeaponAttachment) baseWeapon).getBulletSize()
                 : 1.0f;
         return baseSize * 1.2f;
     }

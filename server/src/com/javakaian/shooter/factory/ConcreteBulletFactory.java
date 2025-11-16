@@ -1,13 +1,14 @@
 package com.javakaian.shooter.factory;
 
 import com.javakaian.shooter.shapes.Bullet;
-import com.javakaian.shooter.shapes.StandardBullet;
 import com.javakaian.shooter.shapes.FastBullet;
 import com.javakaian.shooter.shapes.HeavyBullet;
+import com.javakaian.shooter.shapes.StandardBullet;
 
 
 public class ConcreteBulletFactory extends BulletFactory {
-    public ConcreteBulletFactory() { }
+    public ConcreteBulletFactory() {
+    }
 
     @Override
     public Bullet createBullet(BulletType type, float x, float y, float angle, int playerId) {

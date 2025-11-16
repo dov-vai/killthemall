@@ -4,12 +4,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import java.util.List;
-
 import com.javakaian.shooter.shapes.AimLine;
 import com.javakaian.shooter.shapes.Player;
-import com.javakaian.shooter.utils.Subsystems.*;
+import com.javakaian.shooter.utils.Subsystems.ObjectRenderSystem;
+import com.javakaian.shooter.utils.Subsystems.StatAction;
+import com.javakaian.shooter.utils.Subsystems.StatType;
+import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
+
+import java.util.List;
 
 public class GameManagerFacade {
 
@@ -55,6 +58,7 @@ public class GameManagerFacade {
                 throw new UnsupportedOperationException("render right not impelemnted yet");
         }
     }
+
     public void startSession() {
         stats.resetSession();
         stats.startSession();
@@ -92,7 +96,6 @@ public class GameManagerFacade {
     public BitmapFont generateBitmapFont(int size, Color color) {
         return GameUtils.generateBitmapFont(size, color);
     }
-
 
 
 }

@@ -43,11 +43,10 @@ public class SniperBuilder implements IBuilder {
 
     @Override
     public Weapon build() {
-        if(sniper.getBarrel() != null && sniper.getGrip() != null
-        && sniper.getMagazine() != null && sniper.getScope() != null) {
+        if (sniper.getBarrel() != null && sniper.getGrip() != null
+                && sniper.getMagazine() != null && sniper.getScope() != null) {
             return sniper;
-        }
-        else {
+        } else {
             return null;
         }
     }

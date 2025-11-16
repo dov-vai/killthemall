@@ -8,26 +8,26 @@ import com.javakaian.states.PlayState;
  */
 public class ShootCommand implements InputCommand {
     private final PlayState playState;
-    
+
     public ShootCommand(PlayState playState) {
         this.playState = playState;
     }
-    
+
     @Override
     public void execute() {
         playState.shoot();
     }
-    
+
     @Override
     public void undo() {
         // Cannot undo a shot
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Shoot";

@@ -4,7 +4,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class StandardBullet implements Bullet {
-    
+
+    private static final int SPEED = 800;  // normal speed
     private Vector2 position;
     private float size;
     private float angle;
@@ -12,8 +13,6 @@ public class StandardBullet implements Bullet {
     private float ttlCounter = 0;
     private int id;
     private Rectangle boundRect;
-    
-    private static final int SPEED = 800;  // normal speed
 
     public StandardBullet(float x, float y, float size, float angle, int id) {
         this.position = new Vector2(x, y);
@@ -33,7 +32,7 @@ public class StandardBullet implements Bullet {
 
         position.y -= speed * dy;
         position.x += speed * dx;
-        
+
         if (ttlCounter > 2) {
             visible = false;
             ttlCounter = 0;

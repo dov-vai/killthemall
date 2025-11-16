@@ -7,12 +7,11 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
 import com.javakaian.shooter.input.MenuStateInput;
-import com.javakaian.shooter.utils.*;
-import com.javakaian.shooter.utils.Subsystems.TextAlignment;
-
-import com.javakaian.shooter.logger.IGameLogger;
 import com.javakaian.shooter.logger.ConsoleGameLoggerAdapter;
 import com.javakaian.shooter.logger.GameLogEntry;
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.shooter.utils.GameManagerFacade;
+import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 
 public class MenuState extends State {
 
@@ -28,13 +27,13 @@ public class MenuState extends State {
         ip = new MenuStateInput(this);
 
         gameLogger = new ConsoleGameLoggerAdapter();
-        
+
         // Log menu state creation
         GameLogEntry menuEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "MENU_OPENED",
-            "Main menu opened",
-            "INFO"
+                System.currentTimeMillis(),
+                "MENU_OPENED",
+                "Main menu opened",
+                "INFO"
         );
         gameLogger.logEvent(menuEvent);
 
@@ -50,10 +49,10 @@ public class MenuState extends State {
         applyTheme();
 
         GameLogEntry themeEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "THEME_CHANGE",
-            "Theme changed to " + (darkMode ? "Dark Mode" : "Light Mode"),
-            "INFO"
+                System.currentTimeMillis(),
+                "THEME_CHANGE",
+                "Theme changed to " + (darkMode ? "Dark Mode" : "Light Mode"),
+                "INFO"
         );
         gameLogger.logEvent(themeEvent);
     }
@@ -98,10 +97,10 @@ public class MenuState extends State {
 
     public void quit() {
         GameLogEntry exitEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "APP_EXIT",
-            "User quit the application from menu",
-            "INFO"
+                System.currentTimeMillis(),
+                "APP_EXIT",
+                "User quit the application from menu",
+                "INFO"
         );
         gameLogger.logEvent(exitEvent);
 

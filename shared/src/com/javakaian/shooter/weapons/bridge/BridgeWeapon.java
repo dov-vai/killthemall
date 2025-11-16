@@ -2,12 +2,12 @@ package com.javakaian.shooter.weapons.bridge;
 
 /**
  * Bridge Pattern - Refined Abstraction (Base)
- * 
+ * <p>
  * This abstract class is the core of the Bridge pattern abstraction.
  * It maintains a reference to a FiringMechanism (the implementation)
  * and delegates firing behavior to it. This separates the weapon type
  * from how it fires, allowing any weapon to use any firing mechanism.
- * 
+ * <p>
  * The Bridge pattern decouples abstraction (weapon types) from
  * implementation (firing mechanisms), allowing them to vary independently.
  */
@@ -129,36 +129,28 @@ public abstract class BridgeWeapon {
         return damage;
     }
 
-    public float getRange() {
-        return range;
-    }
-
-    public float getBaseFireRate() {
-        return baseFireRate;
-    }
-
-    public int getAmmoCapacity() {
-        return ammoCapacity;
-    }
-
-    public int getCurrentAmmo() {
-        return currentAmmo;
-    }
-
-    public FiringMechanism getFiringMechanism() {
-        return firingMechanism;
-    }
-
     public void setDamage(float damage) {
         this.damage = damage;
+    }
+
+    public float getRange() {
+        return range;
     }
 
     public void setRange(float range) {
         this.range = range;
     }
 
+    public float getBaseFireRate() {
+        return baseFireRate;
+    }
+
     public void setBaseFireRate(float baseFireRate) {
         this.baseFireRate = baseFireRate;
+    }
+
+    public int getAmmoCapacity() {
+        return ammoCapacity;
     }
 
     public void setAmmoCapacity(int ammoCapacity) {
@@ -169,9 +161,17 @@ public abstract class BridgeWeapon {
         }
     }
 
+    public int getCurrentAmmo() {
+        return currentAmmo;
+    }
+
     // Sync current ammo from server
     public void setCurrentAmmo(int currentAmmo) {
         this.currentAmmo = Math.max(0, Math.min(currentAmmo, ammoCapacity));
+    }
+
+    public FiringMechanism getFiringMechanism() {
+        return firingMechanism;
     }
 
     // Manually decrement ammo (for full auto and burst)

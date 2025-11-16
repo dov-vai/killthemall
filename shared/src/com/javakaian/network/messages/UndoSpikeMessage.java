@@ -6,7 +6,8 @@ package com.javakaian.network.messages;
 public class UndoSpikeMessage {
     private int playerId;
 
-    public UndoSpikeMessage() {}
+    public UndoSpikeMessage() {
+    }
 
     public int getPlayerId() {
         return playerId;

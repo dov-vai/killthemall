@@ -7,7 +7,8 @@ public class InventoryUpdateMessage {
     private int playerId;
     private int spikeCount;
 
-    public InventoryUpdateMessage() {}
+    public InventoryUpdateMessage() {
+    }
 
     public int getPlayerId() {
         return playerId;

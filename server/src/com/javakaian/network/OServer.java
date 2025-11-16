@@ -14,13 +14,13 @@ import java.util.Queue;
 
 /**
  * @author oguz
- *         <p>
- *         Server object which is responsible for creating kryo server and
- *         managing it.
- *         <p>
- *         Every message received by server queued by this object and get
- *         processed 60 time per second. After processing messages, related
- *         methods will be invoked by this class.
+ * <p>
+ * Server object which is responsible for creating kryo server and
+ * managing it.
+ * <p>
+ * Every message received by server queued by this object and get
+ * processed 60 time per second. After processing messages, related
+ * methods will be invoked by this class.
  */
 public class OServer {
 

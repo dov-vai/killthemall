@@ -21,12 +21,12 @@ public class GripAttachment extends WeaponAttachment {
         // Much faster fire rate for full auto
         return baseWeapon.getFireRate() + bonusFireRate;
     }
-    
+
     @Override
     public float getBulletSize() {
         // No change to bullet size, pass through
-        float baseSize = (baseWeapon instanceof WeaponAttachment) 
-                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+        float baseSize = (baseWeapon instanceof WeaponAttachment)
+                ? ((WeaponAttachment) baseWeapon).getBulletSize()
                 : 1.0f;
         return baseSize;
     }

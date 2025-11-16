@@ -7,7 +7,8 @@ public class PlaceSpikeMessage {
     private int playerId;
     private float rotation; // rotation angle in degrees (from aimline)
 
-    public PlaceSpikeMessage() {}
+    public PlaceSpikeMessage() {
+    }
 
     public int getPlayerId() {
         return playerId;

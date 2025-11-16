@@ -11,26 +11,23 @@ import com.javakaian.network.OClient;
 import com.javakaian.network.messages.*;
 import com.javakaian.network.messages.PositionMessage.Direction;
 import com.javakaian.shooter.OMessageListener;
-import com.javakaian.shooter.achievements.Achievement;
-import com.javakaian.shooter.achievements.AchievementObserver;
 import com.javakaian.shooter.ThemeFactory.Theme;
 import com.javakaian.shooter.ThemeFactory.ThemeFactory;
+import com.javakaian.shooter.achievements.Achievement;
+import com.javakaian.shooter.achievements.AchievementObserver;
 import com.javakaian.shooter.input.PlayStateInput;
-import com.javakaian.shooter.shapes.AimLine;
-import com.javakaian.shooter.shapes.Bullet;
-import com.javakaian.shooter.shapes.Enemy;
-import com.javakaian.shooter.shapes.Player;
-import com.javakaian.shooter.shapes.Spike;
-import com.javakaian.shooter.shapes.PlacedSpike;
-import com.javakaian.shooter.utils.*;
+import com.javakaian.shooter.logger.ConsoleGameLoggerAdapter;
+import com.javakaian.shooter.logger.GameLogEntry;
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.shooter.logger.SimpleLogDisplay;
+import com.javakaian.shooter.shapes.*;
+import com.javakaian.shooter.utils.GameConstants;
+import com.javakaian.shooter.utils.GameManagerFacade;
+import com.javakaian.shooter.utils.OMessageParser;
 import com.javakaian.shooter.utils.Subsystems.StatAction;
 import com.javakaian.shooter.utils.Subsystems.StatType;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
-
-import com.javakaian.shooter.logger.*;
 import com.javakaian.shooter.utils.stats.GameStats;
-
-// Bridge Pattern imports
 import com.javakaian.shooter.weapons.bridge.*;
 
 import java.security.SecureRandom;
@@ -44,6 +41,11 @@ import java.util.List;
  */
 public class PlayState extends State implements OMessageListener, AchievementObserver {
 
+    private static final float BURST_DELAY = 0.1f; // Delay between burst shots
+    private static final float AUTO_FIRE_RATE = 0.1f; // Time between auto shots
+    private final List<Notification> notifications = new ArrayList<>();
+    private final List<String> activeAttachments = new ArrayList<>();
+    GameManagerFacade stats = GameManagerFacade.getInstance();
     private ThemeFactory themeFactory;
     private Player player;
     private List<Player> players;
@@ -52,32 +54,21 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private List<Spike> spikes;
     private List<PlacedSpike> placedSpikes;
     private AimLine aimLine;
-    GameManagerFacade stats = GameManagerFacade.getInstance();
-
     private OClient client;
-
     private BitmapFont healthFont;
     private float lastX, lastY;
-
-    private final List<Notification> notifications = new ArrayList<>();
     private BitmapFont notifFont;
-
     private String currentWeaponInfo = "Assault rifle";
     private String currentWeaponComponents = "";
     private String currentWeaponStats = "";
     private BitmapFont weaponsFont;
-
     private int spikeCount = 0;
-
     // Adapter pattern - unified game logger
     private IGameLogger gameLogger;
     private SimpleLogDisplay logDisplay;
-
     // Track current base weapon and active attachments to send full config to
     // server
     private String currentBaseConfig = "assault_rifle";
-    private final List<String> activeAttachments = new ArrayList<>();
-
     // Bridge Pattern - Weapon system
     private BridgeWeapon currentBridgeWeapon;
     private BridgeWeapon unwrappedWeapon; // Base weapon without decorators
@@ -85,9 +76,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private boolean isShooting = false;
     private int burstShotsRemaining = 0;
     private float burstShotTimer = 0;
-    private static final float BURST_DELAY = 0.1f; // Delay between burst shots
     private float autoFireTimer = 0;
-    private static final float AUTO_FIRE_RATE = 0.1f; // Time between auto shots
 
     public PlayState(StateController sc) {
         super(sc);

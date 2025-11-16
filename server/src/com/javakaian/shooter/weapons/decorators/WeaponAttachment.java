@@ -32,8 +32,18 @@ public abstract class WeaponAttachment extends Weapon {
     }
 
     @Override
+    public void setDamage(float damage) {
+        baseWeapon.setDamage(damage);
+    }
+
+    @Override
     public float getRange() {
         return baseWeapon.getRange();
+    }
+
+    @Override
+    public void setRange(float range) {
+        baseWeapon.setRange(range);
     }
 
     @Override
@@ -42,33 +52,23 @@ public abstract class WeaponAttachment extends Weapon {
     }
 
     @Override
+    public void setFireRate(float fireRate) {
+        baseWeapon.setFireRate(fireRate);
+    }
+
+    @Override
     public int getAmmoCapacity() {
         return baseWeapon.getAmmoCapacity();
     }
 
     @Override
+    public void setAmmoCapacity(int ammoCapacity) {
+        baseWeapon.setAmmoCapacity(ammoCapacity);
+    }
+
+    @Override
     public String getBarrel() {
         return baseWeapon.getBarrel();
-    }
-
-    @Override
-    public String getScope() {
-        return baseWeapon.getScope();
-    }
-
-    @Override
-    public String getStock() {
-        return baseWeapon.getStock();
-    }
-
-    @Override
-    public String getMagazine() {
-        return baseWeapon.getMagazine();
-    }
-
-    @Override
-    public String getGrip() {
-        return baseWeapon.getGrip();
     }
 
     // Delegate mutators too, to avoid diverging state
@@ -78,8 +78,18 @@ public abstract class WeaponAttachment extends Weapon {
     }
 
     @Override
+    public String getScope() {
+        return baseWeapon.getScope();
+    }
+
+    @Override
     public void setScope(String scope) {
         baseWeapon.setScope(scope);
+    }
+
+    @Override
+    public String getStock() {
+        return baseWeapon.getStock();
     }
 
     @Override
@@ -88,33 +98,23 @@ public abstract class WeaponAttachment extends Weapon {
     }
 
     @Override
+    public String getMagazine() {
+        return baseWeapon.getMagazine();
+    }
+
+    @Override
     public void setMagazine(String magazine) {
         baseWeapon.setMagazine(magazine);
     }
 
     @Override
+    public String getGrip() {
+        return baseWeapon.getGrip();
+    }
+
+    @Override
     public void setGrip(String grip) {
         baseWeapon.setGrip(grip);
-    }
-
-    @Override
-    public void setDamage(float damage) {
-        baseWeapon.setDamage(damage);
-    }
-
-    @Override
-    public void setRange(float range) {
-        baseWeapon.setRange(range);
-    }
-
-    @Override
-    public void setFireRate(float fireRate) {
-        baseWeapon.setFireRate(fireRate);
-    }
-
-    @Override
-    public void setAmmoCapacity(int ammoCapacity) {
-        baseWeapon.setAmmoCapacity(ammoCapacity);
     }
 
     /**

@@ -11,11 +11,11 @@ import com.javakaian.states.State.StateEnum;
  */
 public class StartGameCommand implements InputCommand {
     private final MenuState menuState;
-    
+
     public StartGameCommand(MenuState menuState) {
         this.menuState = menuState;
     }
-    
+
     @Override
     public void execute() {
         PlayState playState = (PlayState) menuState.getSc()
@@ -31,17 +31,17 @@ public class StartGameCommand implements InputCommand {
 
         menuState.getSc().setState(StateEnum.PLAY_STATE);
     }
-    
+
     @Override
     public void undo() {
         // Not undoable
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Start Game";

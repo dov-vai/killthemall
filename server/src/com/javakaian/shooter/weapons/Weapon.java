@@ -28,42 +28,6 @@ public abstract class Weapon {
         this.currentAmmo = this.ammoCapacity;
     }
 
-    public void setBarrel(String barrel) {
-        this.barrel = barrel;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-    public void setStock(String stock) {
-        this.stock = stock;
-    }
-
-    public void setMagazine(String magazine) {
-        this.magazine = magazine;
-    }
-
-    public void setGrip(String grip) {
-        this.grip = grip;
-    }
-
-    public void setDamage(float damage) {
-        this.damage = damage;
-    }
-
-    public void setRange(float range) {
-        this.range = range;
-    }
-
-    public void setFireRate(float fireRate) {
-        this.fireRate = fireRate;
-    }
-
-    public void setAmmoCapacity(int ammoCapacity) {
-        this.ammoCapacity = ammoCapacity;
-    }
-
     public String getName() {
         return name;
     }
@@ -72,16 +36,32 @@ public abstract class Weapon {
         return damage;
     }
 
+    public void setDamage(float damage) {
+        this.damage = damage;
+    }
+
     public float getRange() {
         return range;
+    }
+
+    public void setRange(float range) {
+        this.range = range;
     }
 
     public float getFireRate() {
         return fireRate;
     }
 
+    public void setFireRate(float fireRate) {
+        this.fireRate = fireRate;
+    }
+
     public int getAmmoCapacity() {
         return ammoCapacity;
+    }
+
+    public void setAmmoCapacity(int ammoCapacity) {
+        this.ammoCapacity = ammoCapacity;
     }
 
     public int getCurrentAmmo() {
@@ -120,20 +100,40 @@ public abstract class Weapon {
         return barrel;
     }
 
+    public void setBarrel(String barrel) {
+        this.barrel = barrel;
+    }
+
     public String getScope() {
         return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
     }
 
     public String getStock() {
         return stock;
     }
 
+    public void setStock(String stock) {
+        this.stock = stock;
+    }
+
     public String getMagazine() {
         return magazine;
     }
 
+    public void setMagazine(String magazine) {
+        this.magazine = magazine;
+    }
+
     public String getGrip() {
         return grip;
+    }
+
+    public void setGrip(String grip) {
+        this.grip = grip;
     }
 
     /**
@@ -174,7 +174,7 @@ public abstract class Weapon {
     }
 
     private float calculateProjectileAngle(float baseAngleRad, float spreadRad, int projectileIndex,
-            int totalProjectiles) {
+                                           int totalProjectiles) {
         if (totalProjectiles <= 1 || spreadRad <= 0f)
             return baseAngleRad;
         float offset = -spreadRad / 2f + (projectileIndex * (spreadRad / (totalProjectiles - 1)));

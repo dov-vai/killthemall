@@ -5,7 +5,8 @@ public class AmmoUpdateMessage {
     private int currentAmmo;
     private int ammoCapacity;
 
-    public AmmoUpdateMessage() { }
+    public AmmoUpdateMessage() {
+    }
 
     public int getPlayerId() {
         return playerId;

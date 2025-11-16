@@ -4,36 +4,21 @@ import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
-import com.javakaian.shooter.shapes.Bullet;
-import com.javakaian.shooter.factory.BulletFactory;
-import com.javakaian.shooter.factory.ConcreteBulletFactory;
-import com.javakaian.shooter.factory.BulletType;
-import com.javakaian.shooter.shapes.Enemy;
-import com.javakaian.shooter.shapes.Player;
-import com.javakaian.shooter.shapes.Spike;
-import com.javakaian.shooter.shapes.PlacedSpike;
-import com.javakaian.shooter.strategy.*;
+import com.javakaian.shooter.builder.WeaponDirector;
 import com.javakaian.shooter.command.Command;
 import com.javakaian.shooter.command.PlaceSpikeCommand;
+import com.javakaian.shooter.factory.BulletFactory;
+import com.javakaian.shooter.factory.BulletType;
+import com.javakaian.shooter.factory.ConcreteBulletFactory;
+import com.javakaian.shooter.shapes.*;
+import com.javakaian.shooter.strategy.*;
+import com.javakaian.shooter.weapons.Weapon;
+import com.javakaian.shooter.weapons.decorators.*;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
-import com.javakaian.shooter.weapons.Weapon;
-import com.javakaian.network.messages.AmmoUpdateMessage;
-import com.javakaian.shooter.builder.WeaponDirector;
-import com.javakaian.shooter.weapons.decorators.DamageBoostAttachment;
-import com.javakaian.shooter.weapons.decorators.ExtendedMagazineAttachment;
-import com.javakaian.shooter.weapons.decorators.GripAttachment;
-import com.javakaian.shooter.weapons.decorators.ScopeAttachment;
-import com.javakaian.shooter.weapons.decorators.SilencerAttachment;
-
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class ServerWorld implements OMessageListener {
 
@@ -91,7 +76,7 @@ public class ServerWorld implements OMessageListener {
         playerSpikeCommands = new HashMap<>();
         connectionToPlayerId = new HashMap<>();
 
-        behaviorStrategies = new EnemyBehaviorStrategy[] {
+        behaviorStrategies = new EnemyBehaviorStrategy[]{
                 new AggressiveBehavior(),
                 new DefensiveBehavior(),
                 new FlankingBehavior(),
