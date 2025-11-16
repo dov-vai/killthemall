@@ -14,13 +14,13 @@ import java.util.Queue;
 
 /**
  * @author oguz
- * <p>
- * Server object which is responsible for creating kryo server and
- * managing it.
- * <p>
- * Every message received by server queued by this object and get
- * processed 60 time per second. After processing messages, related
- * methods will be invoked by this class.
+ *         <p>
+ *         Server object which is responsible for creating kryo server and
+ *         managing it.
+ *         <p>
+ *         Every message received by server queued by this object and get
+ *         processed 60 time per second. After processing messages, related
+ *         methods will be invoked by this class.
  */
 public class OServer {
 
@@ -41,7 +41,8 @@ public class OServer {
      */
     private Queue<Connection> connectionQueue;
     /**
-     * Queue to store disconnected connections to be processed on the game loop thread.
+     * Queue to store disconnected connections to be processed on the game loop
+     * thread.
      */
     private Queue<Connection> disconnectedQueue;
 
@@ -119,14 +120,13 @@ public class OServer {
 
             } else if (message instanceof ShootMessage m) {
                 messageListener.shootReceived(m);
-            }
-            else if (message instanceof WeaponChangeMessage m) {
+            } else if (message instanceof ReloadMessage m) {
+                messageListener.reloadReceived(m);
+            } else if (message instanceof WeaponChangeMessage m) {
                 messageListener.weaponChangeReceived(m);
-            }
-            else if (message instanceof PlaceSpikeMessage m) {
+            } else if (message instanceof PlaceSpikeMessage m) {
                 messageListener.placeSpikeReceived(m);
-            }
-            else if (message instanceof UndoSpikeMessage m) {
+            } else if (message instanceof UndoSpikeMessage m) {
                 messageListener.undoSpikeReceived(m);
             }
 
@@ -156,7 +156,9 @@ public class OServer {
 
         this.server.getKryo().register(WeaponChangeMessage.class);
         this.server.getKryo().register(WeaponInfoMessage.class);
-        
+        this.server.getKryo().register(AmmoUpdateMessage.class);
+        this.server.getKryo().register(ReloadMessage.class);
+
         this.server.getKryo().register(PlaceSpikeMessage.class);
         this.server.getKryo().register(UndoSpikeMessage.class);
         this.server.getKryo().register(InventoryUpdateMessage.class);

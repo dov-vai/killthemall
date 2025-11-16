@@ -6,6 +6,7 @@ import com.javakaian.network.messages.LogoutMessage;
 import com.javakaian.network.messages.PlayerDiedMessage;
 import com.javakaian.network.messages.WeaponInfoMessage;
 import com.javakaian.network.messages.InventoryUpdateMessage;
+import com.javakaian.network.messages.AmmoUpdateMessage;
 
 /**
  * Listener class. A class who wants to listen events like, login,logout etc.
@@ -48,5 +49,7 @@ public interface OMessageListener {
     void weaponInfoReceived(WeaponInfoMessage m);
     
     void inventoryUpdateReceived(InventoryUpdateMessage m);
+    
+    void ammoUpdateReceived(AmmoUpdateMessage m);
 
 }

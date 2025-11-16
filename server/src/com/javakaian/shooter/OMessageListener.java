@@ -8,6 +8,7 @@ import com.javakaian.network.messages.ShootMessage;
 import com.javakaian.network.messages.WeaponChangeMessage;
 import com.javakaian.network.messages.PlaceSpikeMessage;
 import com.javakaian.network.messages.UndoSpikeMessage;
+import com.javakaian.network.messages.ReloadMessage;
 
 public interface OMessageListener {
 
@@ -49,6 +50,11 @@ public interface OMessageListener {
      * Player wants to undo their last spike placement
      */
     void undoSpikeReceived(UndoSpikeMessage m);
+    
+    /**
+     * Player requests a reload of their current weapon
+     */
+    void reloadReceived(ReloadMessage m);
 
     /**
      * Invoked when a network connection is closed unexpectedly or normally.

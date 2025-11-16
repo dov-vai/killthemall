@@ -14,6 +14,10 @@ public abstract class Weapon {
     protected float range;
     protected float fireRate;
     protected int ammoCapacity;
+    protected int currentAmmo;
+    protected float reloadDuration = 1.6f;
+    protected boolean reloading = false;
+    protected float reloadFinishTime = 0f;
 
     public Weapon(String name) {
         this.name = name;
@@ -21,6 +25,7 @@ public abstract class Weapon {
         this.range = 100.0f;
         this.fireRate = 1.0f;
         this.ammoCapacity = 30;
+        this.currentAmmo = this.ammoCapacity;
     }
 
     public void setBarrel(String barrel) {
@@ -79,6 +84,38 @@ public abstract class Weapon {
         return ammoCapacity;
     }
 
+    public int getCurrentAmmo() {
+        return currentAmmo;
+    }
+
+    public void setCurrentAmmo(int currentAmmo) {
+        this.currentAmmo = Math.max(0, Math.min(currentAmmo, ammoCapacity));
+    }
+
+    public boolean isReloading(float now) {
+        return reloading && now < reloadFinishTime;
+    }
+
+    public boolean needsReload() {
+        return currentAmmo < ammoCapacity;
+    }
+
+    public void startReload(float now) {
+        if (reloading || currentAmmo >= ammoCapacity)
+            return;
+        reloading = true;
+        reloadFinishTime = now + reloadDuration;
+    }
+
+    public boolean tryFinishReload(float now) {
+        if (reloading && now >= reloadFinishTime) {
+            currentAmmo = ammoCapacity;
+            reloading = false;
+            return true;
+        }
+        return false;
+    }
+
     public String getBarrel() {
         return barrel;
     }
@@ -104,6 +141,14 @@ public abstract class Weapon {
      * Angle is in radians, consistent with client/server projectile math.
      */
     public final void fireWeapon(ServerWorld world, Player owner, float angleRad) {
+        if (isReloading(world.getGameTime())) {
+            System.out.println(getName() + " is reloading, cannot fire.");
+            return;
+        }
+        if (!hasAmmo()) {
+            System.out.println(getName() + " attempted to fire with no ammo.");
+            return;
+        }
         consumeAmmo();
 
         int projectileCount = getProjectileCount();
@@ -118,10 +163,14 @@ public abstract class Weapon {
     }
 
     protected void consumeAmmo() {
-        // Hook for ammo systems; server currently tracks only capacity, not current
-        // count.
-        // Keeping simple for now.
-        System.out.println(getName() + " consumed ammo.");
+        if (currentAmmo > 0) {
+            currentAmmo -= 1;
+            System.out.println(getName() + " consumed ammo. Remaining: " + currentAmmo + "/" + ammoCapacity);
+        }
+    }
+
+    protected boolean hasAmmo() {
+        return currentAmmo > 0;
     }
 
     private float calculateProjectileAngle(float baseAngleRad, float spreadRad, int projectileIndex,
