@@ -24,7 +24,7 @@ public class PlayStateInput extends InputAdapter {
         this.keyBindingManager = new KeyBindingManager();
         setupDefaultKeyBindings();
     }
-    
+
     /**
      * Setup default key bindings for PlayState
      * These can be easily changed by modifying this method or by providing
@@ -34,52 +34,68 @@ public class PlayStateInput extends InputAdapter {
         // Basic actions - SPACE removed, handled in keyDown/keyUp for hold functionality
         // keyBindingManager.bindKey(Keys.SPACE, new ShootCommand(playState));
         keyBindingManager.bindKey(Keys.M, new ReturnToMenuCommand(playState));
-        
+
         // Weapon selection
         keyBindingManager.bindKey(Keys.NUM_1, new WeaponChangeCommand(playState, "assault_rifle"));
         keyBindingManager.bindKey(Keys.NUM_2, new WeaponChangeCommand(playState, "combat_shotgun"));
         keyBindingManager.bindKey(Keys.NUM_3, new WeaponChangeCommand(playState, "precision_sniper"));
-        
+
         // Attachments toggles
         keyBindingManager.bindKey(Keys.NUM_4, new AttachmentToggleCommand(playState, "scope:4x ACOG:150"));
         keyBindingManager.bindKey(Keys.NUM_5, new AttachmentToggleCommand(playState, "mag:15"));
         keyBindingManager.bindKey(Keys.NUM_6, new AttachmentToggleCommand(playState, "grip:Tactical:0.5"));
         keyBindingManager.bindKey(Keys.NUM_7, new AttachmentToggleCommand(playState, "silencer:Silenced Barrel:2"));
         keyBindingManager.bindKey(Keys.NUM_8, new AttachmentToggleCommand(playState, "dmg:5"));
-        
+
         // Spike actions
         keyBindingManager.bindKey(Keys.E, new PlaceSpikeCommand(playState));
-        
+
         // Utility
         keyBindingManager.bindKey(Keys.L, new ToggleLogDisplayCommand(playState));
-        
+
         // Bridge Pattern - Firing mode control (using Command pattern)
         keyBindingManager.bindKey(Keys.B, new InputCommand() {
             @Override
             public void execute() {
                 playState.cycleFiringMode();
             }
+
             @Override
-            public void undo() {}
+            public void undo() {
+            }
+
             @Override
-            public boolean canUndo() { return false; }
+            public boolean canUndo() {
+                return false;
+            }
+
             @Override
-            public String getDescription() { return "Cycle Firing Mode"; }
+            public String getDescription() {
+                return "Cycle Firing Mode";
+            }
         });
-        
+
         keyBindingManager.bindKey(Keys.R, new InputCommand() {
             @Override
             public void execute() {
                 playState.reloadBridgeWeapon();
             }
+
             @Override
-            public void undo() {}
+            public void undo() {
+            }
+
             @Override
-            public boolean canUndo() { return false; }
+            public boolean canUndo() {
+                return false;
+            }
+
             @Override
-            public String getDescription() { return "Reload Weapon"; }
+            public String getDescription() {
+                return "Reload Weapon";
+            }
         });
-        
+
         // Note: Keys.NUM_0 for reset attachments and Keys.U for undo spike are handled separately below
         // Note: Ctrl+Z for undo is handled automatically by KeyBindingManager
     }
@@ -94,7 +110,7 @@ public class PlayStateInput extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
-        
+
         // Try to handle with command pattern first
         if (keyBindingManager.handleKeyPress(keycode)) {
             return true;
@@ -120,7 +136,7 @@ public class PlayStateInput extends InputAdapter {
 
         return true;
     }
-    
+
     @Override
     public boolean keyUp(int keycode) {
         // Handle key release for continuous firing modes
@@ -130,7 +146,7 @@ public class PlayStateInput extends InputAdapter {
         }
         return false;
     }
-    
+
     /**
      * Get the key binding manager for this input handler
      * Useful for reconfiguring keys at runtime

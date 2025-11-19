@@ -31,7 +31,9 @@ public class AimLine {
         sr.setColor(Color.WHITE);
     }
 
-    public void setColor(Color color) { this.color = color; }
+    public void setColor(Color color) {
+        this.color = color;
+    }
 
     public void update(float deltaTime) {
 

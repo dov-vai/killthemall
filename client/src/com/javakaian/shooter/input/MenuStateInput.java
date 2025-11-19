@@ -21,7 +21,7 @@ public class MenuStateInput extends InputAdapter {
         this.keyBindingManager = new KeyBindingManager();
         setupDefaultKeyBindings();
     }
-    
+
     /**
      * Setup default key bindings for MenuState
      */
@@ -37,7 +37,7 @@ public class MenuStateInput extends InputAdapter {
     public boolean keyDown(int keycode) {
         return keyBindingManager.handleKeyPress(keycode);
     }
-    
+
     /**
      * Get the key binding manager for runtime key reconfiguration
      */

@@ -1,11 +1,7 @@
 package com.javakaian.shooter.utils;
 
 import com.javakaian.network.messages.GameWorldMessage;
-import com.javakaian.shooter.shapes.Bullet;
-import com.javakaian.shooter.shapes.Enemy;
-import com.javakaian.shooter.shapes.Player;
-import com.javakaian.shooter.shapes.Spike;
-import com.javakaian.shooter.shapes.PlacedSpike;
+import com.javakaian.shooter.shapes.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,45 +87,45 @@ public class OMessageParser {
 
         return blist;
     }
-    
+
     /**
      * Returns a spike pickup list from gameworld message.
      */
     public static List<Spike> getSpikesFromGWM(GameWorldMessage m) {
         float[] ts = m.getSpikes();
         if (ts == null) return new ArrayList<>();
-        
+
         List<Spike> slist = new ArrayList<>();
         for (int i = 0; i < ts.length / 3; i++) {
             float x = ts[i * 3];
             float y = ts[i * 3 + 1];
             float size = ts[i * 3 + 2];
-            
+
             Spike s = new Spike(x, y, size);
             slist.add(s);
         }
-        
+
         return slist;
     }
-    
+
     /**
      * Returns a placed spike list from gameworld message.
      */
     public static List<PlacedSpike> getPlacedSpikesFromGWM(GameWorldMessage m) {
         float[] tps = m.getPlacedSpikes();
         if (tps == null) return new ArrayList<>();
-        
+
         List<PlacedSpike> pslist = new ArrayList<>();
         for (int i = 0; i < tps.length / 4; i++) {
             float x = tps[i * 4];
             float y = tps[i * 4 + 1];
             float size = tps[i * 4 + 2];
             float rotation = tps[i * 4 + 3];
-            
+
             PlacedSpike ps = new PlacedSpike(x, y, size, rotation);
             pslist.add(ps);
         }
-        
+
         return pslist;
     }
 

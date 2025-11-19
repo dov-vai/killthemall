@@ -21,18 +21,18 @@ public class SilencerAttachment extends WeaponAttachment {
     public float getDamage() {
         return Math.max(0f, baseWeapon.getDamage() - damagePenalty);
     }
-    
+
     @Override
     public float getFireRate() {
         // Faster fire rate for full auto
         return baseWeapon.getFireRate() + 0.3f;
     }
-    
+
     @Override
     public float getBulletSize() {
         // Smaller bullets (80% size)
-        float baseSize = (baseWeapon instanceof WeaponAttachment) 
-                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+        float baseSize = (baseWeapon instanceof WeaponAttachment)
+                ? ((WeaponAttachment) baseWeapon).getBulletSize()
                 : 1.0f;
         return baseSize * 0.8f;
     }

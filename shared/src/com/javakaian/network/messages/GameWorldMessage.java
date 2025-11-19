@@ -21,12 +21,12 @@ public class GameWorldMessage {
      * X,Y,Size of all the bullets.-> x1,y1,s1,x2,y2,s2,x3,y3,s3..
      */
     private float[] bullets;
-    
+
     /**
      * X,Y,Size of all the spike pickups.-> x1,y1,s1,x2,y2,s2..
      */
     private float[] spikes;
-    
+
     /**
      * X,Y,Size,Rotation of all placed spikes.-> x1,y1,s1,r1,x2,y2,s2,r2..
      */
@@ -60,19 +60,19 @@ public class GameWorldMessage {
     public void setBullets(float[] bullets) {
         this.bullets = bullets;
     }
-    
+
     public float[] getSpikes() {
         return spikes;
     }
-    
+
     public void setSpikes(float[] spikes) {
         this.spikes = spikes;
     }
-    
+
     public float[] getPlacedSpikes() {
         return placedSpikes;
     }
-    
+
     public void setPlacedSpikes(float[] placedSpikes) {
         this.placedSpikes = placedSpikes;
     }

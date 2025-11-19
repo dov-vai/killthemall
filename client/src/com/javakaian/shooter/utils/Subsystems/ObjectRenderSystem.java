@@ -3,7 +3,8 @@ package com.javakaian.shooter.utils.Subsystems;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.javakaian.shooter.shapes.*;
+import com.javakaian.shooter.shapes.AimLine;
+import com.javakaian.shooter.shapes.Player;
 
 import java.util.List;
 
@@ -46,7 +47,8 @@ public class ObjectRenderSystem {
                 if (obj == null) continue;
                 try {
                     obj.getClass().getMethod("render", ShapeRenderer.class).invoke(obj, sr);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
 

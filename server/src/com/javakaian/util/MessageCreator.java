@@ -65,23 +65,23 @@ public class MessageCreator {
             barray[i * 3 + 2] = bullet.getSize();
         }
         gwm.setBullets(barray);
-        
+
         float[] spikeArray = new float[spikes.size() * 3];
         for (int i = 0; i < spikes.size(); i++) {
             var spike = spikes.get(i);
             var position = spike.getPosition();
-            
+
             spikeArray[i * 3] = position.x;
             spikeArray[i * 3 + 1] = position.y;
             spikeArray[i * 3 + 2] = spike.getSize();
         }
         gwm.setSpikes(spikeArray);
-        
+
         float[] placedSpikeArray = new float[placedSpikes.size() * 4];
         for (int i = 0; i < placedSpikes.size(); i++) {
             var placedSpike = placedSpikes.get(i);
             var position = placedSpike.getPosition();
-            
+
             placedSpikeArray[i * 4] = position.x;
             placedSpikeArray[i * 4 + 1] = position.y;
             placedSpikeArray[i * 4 + 2] = placedSpike.getSize();

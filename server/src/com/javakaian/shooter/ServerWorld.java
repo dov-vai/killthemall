@@ -16,13 +16,10 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.strategy.*;
 import com.javakaian.shooter.command.Command;
 import com.javakaian.shooter.command.PlaceSpikeCommand;
+import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
 
-import com.javakaian.shooter.weapons.Weapon;
-import com.javakaian.shooter.weapons.Rifle;
-import com.javakaian.shooter.weapons.Shotgun;
-import com.javakaian.shooter.weapons.Sniper;
 import com.javakaian.shooter.builder.WeaponDirector;
 import com.javakaian.shooter.weapons.decorators.DamageBoostAttachment;
 import com.javakaian.shooter.weapons.decorators.ExtendedMagazineAttachment;
@@ -30,14 +27,10 @@ import com.javakaian.shooter.weapons.decorators.GripAttachment;
 import com.javakaian.shooter.weapons.decorators.ScopeAttachment;
 import com.javakaian.shooter.weapons.decorators.SilencerAttachment;
 import com.javakaian.shooter.iterator.*;
+import com.javakaian.shooter.iterator.Iterator;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class ServerWorld implements OMessageListener {
 
@@ -60,16 +53,16 @@ public class ServerWorld implements OMessageListener {
 
     private BulletFactory bulletFactory;
 
-    //weapon system
+    // weapon system
     private WeaponDirector weaponDirector;
     private Map<Integer, Weapon> playerWeapons;
     private float gameTime = 0f;
-    
+
     private EnemyBehaviorStrategy[] behaviorStrategies;
     private int strategyIndex = 0;
     private float strategySwitchTimer = 0f;
     private SecureRandom rng = new SecureRandom();
-    
+
     // Command pattern for spike placement - stack to support multiple undos
     private Map<Integer, Stack<Command>> playerSpikeCommands;
     // Map KryoNet connection ID -> player ID for cleanup on disconnect
@@ -95,7 +88,7 @@ public class ServerWorld implements OMessageListener {
 
         bulletFactory = new ConcreteBulletFactory();
 
-        //weapon system
+        // weapon system
         weaponDirector = new WeaponDirector();
         playerWeapons = new HashMap<>();
 
@@ -106,12 +99,12 @@ public class ServerWorld implements OMessageListener {
         
         playerSpikeCommands = new HashMap<>();
         connectionToPlayerId = new HashMap<>();
-        
+
         behaviorStrategies = new EnemyBehaviorStrategy[]{
-            new AggressiveBehavior(),
-            new DefensiveBehavior(),
-            new FlankingBehavior(),
-            new ErraticBehavior()
+                new AggressiveBehavior(),
+                new DefensiveBehavior(),
+                new FlankingBehavior(),
+                new ErraticBehavior()
         };
     }
 
@@ -177,9 +170,21 @@ public class ServerWorld implements OMessageListener {
             logger.debug("Switched enemy behaviors randomly for all enemies");
         }
 
+        // Finalize reloads and send ammo updates if completed
+        for (Player p : players) {
+            Weapon w = p.getCurrentWeapon();
+            if (w != null && w.tryFinishReload(gameTime)) {
+                sendAmmoUpdate(p);
+            }
+        }
+
         GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes, powerUpsArray);
         server.sendToAllUDP(m);
 
+    }
+
+    public float getGameTime() {
+        return gameTime;
     }
 
     /**
@@ -304,14 +309,13 @@ public class ServerWorld implements OMessageListener {
                         new SecureRandom().nextInt(1000),
                         new SecureRandom().nextInt(1000),
                         10,
-                        strategy
-                );
+                        strategy);
                 enemies.add(newEnemy);
             }
             logger.debug("Spawned enemy with " + strategy.getStrategyName() + " behavior");
         }
     }
-    
+
     private void spawnRandomSpike() {
         if (spikeSpawnTime >= 5.0f && spikes.size() < 5) {
             spikeSpawnTime = 0;
@@ -320,7 +324,6 @@ public class ServerWorld implements OMessageListener {
             logger.debug("Spawned spike pickup. Total spikes: " + spikes.size());
         }
     }
-
 
     private void checkCollision() {
 
@@ -369,40 +372,40 @@ public class ServerWorld implements OMessageListener {
             }
 
         }
-        
+
         // Check spike pickup collisions
         for (Spike spike : spikes) {
             for (Player player : players) {
                 if (spike.isVisible() && player.getBoundRect().overlaps(spike.getBoundRect())) {
                     spike.setVisible(false);
                     player.addSpike();
-                    
+
                     InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
                     inventoryMsg.setPlayerId(player.getId());
                     inventoryMsg.setSpikeCount(player.getSpikeCount());
                     server.sendToAllUDP(inventoryMsg);
-                    
+
                     logger.debug("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
                 }
             }
         }
-        
+
         // Check placed spike collisions with other players
         for (PlacedSpike placedSpike : placedSpikes) {
             for (Player player : players) {
                 // Don't damage the player who placed the spike
-                if (placedSpike.isVisible() && !placedSpike.isConsumed() && 
-                    player.getId() != placedSpike.getPlayerId() &&
-                    player.getBoundRect().overlaps(placedSpike.getBoundRect())) {
-                    
+                if (placedSpike.isVisible() && !placedSpike.isConsumed() &&
+                        player.getId() != placedSpike.getPlayerId() &&
+                        player.getBoundRect().overlaps(placedSpike.getBoundRect())) {
+
                     placedSpike.setConsumed(true);
                     placedSpike.setVisible(false);
-                    
+
                     int spikeDamage = 20;
                     player.hit(spikeDamage);
-                    
+
                     logger.debug("Player " + player.getId() + " hit by spike for " + spikeDamage + " damage");
-                    
+
                     if (!player.isAlive()) {
                         PlayerDiedMessage m = new PlayerDiedMessage();
                         m.setPlayerId(player.getId());
@@ -423,11 +426,12 @@ public class ServerWorld implements OMessageListener {
 
         giveWeaponToPlayer(id, "pistol");
         sendWeaponInfoToPlayer(id);
-        logger.debug("Login Message recieved from : " + id + " with default weapon");        
+        logger.debug("Login Message recieved from : " + id + " with default weapon");
 
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
-        // Track which player ID belongs to this connection for proper cleanup on disconnect
+        // Track which player ID belongs to this connection for proper cleanup on
+        // disconnect
         connectionToPlayerId.put(con.getID(), id);
     }
 
@@ -495,79 +499,81 @@ public class ServerWorld implements OMessageListener {
     public void shootReceived(ShootMessage m) {
 
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-        .ifPresent(p -> {
-            // MODIFIED: Check if player can shoot based on fire rate
-            if (p.getCurrentWeapon() != null) {
-                
-                // Check fire rate cooldown
-                if (!p.canShoot(gameTime)) {
-                    System.out.println("Player " + p.getId() + " weapon on cooldown");
-                    return; // Can't shoot yet - fire rate too fast
-                }
-                
-                Weapon weapon = p.getCurrentWeapon();
-                BulletType bulletType = getBulletTypeFromWeapon(weapon);
-                
-                System.out.println("Player " + p.getId() + " fired " + weapon.getName() + 
+                .ifPresent(p -> {
+                    // MODIFIED: Check if player can shoot based on fire rate
+                    if (p.getCurrentWeapon() != null) {
+
+                        // Check fire rate cooldown
+                        if (!p.canShoot(gameTime)) {
+                            System.out.println("Player " + p.getId() + " weapon on cooldown");
+                            return; // Can't shoot yet - fire rate too fast
+                        }
+
+                        Weapon weapon = p.getCurrentWeapon();
+
+                        System.out.println("Player " + p.getId() + " fired " + weapon.getName() +
                                 " (Fire Rate: " + weapon.getFireRate() + ")");
-                
-                // Create bullet
-                Bullet b = bulletFactory.createBullet(
-                    bulletType,
-                    p.getPosition().x + p.getBoundRect().width / 2,
-                    p.getPosition().y + p.getBoundRect().height / 2,
-                    m.getAngleDeg(),
-                    m.getPlayerId()
-                );
-                
-                bullets.add(b);
-                p.recordShot(gameTime); // Record shot time
-                
-            } else {
-                // No weapon, use default
-                BulletType bulletType = BulletType.STANDARD;
-                System.out.println("Player " + p.getId() + " fired default weapon");
-                
-                Bullet b = bulletFactory.createBullet(
-                    bulletType,
-                    p.getPosition().x + p.getBoundRect().width / 2,
-                    p.getPosition().y + p.getBoundRect().height / 2,
-                    m.getAngleDeg(),
-                    m.getPlayerId()
-                );
-                
-                bullets.add(b);
-            }
-        });
+
+                        // Use Template Method on the weapon
+                        weapon.fireWeapon(this, p, m.getAngleDeg());
+
+                        // Record shot time for cooldowns
+                        p.recordShot(gameTime);
+
+                        // Send ammo update to UI
+                        sendAmmoUpdate(p);
+
+                    } else {
+                        // No weapon, use default
+                        System.out.println("Player " + p.getId() + " fired default weapon");
+
+                        createBullet(BulletType.STANDARD, p, m.getAngleDeg());
+                    }
+                });
 
     }
-    
-    // weapon system
-    private BulletType getBulletTypeFromWeapon(Weapon weapon) {
-        // Unwrap decorators to inspect the base weapon type
-        Weapon base = weapon;
-        while (base instanceof com.javakaian.shooter.weapons.decorators.WeaponAttachment wa) {
-            base = wa.getWrapped();
-        }
-        if (base instanceof Rifle) return BulletType.STANDARD;
-        if (base instanceof Shotgun) return BulletType.HEAVY;
-        if (base instanceof Sniper) return BulletType.FAST;
-        return BulletType.STANDARD;
+
+    private void sendAmmoUpdate(Player p) {
+        if (p.getCurrentWeapon() == null)
+            return;
+        Weapon w = p.getCurrentWeapon();
+        AmmoUpdateMessage msg = new AmmoUpdateMessage();
+        msg.setPlayerId(p.getId());
+        msg.setCurrentAmmo(w.getCurrentAmmo());
+        msg.setAmmoCapacity(w.getAmmoCapacity());
+        server.sendToAllUDP(msg);
     }
-    
+
+    /**
+     * Helper for weapons to spawn bullets consistently.
+     */
+    public void createBullet(BulletType type, Player owner, float angleRad) {
+        Bullet b = bulletFactory.createBullet(
+                type,
+                owner.getPosition().x + owner.getBoundRect().width / 2,
+                owner.getPosition().y + owner.getBoundRect().height / 2,
+                angleRad,
+                owner.getId());
+        bullets.add(b);
+    }
+
     public void giveWeaponToPlayer(int playerId, String weaponConfig) {
         players.stream().filter(p -> p.getId() == playerId).findFirst()
-        .ifPresent(p -> {
-            String baseConfig = extractBaseConfig(weaponConfig);
-            Weapon weapon = createWeaponByConfig(baseConfig);
-            weapon = decorateWeaponForConfig(weapon, weaponConfig);
-            System.out.println("Created weapon: " + weapon.getName() + " with damage: " + weapon.getDamage());
-            
-            p.equipWeapon(weapon);
-            playerWeapons.put(playerId, weapon);
-        });
+                .ifPresent(p -> {
+                    String baseConfig = extractBaseConfig(weaponConfig);
+                    Weapon weapon = createWeaponByConfig(baseConfig);
+                    weapon = decorateWeaponForConfig(weapon, weaponConfig);
+                    weapon.setCurrentAmmo(weapon.getAmmoCapacity());
+                    System.out.println("Created weapon: " + weapon.getName() + " with damage: " + weapon.getDamage());
+
+                    p.equipWeapon(weapon);
+                    playerWeapons.put(playerId, weapon);
+
+                    // Notify UI of initial ammo state
+                    sendAmmoUpdate(p);
+                });
     }
-    
+
     private Weapon createWeaponByConfig(String config) {
         return switch (config) {
             case "assault_rifle" -> weaponDirector.createAssaultRifle();
@@ -578,12 +584,16 @@ public class ServerWorld implements OMessageListener {
     }
 
     /**
-     * Applies context-appropriate attachments to a base weapon using Decorator chaining.
-     * You can expand this mapping or parse richer configs (e.g., "assault_rifle+mag:15+scope:4x:150").
+     * Applies context-appropriate attachments to a base weapon using Decorator
+     * chaining.
+     * You can expand this mapping or parse richer configs (e.g.,
+     * "assault_rifle+mag:15+scope:4x:150").
      */
     private Weapon decorateWeaponForConfig(Weapon base, String weaponConfig) {
-        if (base == null) return null;
-        if (weaponConfig == null || weaponConfig.isEmpty()) return base;
+        if (base == null)
+            return null;
+        if (weaponConfig == null || weaponConfig.isEmpty())
+            return base;
 
         // Support either simple presets or +attachment tokens
         if (!weaponConfig.contains("+")) {
@@ -611,7 +621,8 @@ public class ServerWorld implements OMessageListener {
         // parts[0] is base, already used
         for (int i = 1; i < parts.length; i++) {
             String token = parts[i].trim();
-            if (token.isEmpty()) continue;
+            if (token.isEmpty())
+                continue;
             try {
                 // scope:name:bonusRange
                 if (token.startsWith("scope")) {
@@ -663,102 +674,124 @@ public class ServerWorld implements OMessageListener {
     }
 
     private String extractBaseConfig(String fullConfig) {
-        if (fullConfig == null || fullConfig.isEmpty()) return "assault_rifle";
+        if (fullConfig == null || fullConfig.isEmpty())
+            return "assault_rifle";
         int plus = fullConfig.indexOf('+');
-        if (plus < 0) return fullConfig;
+        if (plus < 0)
+            return fullConfig;
         return fullConfig.substring(0, plus);
     }
 
     private void sendWeaponInfoToPlayer(int playerId) {
         players.stream().filter(p -> p.getId() == playerId).findFirst()
-        .ifPresent(p -> {
-            if (p.getCurrentWeapon() != null) {
-                Weapon weapon = p.getCurrentWeapon();
-                
-                WeaponInfoMessage info = new WeaponInfoMessage();
-                info.setPlayerId(playerId);
-                info.setWeaponName(weapon.getName());
-                
-                StringBuilder components = new StringBuilder();
-                if (weapon.getBarrel() != null) components.append(weapon.getBarrel()).append(", ");
-                if (weapon.getScope() != null && !weapon.getScope().equals("null")) components.append(weapon.getScope()).append(", ");
-                if (weapon.getStock() != null) components.append(weapon.getStock()).append(", ");
-                if (weapon.getMagazine() != null && !weapon.getMagazine().equals("null")) components.append(weapon.getMagazine()).append(", ");
-                if (weapon.getGrip() != null && !weapon.getGrip().equals("null")) components.append(weapon.getGrip());
-                
-                String componentsStr = components.toString().replaceAll(", $", "");
-                info.setComponents(componentsStr);
-                
-                String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
-                    weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
-                info.setStats(stats);
-                
-                server.sendToAllUDP(info);
-            }
-        });
+                .ifPresent(p -> {
+                    if (p.getCurrentWeapon() != null) {
+                        Weapon weapon = p.getCurrentWeapon();
+
+                        WeaponInfoMessage info = new WeaponInfoMessage();
+                        info.setPlayerId(playerId);
+                        info.setWeaponName(weapon.getName());
+
+                        StringBuilder components = new StringBuilder();
+                        if (weapon.getBarrel() != null)
+                            components.append(weapon.getBarrel()).append(", ");
+                        if (weapon.getScope() != null && !weapon.getScope().equals("null"))
+                            components.append(weapon.getScope()).append(", ");
+                        if (weapon.getStock() != null)
+                            components.append(weapon.getStock()).append(", ");
+                        if (weapon.getMagazine() != null && !weapon.getMagazine().equals("null"))
+                            components.append(weapon.getMagazine()).append(", ");
+                        if (weapon.getGrip() != null && !weapon.getGrip().equals("null"))
+                            components.append(weapon.getGrip());
+
+                        String componentsStr = components.toString().replaceAll(", $", "");
+                        info.setComponents(componentsStr);
+
+                        String stats = String.format("Dmg:%.0f | Range:%.0f | Fire:%.1f | Ammo:%d",
+                                weapon.getDamage(), weapon.getRange(), weapon.getFireRate(), weapon.getAmmoCapacity());
+                        info.setStats(stats);
+
+                        server.sendToAllUDP(info);
+                    }
+                });
     }
 
     @Override
     public void weaponChangeReceived(WeaponChangeMessage m) {
         giveWeaponToPlayer(m.getPlayerId(), m.getWeaponConfig());
-        
+
         sendWeaponInfoToPlayer(m.getPlayerId());
 
-        
         logger.debug("Player " + m.getPlayerId() + " changed weapon to: " + m.getWeaponConfig());
     }
-    
+
     @Override
     public void placeSpikeReceived(PlaceSpikeMessage m) {
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-        .ifPresent(player -> {
-            if (player.hasSpikes()) {
-                // Calculate position in front of player based on rotation
-                float distance = 60; // Place spike 60 units in front
-                float angleRad = (float) Math.toRadians(m.getRotation());
-                float x = player.getPosition().x + (float) Math.cos(angleRad) * distance;
-                float y = player.getPosition().y - (float) Math.sin(angleRad) * distance;
-                
-                PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikes, x, y, m.getRotation());
-                command.execute();
-                
-                playerSpikeCommands.computeIfAbsent(player.getId(), k -> new Stack<>()).push(command);
-                
-                InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
-                inventoryMsg.setPlayerId(player.getId());
-                inventoryMsg.setSpikeCount(player.getSpikeCount());
-                server.sendToAllUDP(inventoryMsg);
-                
-                logger.debug("Player " + player.getId() + " placed spike at (" + x + ", " + y + ") rotation: " + m.getRotation());
-            }
-        });
+                .ifPresent(player -> {
+                    if (player.hasSpikes()) {
+                        // Calculate position in front of player based on rotation
+                        float distance = 60; // Place spike 60 units in front
+                        float angleRad = (float) Math.toRadians(m.getRotation());
+                        float x = player.getPosition().x + (float) Math.cos(angleRad) * distance;
+                        float y = player.getPosition().y - (float) Math.sin(angleRad) * distance;
+
+                        PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikes, x, y, m.getRotation());
+                        command.execute();
+
+                        playerSpikeCommands.computeIfAbsent(player.getId(), k -> new Stack<>()).push(command);
+
+                        InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                        inventoryMsg.setPlayerId(player.getId());
+                        inventoryMsg.setSpikeCount(player.getSpikeCount());
+                        server.sendToAllUDP(inventoryMsg);
+
+                        logger.debug("Player " + player.getId() + " placed spike at (" + x + ", " + y + ") rotation: "
+                                + m.getRotation());
+                    }
+                });
     }
-    
+
+    @Override
+    public void reloadReceived(ReloadMessage m) {
+        players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+                .ifPresent(p -> {
+                    Weapon w = p.getCurrentWeapon();
+                    if (w == null)
+                        return;
+                    if (!w.needsReload())
+                        return;
+                    if (w.isReloading(gameTime))
+                        return;
+                    w.startReload(gameTime);
+                });
+    }
+
     @Override
     public void undoSpikeReceived(UndoSpikeMessage m) {
         Stack<Command> commandStack = playerSpikeCommands.get(m.getPlayerId());
-        
+
         while (commandStack != null && !commandStack.isEmpty()) {
             Command lastCommand = commandStack.pop();
-            
+
             if (lastCommand.canUndo()) {
                 lastCommand.undo();
-                
+
                 players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
-                .ifPresent(player -> {
-                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
-                    inventoryMsg.setPlayerId(player.getId());
-                    inventoryMsg.setSpikeCount(player.getSpikeCount());
-                    server.sendToAllUDP(inventoryMsg);
-                });
-                
+                        .ifPresent(player -> {
+                            InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                            inventoryMsg.setPlayerId(player.getId());
+                            inventoryMsg.setSpikeCount(player.getSpikeCount());
+                            server.sendToAllUDP(inventoryMsg);
+                        });
+
                 logger.debug("Player " + m.getPlayerId() + " undid spike placement");
                 return;
             } else {
                 logger.debug("Player " + m.getPlayerId() + " spike was consumed, skipping to previous spike");
             }
         }
-        
+
         if (commandStack == null || commandStack.isEmpty()) {
             logger.debug("Player " + m.getPlayerId() + " has no spikes to undo");
         }

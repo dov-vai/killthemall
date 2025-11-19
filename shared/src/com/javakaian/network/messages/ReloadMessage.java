@@ -1,12 +1,9 @@
 package com.javakaian.network.messages;
 
-/**
- * Message sent from client to server to undo the last placed spike
- */
-public class UndoSpikeMessage {
+public class ReloadMessage {
     private int playerId;
 
-    public UndoSpikeMessage() {
+    public ReloadMessage() {
     }
 
     public int getPlayerId() {
@@ -17,3 +14,4 @@ public class UndoSpikeMessage {
         this.playerId = playerId;
     }
 }
+

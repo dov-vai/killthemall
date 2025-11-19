@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.shooter.weapons.bridge.BridgeWeapon;
 
-public class Player{
+public class Player {
 
     private float size;
     private Vector2 position;
@@ -17,7 +17,7 @@ public class Player{
     //weapon system
     private Weapon currentWeapon;
     private float lastShotTime = 0;
-    
+
     //spike inventory
     private int spikeCount;
 
@@ -113,7 +113,7 @@ public class Player{
         if (this.health >= 100)
             return;
         this.health += 10;
-        if (this.health > 100 ) this.health = 100;
+        if (this.health > 100) this.health = 100;
     }
 
     public void hit(int damage) {
@@ -156,44 +156,44 @@ public class Player{
         this.lastShotTime = 0;
         System.out.println("Player " + id + " equipped: " + weapon.getDescription());
     }
-    
+
     public boolean canShoot(float currentTime) {
         if (currentWeapon == null) return false;
-        
+
         float timeSinceLastShot = currentTime - lastShotTime;
         float requiredCooldown = 1.0f / currentWeapon.getFireRate();
-        
+
         boolean canShoot = timeSinceLastShot >= requiredCooldown;
-        
-        System.out.println("Player " + id + " canShoot check: time=" + currentTime + 
-                        " lastShot=" + lastShotTime + " timeSince=" + timeSinceLastShot + 
-                        " required=" + requiredCooldown + " result=" + canShoot);
-        
+
+        System.out.println("Player " + id + " canShoot check: time=" + currentTime +
+                " lastShot=" + lastShotTime + " timeSince=" + timeSinceLastShot +
+                " required=" + requiredCooldown + " result=" + canShoot);
+
         return canShoot;
     }
-    
+
     public Weapon getCurrentWeapon() {
         return currentWeapon;
     }
-    
+
     public void recordShot(float currentTime) {
         this.lastShotTime = currentTime;
         System.out.println("Player " + id + " shot recorded at time " + currentTime);
     }
-    
+
     //spike inventory system
     public int getSpikeCount() {
         return spikeCount;
     }
-    
+
     public void addSpike() {
         this.spikeCount++;
     }
-    
+
     public boolean hasSpikes() {
         return spikeCount > 0;
     }
-    
+
     public void removeSpike() {
         if (spikeCount > 0) {
             spikeCount--;

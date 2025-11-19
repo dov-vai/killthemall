@@ -19,18 +19,18 @@ public class ExtendedMagazineAttachment extends WeaponAttachment {
     public int getAmmoCapacity() {
         return baseWeapon.getAmmoCapacity() + extraAmmo;
     }
-    
+
     @Override
     public float getFireRate() {
         // Slightly slower fire rate due to heavier magazine
         return Math.max(0.1f, baseWeapon.getFireRate() - 0.05f);
     }
-    
+
     @Override
     public float getBulletSize() {
         // No change to bullet size
-        float baseSize = (baseWeapon instanceof WeaponAttachment) 
-                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+        float baseSize = (baseWeapon instanceof WeaponAttachment)
+                ? ((WeaponAttachment) baseWeapon).getBulletSize()
                 : 1.0f;
         return baseSize;
     }

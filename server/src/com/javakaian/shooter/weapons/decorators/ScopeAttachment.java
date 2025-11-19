@@ -20,18 +20,18 @@ public class ScopeAttachment extends WeaponAttachment {
     public float getRange() {
         return baseWeapon.getRange() + bonusRange;
     }
-    
+
     @Override
     public float getFireRate() {
         // Slightly slower fire rate (heavier optic)
         return Math.max(0.1f, baseWeapon.getFireRate() - 0.1f);
     }
-    
+
     @Override
     public float getBulletSize() {
         // No change to bullet size
-        float baseSize = (baseWeapon instanceof WeaponAttachment) 
-                ? ((WeaponAttachment) baseWeapon).getBulletSize() 
+        float baseSize = (baseWeapon instanceof WeaponAttachment)
+                ? ((WeaponAttachment) baseWeapon).getBulletSize()
                 : 1.0f;
         return baseSize;
     }
