@@ -10,6 +10,8 @@ public class Player {
     private Vector2 position;
     private int id = -1;
     private int health;
+    private boolean hasShield = false;
+    private int shieldHealth = 0;
 
     private Vector2 center;
 
@@ -58,6 +60,22 @@ public class Player {
 
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    public boolean hasShield() {
+        return hasShield;
+    }
+
+    public int getShieldHealth() {
+        return shieldHealth;
+    }
+
+    public void setShield(boolean hasShield) {
+        this.hasShield = hasShield;
+    }
+
+    public void setShieldHealth(int shieldHealth) {
+        this.shieldHealth = shieldHealth;
     }
 
 }

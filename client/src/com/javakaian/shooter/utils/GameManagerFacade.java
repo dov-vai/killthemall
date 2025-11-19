@@ -39,9 +39,10 @@ public class GameManagerFacade {
                                   List<?> bullets,
                                   List<?> spikes,
                                   List<?> placedSpikes,
+                                  List<?> powerUps,
                                   Player mainPlayer,
                                   AimLine aimLine) {
-        objectRenderSystem.renderObjects(sr, otherPlayers, enemies, bullets, spikes, placedSpikes, mainPlayer, aimLine);
+        objectRenderSystem.renderObjects(sr, otherPlayers, enemies, bullets, spikes, placedSpikes, powerUps, mainPlayer, aimLine);
     }
 
     public void renderText(SpriteBatch sb, BitmapFont font, String text, TextAlignment alignment, float x, float y) {

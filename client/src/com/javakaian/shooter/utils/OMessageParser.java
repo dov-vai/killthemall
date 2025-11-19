@@ -46,15 +46,19 @@ public class OMessageParser {
 
         float[] tp = m.getPlayers();
         List<Player> plist = new ArrayList<>();
-        for (int i = 0; i < tp.length / 4; i++) {
+        for (int i = 0; i < tp.length / 6; i++) {
 
-            float x = tp[i * 4];
-            float y = tp[i * 4 + 1];
-            float id = tp[i * 4 + 2];
-            float health = tp[i * 4 + 3];
+            float x = tp[i * 6];
+            float y = tp[i * 6 + 1];
+            float id = tp[i * 6 + 2];
+            float health = tp[i * 6 + 3];
+            float hasShield = tp[i * 6 + 4];
+            float shieldHealth = tp[i * 6 + 5];
             Player p = new Player(x, y, 50);
             p.setHealth((int) health);
             p.setId((int) id);
+            p.setShield(hasShield == 1f);
+            p.setShieldHealth((int) shieldHealth);
 
             plist.add(p);
 
@@ -123,6 +127,27 @@ public class OMessageParser {
         }
 
         return pslist;
+    }
+
+    public static List<com.javakaian.shooter.shapes.PowerUp> getPowerUpsFromGWM(GameWorldMessage m) {
+        List<com.javakaian.shooter.shapes.PowerUp> powerUps = new ArrayList<>();
+        
+        float[] powerUpArray = m.getPowerUps();
+        if (powerUpArray == null) return powerUps;
+        
+        for (int i = 0; i < powerUpArray.length; i += 4) {
+            float x = powerUpArray[i];
+            float y = powerUpArray[i + 1];
+            float size = powerUpArray[i + 2];
+            int typeOrdinal = (int) powerUpArray[i + 3];
+            
+            com.javakaian.shooter.shapes.PowerUp.PowerUpType type = 
+                com.javakaian.shooter.shapes.PowerUp.PowerUpType.values()[typeOrdinal];
+            
+            powerUps.add(new com.javakaian.shooter.shapes.PowerUp(x, y, size, type));
+        }
+        
+        return powerUps;
     }
 
 }
