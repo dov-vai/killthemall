@@ -187,7 +187,7 @@ public class ServerWorld implements OMessageListener {
      * Demonstrates Iterator pattern with 3 different data structures.
      */
     private void spawnRandomPowerUp() {
-        if (powerUpSpawnTime >= 8.0f && powerUpsArray.size() < 3) {
+        if (powerUpSpawnTime >= 5.0f && powerUpsArray.size() < 5) { //spawn timer && amount
             powerUpSpawnTime = 0;
             
             PowerUp.PowerUpType[] types = PowerUp.PowerUpType.values();
@@ -198,7 +198,7 @@ public class ServerWorld implements OMessageListener {
                 rng.nextInt(1000),
                 rng.nextInt(1000),
                 randomType,
-                10.0f // 10 second duration
+                8.0f // effect duration
             );
             
             powerUpsArray.add(powerUp);
