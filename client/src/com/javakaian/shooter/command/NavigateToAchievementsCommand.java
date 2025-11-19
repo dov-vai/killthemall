@@ -9,26 +9,26 @@ import com.javakaian.states.State.StateEnum;
  */
 public class NavigateToAchievementsCommand implements InputCommand {
     private final MenuState menuState;
-    
+
     public NavigateToAchievementsCommand(MenuState menuState) {
         this.menuState = menuState;
     }
-    
+
     @Override
     public void execute() {
         menuState.getSc().setState(StateEnum.ACHIEVEMENTS_STATE);
     }
-    
+
     @Override
     public void undo() {
         // Not undoable
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Navigate to Achievements";

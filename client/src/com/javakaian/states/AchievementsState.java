@@ -8,7 +8,6 @@ import com.javakaian.shooter.achievements.Achievement;
 import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.shooter.input.AchievementsStateInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
-import com.javakaian.shooter.utils.GameUtils;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 
 import java.util.List;

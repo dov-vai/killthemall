@@ -32,9 +32,13 @@ public class AchievementManager extends AchievementsObservable implements StatsO
         add(new Achievement("iron_man", "Iron Man", "Survive 60 seconds in a session"));
     }
 
-    private void add(Achievement a) { catalog.put(a.getId(), a); }
+    private void add(Achievement a) {
+        catalog.put(a.getId(), a);
+    }
 
-    public Collection<Achievement> getCatalog() { return catalog.values(); }
+    public Collection<Achievement> getCatalog() {
+        return catalog.values();
+    }
 
     public List<Achievement> getUnlocked() {
         List<Achievement> list = new ArrayList<>();
@@ -45,7 +49,9 @@ public class AchievementManager extends AchievementsObservable implements StatsO
         return list;
     }
 
-    public boolean isUnlocked(String id) { return unlocked.contains(id); }
+    public boolean isUnlocked(String id) {
+        return unlocked.contains(id);
+    }
 
     private void unlock(String id) {
         if (unlocked.contains(id)) return;
@@ -78,7 +84,8 @@ public class AchievementManager extends AchievementsObservable implements StatsO
             case ShotsFiredChangedMessage m when m.projectedTotalShots() >= 100 -> unlock("rookie_shooter");
             case DistanceTraveledChangedMessage m when m.projectedTotalDistance() >= 5000f -> unlock("marathon");
             case SessionEndedMessage m when m.sessionTimeSeconds() >= 60f -> unlock("iron_man");
-            default -> {}
+            default -> {
+            }
         }
     }
 }

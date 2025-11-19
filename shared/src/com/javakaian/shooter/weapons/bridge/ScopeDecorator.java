@@ -5,17 +5,17 @@ package com.javakaian.shooter.weapons.bridge;
  * Increases range, slightly reduces fire rate (heavier)
  */
 public class ScopeDecorator extends BridgeWeapon {
-    
+
     private final BridgeWeapon baseWeapon;
     private final String scopeName;
     private final float rangeBonus;
-    
+
     public ScopeDecorator(BridgeWeapon baseWeapon, String scopeName, float rangeBonus) {
         super(baseWeapon.getName(), baseWeapon.getFiringMechanism());
         this.baseWeapon = baseWeapon;
         this.scopeName = scopeName;
         this.rangeBonus = rangeBonus;
-        
+
         // Copy base stats
         this.damage = baseWeapon.getDamage();
         this.range = baseWeapon.getRange() + rangeBonus; // Bonus range
@@ -23,7 +23,7 @@ public class ScopeDecorator extends BridgeWeapon {
         this.ammoCapacity = baseWeapon.getAmmoCapacity();
         this.currentAmmo = baseWeapon.getCurrentAmmo();
     }
-    
+
     @Override
     public float getEffectiveFireRate() {
         // Only apply fire rate penalty in Full Auto mode
@@ -32,18 +32,18 @@ public class ScopeDecorator extends BridgeWeapon {
         }
         return baseWeapon.getEffectiveFireRate();
     }
-    
+
     @Override
     public String getWeaponType() {
         return baseWeapon.getWeaponType() + " [Scope]";
     }
-    
+
     @Override
     public void decrementAmmo(int amount) {
         super.decrementAmmo(amount);
         baseWeapon.decrementAmmo(amount);
     }
-    
+
     @Override
     public void reload() {
         super.reload();

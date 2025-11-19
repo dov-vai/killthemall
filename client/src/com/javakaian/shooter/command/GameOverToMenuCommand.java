@@ -9,26 +9,26 @@ import com.javakaian.states.State.StateEnum;
  */
 public class GameOverToMenuCommand implements InputCommand {
     private final GameOverState gameOverState;
-    
+
     public GameOverToMenuCommand(GameOverState gameOverState) {
         this.gameOverState = gameOverState;
     }
-    
+
     @Override
     public void execute() {
         gameOverState.getSc().setState(StateEnum.MENU_STATE);
     }
-    
+
     @Override
     public void undo() {
         // Not undoable
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Return to Menu";

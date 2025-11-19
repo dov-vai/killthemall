@@ -8,7 +8,6 @@ import com.javakaian.shooter.input.GameOverInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
-import com.javakaian.shooter.utils.GameUtils;
 
 /**
  * This class controls game over state.

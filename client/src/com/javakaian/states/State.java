@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.javakaian.shooter.utils.GameConstants;
 import com.javakaian.shooter.utils.GameManagerFacade;
-import com.javakaian.shooter.utils.GameUtils;
 
 /**
  * This class represents the game states. Usually most of the games will have

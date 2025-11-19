@@ -1,19 +1,19 @@
 package com.javakaian.shooter.weapons.bridge;
 
 /**
- * Decorator for BridgeWeapon - Extended Magazine attachment  
+ * Decorator for BridgeWeapon - Extended Magazine attachment
  * Increases ammo capacity, slightly reduces fire rate (heavier)
  */
 public class ExtendedMagDecorator extends BridgeWeapon {
-    
+
     private final BridgeWeapon baseWeapon;
     private final int extraAmmo;
-    
+
     public ExtendedMagDecorator(BridgeWeapon baseWeapon, int extraAmmo) {
         super(baseWeapon.getName(), baseWeapon.getFiringMechanism());
         this.baseWeapon = baseWeapon;
         this.extraAmmo = extraAmmo;
-        
+
         // Copy base stats
         this.damage = baseWeapon.getDamage();
         this.range = baseWeapon.getRange();
@@ -21,7 +21,7 @@ public class ExtendedMagDecorator extends BridgeWeapon {
         this.ammoCapacity = baseWeapon.getAmmoCapacity() + extraAmmo; // Extra ammo
         this.currentAmmo = this.ammoCapacity; // Full reload
     }
-    
+
     @Override
     public float getEffectiveFireRate() {
         // Only apply fire rate penalty in Full Auto mode
@@ -30,17 +30,17 @@ public class ExtendedMagDecorator extends BridgeWeapon {
         }
         return baseWeapon.getEffectiveFireRate();
     }
-    
+
     @Override
     public String getWeaponType() {
         return baseWeapon.getWeaponType() + " [Extended Mag]";
     }
-    
+
     @Override
     public void decrementAmmo(int amount) {
         super.decrementAmmo(amount);
     }
-    
+
     @Override
     public void reload() {
         super.reload();

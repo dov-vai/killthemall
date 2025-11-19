@@ -2,11 +2,10 @@ package com.javakaian.states;
 
 import com.badlogic.gdx.Gdx;
 import com.javakaian.shooter.achievements.AchievementManager;
-import com.javakaian.states.State.StateEnum;
-
-import com.javakaian.shooter.logger.IGameLogger;
 import com.javakaian.shooter.logger.FileGameLoggerAdapter;
 import com.javakaian.shooter.logger.GameLogEntry;
+import com.javakaian.shooter.logger.IGameLogger;
+import com.javakaian.states.State.StateEnum;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,10 +48,10 @@ public class StateController {
         gameLogger = new FileGameLoggerAdapter("logs/state-transitions.log");
 
         GameLogEntry initEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "CONTROLLER_INIT",
-            "StateController initialized for server: " + ip,
-            "INFO"
+                System.currentTimeMillis(),
+                "CONTROLLER_INIT",
+                "StateController initialized for server: " + ip,
+                "INFO"
         );
         gameLogger.logEvent(initEvent);
     }
@@ -69,7 +68,7 @@ public class StateController {
         currentState = stateMap.get(stateEnum.ordinal());
 
         boolean isNewState = (currentState == null);
-        
+
         if (currentState == null) {
             switch (stateEnum) {
                 case PLAY_STATE:
@@ -97,11 +96,11 @@ public class StateController {
 
         String newState = currentState.getClass().getSimpleName();
         GameLogEntry stateChangeEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "STATE_CHANGE",
-            "State transition: " + previousState + " -> " + newState + 
-            (isNewState ? " (newly created)" : " (existing)"),
-            "INFO"
+                System.currentTimeMillis(),
+                "STATE_CHANGE",
+                "State transition: " + previousState + " -> " + newState +
+                        (isNewState ? " (newly created)" : " (existing)"),
+                "INFO"
         );
         gameLogger.logEvent(stateChangeEvent);
     }
@@ -126,10 +125,10 @@ public class StateController {
      */
     public void dispose() {
         GameLogEntry disposeEvent = new GameLogEntry(
-            System.currentTimeMillis(),
-            "CONTROLLER_DISPOSE",
-            "StateController disposing " + stateMap.size() + " states",
-            "INFO"
+                System.currentTimeMillis(),
+                "CONTROLLER_DISPOSE",
+                "StateController disposing " + stateMap.size() + " states",
+                "INFO"
         );
         gameLogger.logEvent(disposeEvent);
 

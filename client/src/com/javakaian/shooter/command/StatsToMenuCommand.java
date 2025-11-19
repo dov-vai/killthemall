@@ -8,26 +8,26 @@ import com.javakaian.states.StatsState;
  */
 public class StatsToMenuCommand implements InputCommand {
     private final StatsState statsState;
-    
+
     public StatsToMenuCommand(StatsState statsState) {
         this.statsState = statsState;
     }
-    
+
     @Override
     public void execute() {
         statsState.backToMenu();
     }
-    
+
     @Override
     public void undo() {
         // Not undoable
     }
-    
+
     @Override
     public boolean canUndo() {
         return false;
     }
-    
+
     @Override
     public String getDescription() {
         return "Back to Menu";

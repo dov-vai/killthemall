@@ -2,7 +2,9 @@ package com.javakaian.shooter.input;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
-import com.javakaian.shooter.command.*;
+import com.javakaian.shooter.command.GameOverToMenuCommand;
+import com.javakaian.shooter.command.KeyBindingManager;
+import com.javakaian.shooter.command.RestartGameCommand;
 import com.javakaian.states.GameOverState;
 
 /**
@@ -20,7 +22,7 @@ public class GameOverInput extends InputAdapter {
         this.keyBindingManager = new KeyBindingManager();
         setupDefaultKeyBindings();
     }
-    
+
     /**
      * Setup default key bindings for GameOverState
      */
@@ -33,7 +35,7 @@ public class GameOverInput extends InputAdapter {
     public boolean keyDown(int keycode) {
         return keyBindingManager.handleKeyPress(keycode);
     }
-    
+
     /**
      * Get the key binding manager for runtime key reconfiguration
      */
