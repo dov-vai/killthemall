@@ -140,11 +140,6 @@ public class Player{
                 this.alive = false;
             }
         }
-
-        // this.health -= damage;
-        // if (this.health <= 0) {
-        //     this.alive = false;
-        // }
     }
 
     public boolean isVisible() {

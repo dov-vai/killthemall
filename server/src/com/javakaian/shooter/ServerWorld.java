@@ -341,16 +341,6 @@ public class ServerWorld implements OMessageListener {
 
                     players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
                     .ifPresent(attacker -> {
-                        // if (attacker.getCurrentWeapon() != null) {
-                        //     Weapon attackerWeapon = attacker.getCurrentWeapon();
-                        //     int weaponDamage = (int) attackerWeapon.getDamage();
-                        //     String weaponName = attackerWeapon.getName();
-                            
-                        //     System.out.println("Player " + p.getId() + " hit by " + weaponName + 
-                        //         " for " + weaponDamage + " damage");
-                            
-                        //     p.hit(weaponDamage);
-                        // }
                         if (attacker.getCurrentWeapon() != null) {
                             Weapon attackerWeapon = attacker.getCurrentWeapon();
                             
@@ -474,29 +464,6 @@ public class ServerWorld implements OMessageListener {
 
     @Override
     public void playerMovedReceived(PositionMessage m) {
-
-        // players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst().ifPresent(p -> {
-
-        //     Vector2 v = p.getPosition();
-        //     switch (m.getDirection()) {
-        //         case LEFT:
-        //             v.x -= deltaTime * 200;
-        //             break;
-        //         case RIGHT:
-        //             v.x += deltaTime * 200;
-        //             break;
-        //         case UP:
-        //             v.y -= deltaTime * 200;
-        //             break;
-        //         case DOWN:
-        //             v.y += deltaTime * 200;
-        //             break;
-        //         default:
-        //             break;
-        //     }
-
-        // });
-
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst().ifPresent(p -> {
 
             Vector2 v = p.getPosition();
