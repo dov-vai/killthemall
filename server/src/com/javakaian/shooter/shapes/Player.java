@@ -37,6 +37,8 @@ public class Player{
     private int shieldHealth = 0;
     private static final int SHIELD_MAX_HEALTH = 50;
 
+    private int refill;
+
     public Player(float x, float y, float size, int id) {
         this.position = new Vector2(x, y);
         this.size = size;
@@ -45,6 +47,7 @@ public class Player{
         this.alive = true;
         this.health = 100;
         this.spikeCount = 0;
+        this.refill = 0;
     }
 
     public void update(float deltaTime) {
@@ -272,6 +275,10 @@ public class Player{
 
     public int getShieldHealth() {
         return shieldHealth;
+    }
+
+    public int getRefill() {
+        return refill;
     }
 
     public float getSpeedBoostTimeRemaining(float currentTime) {

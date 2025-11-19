@@ -20,6 +20,7 @@ import com.javakaian.shooter.shapes.AimLine;
 import com.javakaian.shooter.shapes.Bullet;
 import com.javakaian.shooter.shapes.Enemy;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.shapes.PowerUp;
 import com.javakaian.shooter.shapes.Spike;
 import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.utils.*;
@@ -53,6 +54,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private List<PlacedSpike> placedSpikes;
     private AimLine aimLine;
     GameManagerFacade stats = GameManagerFacade.getInstance();
+    private List<PowerUp> powerUps;
+    private boolean hasShield = false;
 
 
     private OClient client;
@@ -355,6 +358,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         bullets = new ArrayList<>();
         spikes = new ArrayList<>();
         placedSpikes = new ArrayList<>();
+        powerUps = new ArrayList<>();
 
         aimLine = themeFactory.createAimLine(new Vector2(0, 0), new Vector2(0, 0));
         aimLine.setCamera(camera);
@@ -377,10 +381,16 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         ScreenUtils.clear(bg.r, bg.g, bg.b, 1);
 
         GameManagerFacade gm = GameManagerFacade.getInstance();
-        gm.renderGameObjects(sr, players, enemies, bullets, spikes, placedSpikes, player, aimLine);
+        gm.renderGameObjects(sr, players, enemies, bullets, spikes, placedSpikes, powerUps, player, aimLine);
 
         sb.begin();
         gm.renderText(sb, healthFont, "HEALTH: " + player.getHealth(), TextAlignment.CENTER, 0f, 0.05f);
+
+        if (player.hasShield()) {
+            gm.renderText(sb, weaponsFont, 
+                "SHIELD: " + player.getShieldHealth() + " HP", 
+                TextAlignment.CENTER, 0f, 0.08f);
+        }
 
         float baseEquipmentY = 0.05f;
 
@@ -769,6 +779,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         players = OMessageParser.getPlayersFromGWM(m);
         spikes = OMessageParser.getSpikesFromGWM(m);
         placedSpikes = OMessageParser.getPlacedSpikesFromGWM(m);
+        powerUps = OMessageParser.getPowerUpsFromGWM(m);
 
         if (player == null) return;
 
@@ -777,6 +788,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 .findFirst()
                 .ifPresent(p -> {
                     player = p;
+                    hasShield = player.hasShield();
                     float newHealth = player.getHealth();
                     if (newHealth < oldHealth) {
                         stats.stats(StatAction.SET, StatType.TOTAL_DAMAGE, oldHealth - newHealth);
@@ -789,6 +801,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void inventoryUpdateReceived(InventoryUpdateMessage m) {
         if (player != null && m.getPlayerId() == player.getId()) {
             spikeCount = m.getSpikeCount();
+
+            if (m.isShouldReload()) {
+                reloadBridgeWeapon();
+                notifications.add(new Notification("Ammo Refilled!", 2.0f));
+            }
         }
     }
 

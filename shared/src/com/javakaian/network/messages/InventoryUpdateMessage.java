@@ -6,6 +6,7 @@ package com.javakaian.network.messages;
 public class InventoryUpdateMessage {
     private int playerId;
     private int spikeCount;
+    private boolean shouldReload;
 
     public InventoryUpdateMessage() {}
 
@@ -23,5 +24,13 @@ public class InventoryUpdateMessage {
 
     public void setSpikeCount(int spikeCount) {
         this.spikeCount = spikeCount;
+    }
+
+    public boolean isShouldReload() {
+        return shouldReload;
+    }
+    
+    public void setShouldReload(boolean shouldReload) {
+        this.shouldReload = shouldReload;
     }
 }

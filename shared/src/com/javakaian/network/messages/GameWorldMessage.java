@@ -13,8 +13,8 @@ public class GameWorldMessage {
      */
     private float[] enemies;
     /**
-     * X,Y,ID,Health of all the players.->
-     * x1,y1,ID1,Health1,x2,y2,ID2,Health2,x3,y3,ID3,Health3..
+     * X,Y,ID,Health,HasShield,ShieldHealth of all the players.->
+     * x1,y1,ID1,Health1,Shield1,ShieldHP1,x2,y2,ID2,Health2,Shield2,ShieldHP2...
      */
     private float[] players;
     /**
@@ -31,6 +31,11 @@ public class GameWorldMessage {
      * X,Y,Size,Rotation of all placed spikes.-> x1,y1,s1,r1,x2,y2,s2,r2..
      */
     private float[] placedSpikes;
+
+    /**
+     * X,Y,Size,Rotation of all placed powerUps.-> x1,y1,s1,r1,x2,y2,s2,r2..
+     */
+    private float[] powerUps;
 
     public float[] getEnemies() {
         return enemies;
@@ -70,6 +75,14 @@ public class GameWorldMessage {
     
     public void setPlacedSpikes(float[] placedSpikes) {
         this.placedSpikes = placedSpikes;
+    }
+
+    public float[] getPowerUps() {
+        return powerUps;
+    }
+    
+    public void setPowerUps(float[] powerUps) {
+        this.powerUps = powerUps;
     }
 
 }

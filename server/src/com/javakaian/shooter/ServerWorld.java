@@ -177,7 +177,7 @@ public class ServerWorld implements OMessageListener {
             logger.debug("Switched enemy behaviors randomly for all enemies");
         }
 
-        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes);
+        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes, powerUpsArray);
         server.sendToAllUDP(m);
 
     }
@@ -261,6 +261,12 @@ public class ServerWorld implements OMessageListener {
         case AMMO_REFILL:
             player.applyAmmoRefill(gameTime);
             logger.debug("Player " + player.getId() + " collected AMMO_REFILL (instant reload)");
+
+            InventoryUpdateMessage reloadMsg = new InventoryUpdateMessage();
+            reloadMsg.setPlayerId(player.getId());
+            reloadMsg.setSpikeCount(player.getRefill());
+            reloadMsg.setShouldReload(true);
+            server.sendToAllUDP(reloadMsg); 
             break;
     }
     }
