@@ -1,9 +1,15 @@
 package com.javakaian.shooter.shapes;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.javakaian.shooter.shapes.flyweight.Flyweight;
+import com.javakaian.shooter.shapes.flyweight.FlyweightFactory;
 
+/**
+ * PowerUp now acts as a Client in the Flyweight pattern.
+ * It stores extrinsic state (position, size) and uses a shared
+ * Flyweight object for rendering based on the PowerUpType.
+ */
 public class PowerUp {
     
     public enum PowerUpType {
@@ -13,8 +19,13 @@ public class PowerUp {
         AMMO_REFILL       // 3 - Yellow
     }
     
+    private static FlyweightFactory factory = new FlyweightFactory();
+    
+    // Extrinsic state (unique to each PowerUp instance)
     private Vector2 position;
     private float size;
+    
+    // Reference to the type, used to get the appropriate flyweight
     private PowerUpType type;
     
     public PowerUp(float x, float y, float size, PowerUpType type) {
@@ -23,33 +34,16 @@ public class PowerUp {
         this.type = type;
     }
     
+    /**
+     * Render method now delegates to the Flyweight object,
+     * passing the extrinsic state (position and size).
+     */
     public void render(ShapeRenderer sr) {
-        switch (type) {
-            case SPEED_BOOST:
-                sr.setColor(Color.GREEN);
-                break;
-            case DAMAGE_BOOST:
-                sr.setColor(Color.PINK);
-                break;
-            case SHIELD:
-                sr.setColor(Color.BLUE);
-                break;
-            case AMMO_REFILL:
-                sr.setColor(Color.YELLOW);
-                break;
-        }
+        // Get the shared flyweight for this PowerUpType
+        Flyweight flyweight = factory.getFlyweight(type);
         
-        float halfSize = size / 2;
-        float centerX = position.x + halfSize;
-        float centerY = position.y + halfSize;
-        
-        // Draw multiple circles for a glowing effect (all in Line mode)
-        sr.circle(centerX, centerY, size * 0.4f);
-        sr.circle(centerX, centerY, size * 0.6f);
-        sr.circle(centerX, centerY, size * 0.8f);
-        
-        // Draw square border
-        sr.rect(position.x, position.y, size, size);
+        // Call operation with extrinsic state
+        flyweight.operation(sr, position.x, position.y, size);
     }
     
     public Vector2 getPosition() {
@@ -62,5 +56,12 @@ public class PowerUp {
     
     public PowerUpType getType() {
         return type;
+    }
+    
+    /**
+     * Returns the FlyweightFactory instance for debugging or testing purposes.
+     */
+    public static FlyweightFactory getFactory() {
+        return factory;
     }
 }

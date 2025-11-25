@@ -1,0 +1,135 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         FLYWEIGHT PATTERN STRUCTURE                             │
+│                         (Applied to PowerUp System)                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ FlyweightFactory                                                                │
+│                                                                                 │
+│ - flyweights: Map<PowerUpType, Flyweight>                                      │
+│                                                                                 │
+│ + getFlyweight(key: PowerUpType): Flyweight                                    │
+│                                                                                 │
+│   Logic:                                                                        │
+│   ┌──────────────────────────────────────────┐                                 │
+│   │ if (flyweight[key] exists) {             │                                 │
+│   │     return existing flyweight;           │                                 │
+│   │ } else {                                 │                                 │
+│   │     create new flyweight;                │                                 │
+│   │     add it to pool of flyweights;        │                                 │
+│   │     return the new flyweight;            │                                 │
+│   │ }                                        │                                 │
+│   └──────────────────────────────────────────┘                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ creates and manages
+                                    ▼
+        ┌───────────────────────────────────────────────────────┐
+        │           <<interface>> Flyweight                     │
+        │                                                       │
+        │  + operation(sr, x, y, size)                          │
+        │                                                       │
+        │  Parameters are EXTRINSIC STATE:                      │
+        │    - sr: ShapeRenderer                                │
+        │    - x, y: position                                   │
+        │    - size: PowerUp size                               │
+        └───────────────────────────────────────────────────────┘
+                         ▲                           ▲
+                         │                           │
+                         │                           │
+        ┌────────────────┴──────────┐    ┌───────────┴────────────────────┐
+        │   ConcreteFlyweight       │    │ UnsharedConcreteFlyweight      │
+        │                           │    │                                │
+        │ INTRINSIC STATE:          │    │ ALL STATES (intrinsic +        │
+        │ - intrinsicState:         │    │              extrinsic):       │
+        │     PowerUpType           │    │ - allStates: PowerUpType       │
+        │   (SPEED_BOOST,           │    │ - x: float                     │
+        │    DAMAGE_BOOST,          │    │ - y: float                     │
+        │    SHIELD,                │    │ - size: float                  │
+        │    AMMO_REFILL)           │    │                                │
+        │                           │    │                                │
+        │ + operation(sr, x, y,     │    │ + operation(sr, x, y, size)    │
+        │              size)        │    │   (uses internal state,        │
+        │   - Sets color based on   │    │    ignores parameters)         │
+        │     type                  │    │                                │
+        │   - Renders circles &     │    │                                │
+        │     rectangle             │    │                                │
+        └───────────────────────────┘    └────────────────────────────────┘
+                         ▲
+                         │
+                         │ uses
+                         │
+        ┌────────────────┴─────────────────────────────────┐
+        │   Client: PowerUp                                │
+        │                                                  │
+        │ EXTRINSIC STATE (unique per instance):          │
+        │ - position: Vector2                             │
+        │ - size: float                                   │
+        │                                                  │
+        │ REFERENCE TO FACTORY:                           │
+        │ - static factory: FlyweightFactory              │
+        │                                                  │
+        │ REFERENCE TO TYPE:                              │
+        │ - type: PowerUpType                             │
+        │                                                  │
+        │ + render(sr: ShapeRenderer)                     │
+        │   ┌──────────────────────────────────────────┐  │
+        │   │ flyweight = factory.getFlyweight(type)   │  │
+        │   │ flyweight.operation(sr, pos.x, pos.y,    │  │
+        │   │                     size)                │  │
+        │   └──────────────────────────────────────────┘  │
+        └─────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              EXAMPLE SCENARIO                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Creating 3 SPEED_BOOST PowerUps:
+
+PowerUp speedBoost1 = new PowerUp(100, 100, 20, SPEED_BOOST);
+PowerUp speedBoost2 = new PowerUp(200, 150, 20, SPEED_BOOST);
+PowerUp speedBoost3 = new PowerUp(300, 200, 20, SPEED_BOOST);
+
+
+Memory Layout:
+
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│ speedBoost1  │     │ speedBoost2  │     │ speedBoost3  │
+│──────────────│     │──────────────│     │──────────────│
+│ pos: (100,   │     │ pos: (200,   │     │ pos: (300,   │
+│       100)   │     │       150)   │     │       200)   │
+│ size: 20     │     │ size: 20     │     │ size: 20     │
+│ type:        │     │ type:        │     │ type:        │
+│  SPEED_BOOST │     │  SPEED_BOOST │     │  SPEED_BOOST │
+└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+       │                    │                    │
+       │                    │                    │
+       └────────────────────┼────────────────────┘
+                            │
+                            │ all reference same flyweight
+                            ▼
+              ┌─────────────────────────────┐
+              │ ConcreteFlyweight           │
+              │─────────────────────────────│
+              │ intrinsicState: SPEED_BOOST │
+              │                             │
+              │ Rendering Logic:            │
+              │ - Color: GREEN              │
+              │ - Draw circles              │
+              │ - Draw rectangle            │
+              └─────────────────────────────┘
+                   ▲
+                   │ managed by
+                   │
+         ┌─────────┴──────────────────────────────────────┐
+         │ FlyweightFactory.flyweights                    │
+         │────────────────────────────────────────────────│
+         │ SPEED_BOOST    → ConcreteFlyweight instance 1  │
+         │ DAMAGE_BOOST   → ConcreteFlyweight instance 2  │
+         │ SHIELD         → ConcreteFlyweight instance 3  │
+         │ AMMO_REFILL    → ConcreteFlyweight instance 4  │
+         └────────────────────────────────────────────────┘
+
+Result: 3 PowerUp objects share 1 ConcreteFlyweight
+        Memory saved: ~66% for rendering logic

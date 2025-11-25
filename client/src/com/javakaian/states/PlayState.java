@@ -29,6 +29,7 @@ import com.javakaian.shooter.utils.Subsystems.StatType;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.shooter.weapons.bridge.*;
+import com.javakaian.shooter.interpreter.GameConsole;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -79,6 +80,8 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private int burstShotsRemaining = 0;
     private float burstShotTimer = 0;
     private float autoFireTimer = 0;
+    // Interpreter Pattern - Game Console
+    private GameConsole gameConsole;
 
     public PlayState(StateController sc) {
         super(sc);
@@ -464,6 +467,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (logDisplay != null && logDisplay.isVisible()) {
             logDisplay.render(sb);
         }
+        
+        // Interpreter Pattern - Render game console
+        if (gameConsole != null) {
+            gameConsole.render(sr);
+            gameConsole.renderText(sb);
+        }
     }
 
     private void renderNotifications() {
@@ -536,6 +545,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         // Update log display
         if (logDisplay != null) {
             logDisplay.update(deltaTime);
+        }
+        
+        // Interpreter Pattern - Update game console
+        if (gameConsole != null) {
+            gameConsole.update();
         }
     }
 
@@ -729,6 +743,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         lastY = player.getPosition().y;
         stats.startSession();
         sc.getAchievementManager().addListener(this);
+        
+        // Interpreter Pattern - Initialize game console
+        BitmapFont consoleFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GREEN);
+        gameConsole = new GameConsole(this, player, consoleFont);
 
         GameLogEntry loginEvent = new GameLogEntry(
                 System.currentTimeMillis(),

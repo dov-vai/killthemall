@@ -1,0 +1,252 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                      INTERPRETER PATTERN STRUCTURE                              │
+│                    (In-Game Command Console System)                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ CLIENT: CommandInterpreter                                                      │
+│                                                                                 │
+│ + parse(commandText: String): Expression                                       │
+│                                                                                 │
+│   Parses text commands and builds expression tree:                             │
+│   - "heal 50"           → HealExpression(NumberExpression(50))                 │
+│   - "teleport 100 200"  → TeleportExpression(Number(100), Number(200))         │
+│   - "heal 50; speed 2"  → SequenceExpression([Heal(...), Speed(...)])         │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ creates
+                                    ▼
+        ┌───────────────────────────────────────────────────────┐
+        │       <<interface>> Expression                        │
+        │       (AbstractExpression)                            │
+        │                                                       │
+        │  + interpret(context: Context): boolean               │
+        │                                                       │
+        │  The fundamental operation that all expressions       │
+        │  must implement                                       │
+        └───────────────────────────────────────────────────────┘
+                         ▲                           ▲
+                         │                           │
+        ┌────────────────┴──────────┐    ┌───────────┴────────────────────┐
+        │                           │    │                                │
+        │                           │    │                                │
+        │                           │    │                                │
+
+┌───────┴────────────────────┐    ┌────┴────────────────────┐    ┌────────────────────┐
+│ TERMINAL EXPRESSIONS       │    │ NONTERMINAL EXPRESSIONS  │    │                    │
+│ (Leaf nodes - no children) │    │ (Composite nodes)        │    │                    │
+├────────────────────────────┤    ├──────────────────────────┤    │                    │
+│                            │    │                          │    │                    │
+│ NumberExpression           │    │ TeleportExpression       │    │  SequenceExpression│
+│ - number: int              │    │ - xExpr: Expression      │    │  - expressions:    │
+│                            │    │ - yExpr: Expression      │    │      List<Expr>    │
+│ +interpret(Context)        │    │                          │    │                    │
+│   Stores number in         │    │ +interpret(Context)      │    │  +interpret(Ctx)   │
+│   context["lastNumber"]    │    │   Interprets both        │    │    Interprets all  │
+│                            │    │   coordinate expressions │    │    in sequence     │
+│────────────────────────────│    │   and teleports player   │    │                    │
+│                            │    │                          │    │  +addExpression()  │
+│ HealExpression             │    └──────────────────────────┘    │                    │
+│ - amountExpr: Expression   │                                    └────────────────────┘
+│                            │
+│ +interpret(Context)        │
+│   Gets amount from         │
+│   amountExpr, heals        │
+│   player                   │
+│────────────────────────────│
+│                            │
+│ SpeedExpression            │
+│ - multiplierExpr: Expr     │
+│                            │
+│ +interpret(Context)        │
+│   Sets speed multiplier    │
+│────────────────────────────│
+│                            │
+│ GodModeExpression          │
+│                            │
+│ +interpret(Context)        │
+│   Toggles god mode         │
+│────────────────────────────│
+│                            │
+│ HelpExpression             │
+│ StatsExpression            │
+│ ClearExpression            │
+│                            │
+└────────────────────────────┘
+                │
+                │ uses
+                ▼
+        ┌───────────────────────────────┐
+        │ Context                       │
+        │───────────────────────────────│
+        │ - variables: Map<String, Obj> │
+        │ - playState: PlayState        │
+        │ - player: Player              │
+        │ - output: StringBuilder       │
+        │ - commandExecuted: boolean    │
+        │                               │
+        │ +setVariable(name, value)     │
+        │ +getVariable(name): Object    │
+        │ +appendOutput(message)        │
+        │ +getPlayState(): PlayState    │
+        │ +getPlayer(): Player          │
+        └───────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        EXAMPLE: EXPRESSION TREE                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+Input: "teleport 500 300"
+
+                        TeleportExpression
+                         /              \
+                        /                \
+              NumberExpression      NumberExpression
+                  (500)                 (300)
+
+Interpretation Flow:
+1. TeleportExpression.interpret(context) is called
+2. It calls xExpr.interpret(context)  → stores 500 in context["lastNumber"]
+3. Retrieves x = context["lastNumber"] → x = 500
+4. It calls yExpr.interpret(context)  → stores 300 in context["lastNumber"]
+5. Retrieves y = context["lastNumber"] → y = 300
+6. Sets player position to (500, 300)
+7. Appends "Teleported to (500, 300)" to output
+
+
+
+Input: "heal 50; speed 2; stats"
+
+                    SequenceExpression
+                  /         |          \
+                 /          |           \
+          HealExpression SpeedExpression StatsExpression
+                |            |
+         NumberExpression NumberExpression
+              (50)           (2)
+
+Interpretation Flow:
+1. SequenceExpression.interpret(context) is called
+2. Iterates through each expression:
+   a. HealExpression.interpret(context)
+      - NumberExpression(50).interpret() → stores 50
+      - Heals player by 50 HP
+      - Outputs "Healed 50 HP. Current health: 100"
+   b. SpeedExpression.interpret(context)
+      - NumberExpression(2).interpret() → stores 2
+      - Sets speed multiplier to 2
+      - Outputs "Speed multiplier set to 2x"
+   c. StatsExpression.interpret(context)
+      - Reads player data
+      - Outputs player statistics
+3. All commands executed in sequence
+
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           UI INTEGRATION                                        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│ GameConsole                                                  │
+│──────────────────────────────────────────────────────────────│
+│ - interpreter: CommandInterpreter                            │
+│ - context: Context                                           │
+│ - currentInput: StringBuilder                                │
+│ - outputHistory: List<String>                                │
+│ - visible: boolean                                           │
+│                                                              │
+│ +update()                                                    │
+│   - Checks for ~ key press to toggle                        │
+│   - Handles text input                                      │
+│   - Executes on ENTER                                       │
+│                                                              │
+│ +executeCommand()                                            │
+│   - Gets current input                                      │
+│   - Calls interpreter.parse(command)                        │
+│   - Calls expression.interpret(context)                     │
+│   - Displays output                                         │
+│                                                              │
+│ +render(ShapeRenderer)                                       │
+│   - Draws console background                                │
+│   - Draws border                                            │
+│                                                              │
+│ +renderText(SpriteBatch)                                     │
+│   - Renders command history                                 │
+│   - Renders current input                                   │
+│   - Renders help text                                       │
+└──────────────────────────────────────────────────────────────┘
+                    │
+                    │ integrated into
+                    ▼
+        ┌────────────────────────┐
+        │ PlayState              │
+        │────────────────────────│
+        │ - gameConsole          │
+        │                        │
+        │ +update(deltaTime)     │
+        │   gameConsole.update() │
+        │                        │
+        │ +render()              │
+        │   gameConsole.render() │
+        └────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        GRAMMAR DEFINITION                                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+<command>   ::= <heal> | <speed> | <god> | <help> | <stats> | <teleport> | <clear>
+<sequence>  ::= <command> | <command> ";" <sequence>
+
+<heal>      ::= "heal" <number>
+<speed>     ::= "speed" <number>
+<teleport>  ::= "teleport" <number> <number>
+<god>       ::= "god"
+<help>      ::= "help"
+<stats>     ::= "stats"
+<clear>     ::= "clear"
+
+<number>    ::= [0-9]+
+
+
+Examples:
+- heal 50
+- speed 3
+- teleport 1000 500
+- god
+- help
+- stats
+- heal 50; speed 2; stats
+- god; teleport 400 400; heal 100
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         PATTERN BENEFITS                                        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+1. EXTENSIBILITY
+   - Add new commands by creating new Expression classes
+   - No need to modify existing code (Open/Closed Principle)
+
+2. COMPOSABILITY
+   - Expressions can be nested (TeleportExpression contains NumberExpressions)
+   - SequenceExpression allows command chaining
+
+3. SEPARATION OF CONCERNS
+   - Parsing (CommandInterpreter) separate from execution (Expressions)
+   - Each expression handles its own logic
+
+4. REUSABILITY
+   - NumberExpression reused by multiple commands
+   - Expressions can be combined in different ways
+
+5. TESTABILITY
+   - Each expression can be tested independently
+   - Easy to create mock contexts for testing
+
+6. IN-GAME VISIBILITY
+   - Console UI makes pattern visible to players
+   - Real-time command execution
+   - Interactive demonstration of the pattern
