@@ -17,6 +17,9 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.strategy.*;
 import com.javakaian.shooter.command.Command;
 import com.javakaian.shooter.command.PlaceSpikeCommand;
+import com.javakaian.shooter.weapons.Rifle;
+import com.javakaian.shooter.weapons.Shotgun;
+import com.javakaian.shooter.weapons.Sniper;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
@@ -162,6 +165,16 @@ public class ServerWorld implements OMessageListener {
         server.sendToAllUDP(m);
     }
 
+    @Override
+    public void reloadReceived(ReloadMessage m) {
+        worldObjects.getAll(Player.class).stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+                .ifPresent(p -> {
+                    if (p.getCurrentWeapon() != null) {
+                        p.getCurrentWeapon().requestReload();
+                    }
+                });
+    }
+
     public float getGameTime() {
         return gameTime;
     }
@@ -205,7 +218,7 @@ public class ServerWorld implements OMessageListener {
             PowerUp powerUp = iter.currentItem();
             if (powerUp == null || !powerUp.isVisible()) continue;
             
-            for (Player player : players) {
+            for (Player player : worldObjects.getAll(Player.class)) {
                 if (player.getBoundRect().overlaps(powerUp.getBoundRect())) {
                     applyPowerUpEffect(player, powerUp);
                     powerUp.setVisible(false);
@@ -380,6 +393,10 @@ public class ServerWorld implements OMessageListener {
 
     @Override
     public void loginReceived(Connection con, LoginMessage m) {
+        if (con == null) {
+            logger.error("loginReceived called with null connection");
+            return;
+        }
 
         int id = idPool.getUserID();
         Player player = new Player(m.getX(), m.getY(), 50, id);
@@ -390,13 +407,10 @@ public class ServerWorld implements OMessageListener {
 
         giveWeaponToPlayer(id, "pistol");
         sendWeaponInfoToPlayer(id);
-        logger.debug("Login Message recieved from : " + id + " with default weapon");
+        logger.debug("Login Message received from : " + id + " with default weapon");
 
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
-        // Track which player ID belongs to this connection for proper cleanup on
-        // disconnect
-
         connectionToPlayerId.put(con.getID(), id);
     }
 
@@ -461,7 +475,7 @@ public class ServerWorld implements OMessageListener {
                     if (p.getCurrentWeapon() != null) {
                         Weapon weapon = p.getCurrentWeapon();
                         bulletType = getBulletTypeFromWeapon(weapon);
-                        p.recordShot();
+                        p.recordShot(gameTime);
                     } else {
                         System.out.println("Player " + p.getId() + " fired default weapon -> " + bulletType + " bullet");
                     }
@@ -476,6 +490,16 @@ public class ServerWorld implements OMessageListener {
 
                     worldObjects.add(b);
                 });
+    }
+
+    public void createBullet(BulletType type, Player owner, float angleRad) {
+        Bullet b = bulletFactory.createBullet(
+                type,
+                owner.getPosition().x + owner.getBoundRect().width / 2,
+                owner.getPosition().y + owner.getBoundRect().height / 2,
+                angleRad,
+                owner.getId());
+        worldObjects.add(b);
     }
 
     // weapon system

@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public interface Bullet extends GameObject {
 
-    void update(float deltaTime);
+    void update(UpdateContext context);
 
     Vector2 getPosition();
 
