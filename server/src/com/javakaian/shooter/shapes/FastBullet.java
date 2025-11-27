@@ -3,9 +3,9 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
-public class FastBullet implements Bullet {
-
+public class FastBullet implements Bullet, GameObject {
     private static final int SPEED = 1200;  // fast speed
+
     private Vector2 position;
     private float size;
     private float angle;
@@ -23,9 +23,9 @@ public class FastBullet implements Bullet {
     }
 
     @Override
-    public void update(float deltaTime) {
-        float speed = deltaTime * SPEED;
-        this.ttlCounter += deltaTime;
+    public void update(UpdateContext context) {
+        float speed = context.deltaTime * SPEED;
+        this.ttlCounter += context.deltaTime;
 
         float dx = (float) Math.cos(angle);
         float dy = (float) Math.sin(angle);
@@ -40,6 +40,11 @@ public class FastBullet implements Bullet {
 
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isVisible();
     }
 
     @Override

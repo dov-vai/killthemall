@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
  * Represents a spike that has been placed by a player
  * These spikes can damage other players and be undone if not consumed
  */
-public class PlacedSpike {
+public class PlacedSpike implements GameObject {
     private Vector2 position;
     private float size;
     private float rotation; // rotation angle in degrees
@@ -26,10 +26,16 @@ public class PlacedSpike {
         this.boundRect = new Rectangle(x, y, size, size);
     }
 
-    public void update(float deltaTime) {
+    public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
     }
+
+    @Override
+    public boolean isAlive() {
+        return !isConsumed();
+    }
+
 
     public Vector2 getPosition() {
         return position;
