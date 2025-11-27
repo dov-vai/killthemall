@@ -1,7 +1,14 @@
 package com.javakaian.shooter.weapons;
 
+import com.esotericsoftware.kryonet.Server;
 import com.javakaian.shooter.ServerWorld;
 import com.javakaian.shooter.shapes.Player;
+import com.javakaian.shooter.weapons.state.ReadyState;
+import com.javakaian.shooter.weapons.state.WeaponListener;
+import com.javakaian.shooter.weapons.state.WeaponState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Weapon {
     protected String barrel;
@@ -18,6 +25,8 @@ public abstract class Weapon {
     protected float reloadDuration = 1.6f;
     protected boolean reloading = false;
     protected float reloadFinishTime = 0f;
+    protected WeaponState state;
+    private List<WeaponListener> listeners;
 
     public Weapon(String name) {
         this.name = name;
@@ -26,6 +35,8 @@ public abstract class Weapon {
         this.fireRate = 1.0f;
         this.ammoCapacity = 30;
         this.currentAmmo = this.ammoCapacity;
+        this.state = new ReadyState();
+        this.listeners = new ArrayList<>();
     }
 
     public String getName() {
@@ -70,30 +81,7 @@ public abstract class Weapon {
 
     public void setCurrentAmmo(int currentAmmo) {
         this.currentAmmo = Math.max(0, Math.min(currentAmmo, ammoCapacity));
-    }
-
-    public boolean isReloading(float now) {
-        return reloading && now < reloadFinishTime;
-    }
-
-    public boolean needsReload() {
-        return currentAmmo < ammoCapacity;
-    }
-
-    public void startReload(float now) {
-        if (reloading || currentAmmo >= ammoCapacity)
-            return;
-        reloading = true;
-        reloadFinishTime = now + reloadDuration;
-    }
-
-    public boolean tryFinishReload(float now) {
-        if (reloading && now >= reloadFinishTime) {
-            currentAmmo = ammoCapacity;
-            reloading = false;
-            return true;
-        }
-        return false;
+        notifyListeners();
     }
 
     public String getBarrel() {
@@ -141,14 +129,6 @@ public abstract class Weapon {
      * Angle is in radians, consistent with client/server projectile math.
      */
     public final void fireWeapon(ServerWorld world, Player owner, float angleRad) {
-        if (isReloading(world.getGameTime())) {
-            System.out.println(getName() + " is reloading, cannot fire.");
-            return;
-        }
-        if (!hasAmmo()) {
-            System.out.println(getName() + " attempted to fire with no ammo.");
-            return;
-        }
         consumeAmmo();
 
         int projectileCount = getProjectileCount();
@@ -162,15 +142,28 @@ public abstract class Weapon {
         applyEffects();
     }
 
+    public void setState(WeaponState state) {
+        this.state = state;
+    }
+
+    public void requestFire(ServerWorld world, Player owner, float angleRad) {
+        state.attemptFire(this, world, owner, angleRad);
+    }
+
+    public void requestReload() {
+        state.attemptReload(this);
+    }
+
+    public void update(float deltaTime) {
+        state.update(this, deltaTime);
+    }
+
     protected void consumeAmmo() {
         if (currentAmmo > 0) {
             currentAmmo -= 1;
             System.out.println(getName() + " consumed ammo. Remaining: " + currentAmmo + "/" + ammoCapacity);
+            notifyListeners();
         }
-    }
-
-    protected boolean hasAmmo() {
-        return currentAmmo > 0;
     }
 
     private float calculateProjectileAngle(float baseAngleRad, float spreadRad, int projectileIndex,
@@ -179,6 +172,16 @@ public abstract class Weapon {
             return baseAngleRad;
         float offset = -spreadRad / 2f + (projectileIndex * (spreadRad / (totalProjectiles - 1)));
         return baseAngleRad + offset;
+    }
+
+    public void addListener(WeaponListener listener) {
+        this.listeners.add(listener);
+    }
+
+    public void notifyListeners() {
+        for (var listener : listeners) {
+            listener.onAmmoChanged(this);
+        }
     }
 
     // Abstract and hook methods for subclasses

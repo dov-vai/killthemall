@@ -172,9 +172,8 @@ public class ServerWorld implements OMessageListener {
 
         // Finalize reloads and send ammo updates if completed
         for (Player p : players) {
-            Weapon w = p.getCurrentWeapon();
-            if (w != null && w.tryFinishReload(gameTime)) {
-                sendAmmoUpdate(p);
+            if (p.getCurrentWeapon() != null) {
+                p.getCurrentWeapon().update(deltaTime);
             }
         }
 
@@ -497,37 +496,10 @@ public class ServerWorld implements OMessageListener {
 
     @Override
     public void shootReceived(ShootMessage m) {
-
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
                 .ifPresent(p -> {
-                    // MODIFIED: Check if player can shoot based on fire rate
                     if (p.getCurrentWeapon() != null) {
-
-                        // Check fire rate cooldown
-                        if (!p.canShoot(gameTime)) {
-                            System.out.println("Player " + p.getId() + " weapon on cooldown");
-                            return; // Can't shoot yet - fire rate too fast
-                        }
-
-                        Weapon weapon = p.getCurrentWeapon();
-
-                        System.out.println("Player " + p.getId() + " fired " + weapon.getName() +
-                                " (Fire Rate: " + weapon.getFireRate() + ")");
-
-                        // Use Template Method on the weapon
-                        weapon.fireWeapon(this, p, m.getAngleDeg());
-
-                        // Record shot time for cooldowns
-                        p.recordShot(gameTime);
-
-                        // Send ammo update to UI
-                        sendAmmoUpdate(p);
-
-                    } else {
-                        // No weapon, use default
-                        System.out.println("Player " + p.getId() + " fired default weapon");
-
-                        createBullet(BulletType.STANDARD, p, m.getAngleDeg());
+                        p.getCurrentWeapon().requestFire(this, p, m.getAngleDeg());
                     }
                 });
 
@@ -563,14 +535,16 @@ public class ServerWorld implements OMessageListener {
                     String baseConfig = extractBaseConfig(weaponConfig);
                     Weapon weapon = createWeaponByConfig(baseConfig);
                     weapon = decorateWeaponForConfig(weapon, weaponConfig);
+
+                    weapon.addListener((w) -> {
+                        sendAmmoUpdate(p);
+                    });
+
                     weapon.setCurrentAmmo(weapon.getAmmoCapacity());
                     System.out.println("Created weapon: " + weapon.getName() + " with damage: " + weapon.getDamage());
 
                     p.equipWeapon(weapon);
                     playerWeapons.put(playerId, weapon);
-
-                    // Notify UI of initial ammo state
-                    sendAmmoUpdate(p);
                 });
     }
 
@@ -756,14 +730,9 @@ public class ServerWorld implements OMessageListener {
     public void reloadReceived(ReloadMessage m) {
         players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
                 .ifPresent(p -> {
-                    Weapon w = p.getCurrentWeapon();
-                    if (w == null)
-                        return;
-                    if (!w.needsReload())
-                        return;
-                    if (w.isReloading(gameTime))
-                        return;
-                    w.startReload(gameTime);
+                    if (p.getCurrentWeapon() != null) {
+                        p.getCurrentWeapon().requestReload();
+                    }
                 });
     }
 
