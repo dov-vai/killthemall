@@ -4,6 +4,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.shooter.weapons.bridge.BridgeWeapon;
+import com.javakaian.shooter.mediator.CollisionMediator;
+import com.javakaian.shooter.mediator.CollisionEvent;
 
 public class Player {
 
@@ -13,6 +15,8 @@ public class Player {
     private Rectangle boundRect;
     private boolean alive;
     private int health;
+    
+    private CollisionMediator mediator;
 
     //weapon system
     private Weapon currentWeapon;
@@ -53,6 +57,15 @@ public class Player {
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+        
+        // Notify mediator that player has moved
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
+    }
+    
+    public void setMediator(CollisionMediator mediator) {
+        this.mediator = mediator;
     }
 
     /**
