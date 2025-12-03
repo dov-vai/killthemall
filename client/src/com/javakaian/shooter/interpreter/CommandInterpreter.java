@@ -106,6 +106,10 @@ public class CommandInterpreter {
             case "clear":
                 return new ClearExpression();
                 
+            case "flyweight":
+            case "fw":
+                return new FlyweightStatsExpression();
+                
             default:
                 return createErrorExpression("Unknown command: " + command + ". Type 'help' for available commands.");
         }

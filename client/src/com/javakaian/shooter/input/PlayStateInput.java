@@ -136,6 +136,19 @@ public class PlayStateInput extends InputAdapter {
 
         return true;
     }
+    
+    @Override
+    public boolean keyTyped(char character) {
+        // Handle console text input when visible
+        if (playState.isConsoleVisible()) {
+            // Only allow printable ASCII characters (excluding backtick which toggles console)
+            if (character >= 32 && character < 127 && character != '`') {
+                playState.consoleAppendInput(character);
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public boolean keyUp(int keycode) {

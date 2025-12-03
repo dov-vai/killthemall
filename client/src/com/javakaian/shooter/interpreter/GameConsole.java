@@ -78,10 +78,7 @@ public class GameConsole {
     }
     
     private void handleInput() {
-        // This is a simplified version - in production you'd use TextInputListener
-        // or a custom InputProcessor for better text input handling
-        
-        // For demonstration, we'll use key polling
+        // Handle special keys
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
             executeCommand();
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
@@ -91,9 +88,6 @@ public class GameConsole {
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             hide();
         }
-        
-        // Note: For full keyboard input, you'd need to implement a proper
-        // text input handler. This is simplified for demonstration.
     }
     
     /**

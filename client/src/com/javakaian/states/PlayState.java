@@ -840,6 +840,41 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void restart() {
         init();
     }
+    
+    // Interpreter Pattern - Console control methods
+    public void toggleConsole() {
+        if (gameConsole != null) {
+            gameConsole.toggle();
+        }
+    }
+    
+    public boolean isConsoleVisible() {
+        return gameConsole != null && gameConsole.isVisible();
+    }
+    
+    public void hideConsole() {
+        if (gameConsole != null) {
+            gameConsole.hide();
+        }
+    }
+    
+    public void executeConsoleCommand() {
+        if (gameConsole != null) {
+            gameConsole.executeCommand();
+        }
+    }
+    
+    public void consoleBackspace() {
+        if (gameConsole != null) {
+            gameConsole.backspace();
+        }
+    }
+    
+    public void consoleAppendInput(char character) {
+        if (gameConsole != null) {
+            gameConsole.appendInput(character);
+        }
+    }
 
     @Override
     public void dispose() {

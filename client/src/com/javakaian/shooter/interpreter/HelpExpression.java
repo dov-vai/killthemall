@@ -15,6 +15,7 @@ public class HelpExpression implements Expression {
         help.append("god              - Toggle god mode\n");
         help.append("stats            - Show player statistics\n");
         help.append("teleport <x> <y> - Teleport to position\n");
+        help.append("flyweight (fw)   - Show Flyweight pattern stats\n");
         help.append("help             - Show this help message\n");
         help.append("clear            - Clear console output");
         
