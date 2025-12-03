@@ -40,7 +40,6 @@ public class ProxyPerformanceReport {
         
         System.out.println("=".repeat(70));
         System.out.println("REPORT GENERATION COMPLETE");
-        System.out.println("Copy the results above for your ataskaita!");
         System.out.println("=".repeat(70) + "\n");
     }
     
@@ -73,7 +72,7 @@ public class ProxyPerformanceReport {
         }
         
         System.out.println("  Time to create 10 proxies: " + String.format("%.2fms", proxyCreationTime / 1_000_000.0));
-        System.out.println("  Actual fonts created: " + fontsLoadedAfterCreation + " (DELAYED CREATION!)");
+        System.out.println("  Actual fonts created: " + fontsLoadedAfterCreation);
         System.out.println("  Proxies are lightweight placeholders\n");
         
         System.out.println("STEP 2: Accessing 3 out of 10 fonts...");
@@ -82,10 +81,6 @@ public class ProxyPerformanceReport {
         BitmapFont font1 = managers[0].getFontResource().getFont();
         BitmapFont font2 = managers[3].getFontResource().getFont();
         BitmapFont font3 = managers[7].getFontResource().getFont();
-
-        System.out.println("  Font 1 created: " + (font1 != null));
-        System.out.println("  Font 2 created: " + (font2 != null));
-        System.out.println("  Font 3 created: " + (font3 != null));
         
         long fontAccessTime = System.nanoTime() - fontAccessStart;
         
@@ -109,12 +104,7 @@ public class ProxyPerformanceReport {
         System.out.println("  Fonts created: " + fontsLoadedAfterAccess + "/10");
         System.out.println("  Memory saved: ~" + String.format("%.1fMB", memorySaved) + 
                           " (" + (10 - fontsLoadedAfterAccess) + " fonts avoided)");
-        System.out.println("  Creation speed: " + String.format("%.2fms", proxyCreationTime / 1_000_000.0) + 
-                          " (instant - no actual fonts made)");
-        
-        System.out.println("\nBENEFIT:");
-        System.out.println("  Virtual Proxy delays font creation until needed.");
-        System.out.println("  Unused fonts are NEVER created, saving memory!");
+        System.out.println("  Creation speed: " + String.format("%.2fms", proxyCreationTime / 1_000_000.0));
         
         // Cleanup
         for (FontManager m : managers) {
@@ -136,7 +126,6 @@ public class ProxyPerformanceReport {
         System.out.println("STEP 1: First access (cache miss - font creation)");
         long firstAccessStart = System.nanoTime();
         BitmapFont font1 = manager.getFontResource().getFont();
-        System.out.println("  Font created: " + (font1 != null));
         long firstAccessTime = System.nanoTime() - firstAccessStart;
         
         int missesAfterFirst = CachingFontProxy.getCacheMisses() - missesBefore;
@@ -151,7 +140,6 @@ public class ProxyPerformanceReport {
         for (int i = 0; i < 100; i++) {
             long start = System.nanoTime();
             BitmapFont font = manager.getFontResource().getFont();
-            System.out.println("  Font created: " + (font != null));
             hitTimes[i] = System.nanoTime() - start;
         }
         
@@ -173,11 +161,6 @@ public class ProxyPerformanceReport {
         System.out.println("  First access (miss): " + String.format("%.2fms", firstAccessTime / 1_000_000.0));
         System.out.println("  Cached access (hit): " + String.format("%.2fμs", avgHitTime));
         System.out.println("  Speed improvement: " + String.format("%.0fx FASTER", speedup));
-        System.out.println("  Cache hit ratio: 100% (perfect caching)");
-        
-        System.out.println("\nBENEFIT:");
-        System.out.println("  Caching Proxy stores font after first creation.");
-        System.out.println("  Subsequent accesses are nearly instant!");
         
         manager.dispose();
     }
@@ -245,11 +228,7 @@ public class ProxyPerformanceReport {
         System.out.println("  Fonts created: " + loadedAfterUse + "/5");
         System.out.println("  Fonts NOT created: " + fontsNotCreated);
         System.out.println("  Memory saved: ~" + String.format("%.1fMB", estimatedSavings));
-        
-        System.out.println("\nBENEFIT:");
-        System.out.println("  Virtual Proxy creates only needed fonts.");
-        System.out.println("  Unused fonts never allocate memory!");
-        
+
         // Cleanup
         for (FontManager m : managers) {
             m.dispose();
@@ -272,7 +251,6 @@ public class ProxyPerformanceReport {
         for (int i = 0; i < 100; i++) {
             long start = System.nanoTime();
             BitmapFont font = manager.getFontResource().getFont();
-            System.out.println("  Font created: " + (font != null));
             accessTimes[i] = System.nanoTime() - start;
         }
         
@@ -305,11 +283,6 @@ public class ProxyPerformanceReport {
         System.out.println("RESULTS:");
         System.out.println("  Security check overhead: ~" + String.format("%.2fμs", avgAccessTime));
         System.out.println("  Denial is fast: ~" + String.format("%.2fμs", avgDeniedTime));
-        System.out.println("  Overhead vs font creation: < 0.1% (negligible)");
-        
-        System.out.println("\nBENEFIT:");
-        System.out.println("  Security Proxy provides access control.");
-        System.out.println("  Performance overhead is minimal!");
         
         manager.dispose();
     }
