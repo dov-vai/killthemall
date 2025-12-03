@@ -10,14 +10,18 @@ import com.javakaian.shooter.utils.Subsystems.StatAction;
 import com.javakaian.shooter.utils.Subsystems.StatType;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
+import com.javakaian.shooter.utils.fonts.FontManager;
 
 public class StatsState extends State {
 
-    private BitmapFont smallFont;
+    //private BitmapFont smallFont;
+    private FontManager smallFontManager;
 
     public StatsState(StateController sc) {
         super(sc);
-        smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
+        //smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
+        smallFontManager = new FontManager(28, Color.WHITE, "Warungasem.ttf", "Stats-SmallFont");
+        smallFontManager.switchToVirtualProxy();
         ip = new StatsStateInput(this);
     }
 
@@ -35,6 +39,8 @@ public class StatsState extends State {
 
         float startY = 0.35f;
         float stepY = 0.07f;
+
+        BitmapFont smallFont = smallFontManager.getFontResource().getFont();
 
         gm.renderText(sb, smallFont, "Total Sessions: " +
                 (int) gm.stats(StatAction.GET, StatType.TOTAL_SESSIONS), TextAlignment.CENTER, 0f, startY);
