@@ -2,6 +2,8 @@ package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.javakaian.shooter.mediator.CollisionMediator;
+import com.javakaian.shooter.mediator.CollisionEvent;
 
 public class StandardBullet implements Bullet {
 
@@ -13,6 +15,7 @@ public class StandardBullet implements Bullet {
     private float ttlCounter = 0;
     private int id;
     private Rectangle boundRect;
+    private CollisionMediator mediator;
 
     public StandardBullet(float x, float y, float size, float angle, int id) {
         this.position = new Vector2(x, y);
@@ -40,6 +43,15 @@ public class StandardBullet implements Bullet {
 
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+        
+        // Notify mediator that bullet has moved
+        if (mediator != null && visible) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
+    }
+    
+    public void setMediator(CollisionMediator mediator) {
+        this.mediator = mediator;
     }
 
     @Override
