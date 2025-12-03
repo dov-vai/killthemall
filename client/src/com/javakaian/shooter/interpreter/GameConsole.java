@@ -88,6 +88,28 @@ public class GameConsole {
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             hide();
         }
+        
+        // Poll for character input (A-Z, 0-9, space, etc.)
+        for (int key = Input.Keys.A; key <= Input.Keys.Z; key++) {
+            if (Gdx.input.isKeyJustPressed(key)) {
+                char c = (char) ('a' + (key - Input.Keys.A));
+                if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+                    c = Character.toUpperCase(c);
+                }
+                currentInput.append(c);
+            }
+        }
+        for (int key = Input.Keys.NUM_0; key <= Input.Keys.NUM_9; key++) {
+            if (Gdx.input.isKeyJustPressed(key)) {
+                currentInput.append((char) ('0' + (key - Input.Keys.NUM_0)));
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            currentInput.append(' ');
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS)) {
+            currentInput.append('-');
+        }
     }
     
     /**
