@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.javakaian.shooter.utils.GameConstants;
 import com.javakaian.shooter.utils.GameManagerFacade;
+import com.javakaian.shooter.utils.fonts.FontManager;
+import com.javakaian.shooter.utils.fonts.FontResource;
 
 /**
  * This class represents the game states. Usually most of the games will have
@@ -33,6 +35,9 @@ public abstract class State {
 
     protected StateController sc;
 
+    private FontManager bitmapFontManager = new FontManager(70, Color.WHITE, "Warungasem.ttf", "State-BitmapFont");
+
+
     protected State(StateController sc) {
 
         this.sc = sc;
@@ -46,7 +51,10 @@ public abstract class State {
         sr.setProjectionMatrix(camera.combined);
         sb.setProjectionMatrix(camera.combined);
 
-        bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(70, Color.WHITE);
+        //bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(70, Color.WHITE);
+        bitmapFontManager.switchToVirtualProxy(); // use Virtual Proxy
+        bitmapFont = bitmapFontManager.getFontResource().getFont(); // get the actual font
+        
         glyphLayout = new GlyphLayout();
 
     }

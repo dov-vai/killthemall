@@ -29,6 +29,8 @@ import com.javakaian.shooter.utils.Subsystems.StatType;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.shooter.weapons.bridge.*;
+import com.javakaian.shooter.utils.fonts.FontManager;
+import com.javakaian.shooter.utils.fonts.FontResource;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -57,13 +59,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private List<PowerUp> powerUps;
     private boolean hasShield = false;
     private OClient client;
-    private BitmapFont healthFont;
+    //private BitmapFont healthFont;
     private float lastX, lastY;
-    private BitmapFont notifFont;
+    //private BitmapFont notifFont;
     private String currentWeaponInfo = "Assault rifle";
     private String currentWeaponComponents = "";
     private String currentWeaponStats = "";
-    private BitmapFont weaponsFont;
+    //private BitmapFont weaponsFont;
     private int spikeCount = 0;
     // Adapter pattern - unified game logger
     private IGameLogger gameLogger;
@@ -80,14 +82,32 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private float burstShotTimer = 0;
     private float autoFireTimer = 0;
 
+    private FontManager healthFontManager;
+    private FontManager notifFontManager;
+    private FontManager weaponsFontManager;
+
+
     public PlayState(StateController sc) {
         super(sc);
 
         themeFactory = ThemeFactory.getFactory(true); // fallback
 
-        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, themeFactory.createTheme().getTextColor());
-        notifFont = GameManagerFacade.getInstance().generateBitmapFont(24, Color.GOLD);
-        weaponsFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GRAY);
+        // healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, themeFactory.createTheme().getTextColor());
+        // notifFont = GameManagerFacade.getInstance().generateBitmapFont(24, Color.GOLD);
+        // weaponsFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GRAY);
+
+        // 1. Health font - Virtual Proxy (delayed creation)
+        healthFontManager = new FontManager(20, themeFactory.createTheme().getTextColor(), 
+            "Warungasem.ttf", "PlayState-HealthFont");
+        healthFontManager.switchToVirtualProxy();
+
+        // 2. Notification font - Caching Proxy (performance)
+        notifFontManager = new FontManager(24, Color.GOLD, "Warungasem.ttf", "PlayState-NotifFont");
+        notifFontManager.switchToCachingProxy();
+
+        // 3. Weapons font - Security Proxy (restricted access)
+        weaponsFontManager = new FontManager(14, Color.GRAY, "Warungasem.ttf", "PlayState-WeaponsFont");
+        weaponsFontManager.switchToSecurityProxy(true); // Start with access allowed
 
         gameLogger = new ConsoleGameLoggerAdapter();
         logDisplay = new SimpleLogDisplay();
@@ -335,9 +355,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             aimLine.setCamera(camera);
         }
 
-        if (healthFont != null)
-            healthFont.dispose();
-        healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, theme.getTextColor());
+        // if (healthFont != null)
+        //     healthFont.dispose();
+        // healthFont = GameManagerFacade.getInstance().generateBitmapFont(20, theme.getTextColor());
+        healthFontManager.dispose();
+        healthFontManager = new FontManager(20, theme.getTextColor(), "Warungasem.ttf", "PlayState-HealthFont");
+        healthFontManager.switchToVirtualProxy();
     }
 
     private void init() {
@@ -367,6 +390,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
         if (player == null)
             return;
+
+        BitmapFont healthFont = healthFontManager.getFontResource().getFont();
+        BitmapFont weaponsFont = weaponsFontManager.getFontResource().getFont();
 
         followPlayer();
         Color bg = themeFactory.createTheme().getBackgroundColor();
@@ -467,6 +493,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void renderNotifications() {
+        BitmapFont notifFont = notifFontManager.getFontResource().getFont();
         GameManagerFacade gm = GameManagerFacade.getInstance();
         float startY = 0.15f;
         float y = startY;
@@ -830,10 +857,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             m.setPlayerId(player.getId());
             client.sendTCP(m);
         }
-        if (healthFont != null)
-            healthFont.dispose();
-        if (notifFont != null)
-            notifFont.dispose();
+        // if (healthFont != null)
+        //     healthFont.dispose();
+        // if (notifFont != null)
+        //     notifFont.dispose();
+        healthFontManager.dispose();
+        notifFontManager.dispose();
+        weaponsFontManager.dispose();
         if (logDisplay != null)
             logDisplay.dispose();
         stats.endSession();

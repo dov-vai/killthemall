@@ -4,6 +4,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.javakaian.shooter.command.*;
 import com.javakaian.states.PlayState;
+import com.badlogic.gdx.Input.Keys;
+import com.javakaian.shooter.utils.fonts.ProxyPatternManualDemo;
 
 /**
  * Input handles of PlayState using Command pattern
@@ -129,6 +131,13 @@ public class PlayStateInput extends InputAdapter {
             case Keys.SPACE:
                 // Start shooting (for full auto and charged shot)
                 playState.shoot();
+                break;
+            case Keys.F9:
+                // Proxy pattern demo
+                ProxyPatternManualDemo.runFullDemonstration();
+                break;
+            case Keys.F10:
+                ProxyPatternManualDemo.runPerformanceReport();
                 break;
             default:
                 break;

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.javakaian.shooter.utils.GameConstants;
 import com.javakaian.shooter.utils.GameManagerFacade;
+import com.javakaian.shooter.utils.fonts.FontManager;
 
 import java.util.List;
 
@@ -18,12 +19,15 @@ import java.util.List;
 public class SimpleLogDisplay {
 
     private boolean visible;
-    private BitmapFont font;
-    private BitmapFont titleFont;
+    // private BitmapFont font;
+    // private BitmapFont titleFont;
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera uiCamera; // Fixed UI camera
     private float updateTimer;
     private List<String> cachedLogs;
+
+    private FontManager fontManager;
+    private FontManager titleFontManager;
 
     // Window properties
     private float windowX = 20;
@@ -35,8 +39,14 @@ public class SimpleLogDisplay {
         this.visible = false;
 
         // Create readable fonts
-        this.titleFont = GameManagerFacade.getInstance().generateBitmapFont(20, Color.GOLD);
-        this.font = GameManagerFacade.getInstance().generateBitmapFont(14, Color.WHITE);
+        // this.titleFont = GameManagerFacade.getInstance().generateBitmapFont(20, Color.GOLD);
+        // this.font = GameManagerFacade.getInstance().generateBitmapFont(14, Color.WHITE);
+        titleFontManager = new FontManager(20, Color.GOLD, "Warungasem.ttf", "LogDisplay-Title");
+        fontManager = new FontManager(14, Color.WHITE, "Warungasem.ttf", "LogDisplay-Font");
+
+        // Use Security Proxy - only visible when debug mode is on
+        // titleFontManager.switchToSecurityProxy(false);
+        // fontManager.switchToSecurityProxy(false);                   
 
         this.shapeRenderer = new ShapeRenderer();
 
@@ -81,6 +91,9 @@ public class SimpleLogDisplay {
         // Draw semi-transparent background using FIXED UI camera
         Gdx.gl.glEnable(Gdx.gl20.GL_BLEND);
         Gdx.gl.glBlendFunc(Gdx.gl20.GL_SRC_ALPHA, Gdx.gl20.GL_ONE_MINUS_SRC_ALPHA);
+
+        BitmapFont titleFont = titleFontManager.getFontResource().getFont();
+        BitmapFont font = fontManager.getFontResource().getFont();  
 
         shapeRenderer.setProjectionMatrix(uiCamera.combined); // Use fixed UI camera!
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -163,8 +176,10 @@ public class SimpleLogDisplay {
     }
 
     public void dispose() {
-        font.dispose();
-        titleFont.dispose();
+        // font.dispose();
+        // titleFont.dispose();
+        fontManager.dispose();
+        titleFontManager.dispose();
         shapeRenderer.dispose();
     }
 }

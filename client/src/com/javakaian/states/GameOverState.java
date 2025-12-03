@@ -8,6 +8,7 @@ import com.javakaian.shooter.input.GameOverInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
+import com.javakaian.shooter.utils.fonts.FontManager;
 
 /**
  * This class controls game over state.
@@ -16,12 +17,15 @@ import com.javakaian.shooter.utils.stats.GameStats;
  */
 public class GameOverState extends State {
 
-    private BitmapFont smallFont;
+    //private BitmapFont smallFont;
+    private FontManager smallFontManager;
 
     public GameOverState(StateController sc) {
         super(sc);
         ip = new GameOverInput(this);
-        smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, Color.WHITE);
+        //smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, Color.WHITE);
+        smallFontManager = new FontManager(32, Color.WHITE, "Warungasem.ttf", "GameOver-SmallFont");
+        smallFontManager.switchToVirtualProxy();
 
     }
 
@@ -34,6 +38,8 @@ public class GameOverState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         GameManagerFacade gm = GameManagerFacade.getInstance();
+
+        BitmapFont smallFont = smallFontManager.getFontResource().getFont();
 
         sb.begin();
         gm.renderText(sb, bitmapFont, "Game Over", TextAlignment.CENTER, 0f, 0.45f);
