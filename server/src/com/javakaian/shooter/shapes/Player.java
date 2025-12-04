@@ -38,6 +38,9 @@ public class Player {
     private static final int SHIELD_MAX_HEALTH = 50;
 
     private int refill;
+    
+    // Power-up inventory for storing collected power-ups
+    private PowerUpInventory powerUpInventory;
 
     public Player(float x, float y, float size, int id) {
         this.position = new Vector2(x, y);
@@ -48,6 +51,7 @@ public class Player {
         this.health = 100;
         this.spikeCount = 0;
         this.refill = 0;
+        this.powerUpInventory = new PowerUpInventory();
     }
 
     public void update(float deltaTime) {
@@ -289,6 +293,53 @@ public class Player {
     public float getShieldTimeRemaining(float currentTime) {
         if (!hasShield) return 0f;
         return Math.max(0f, shieldEndTime - currentTime);
+    }
+
+    /**
+     * Gets the player's power-up inventory.
+     */
+    public PowerUpInventory getPowerUpInventory() {
+        return powerUpInventory;
+    }
+    
+    /**
+     * Stores a collected power-up in inventory.
+     * @return true if stored successfully, false if inventory is full
+     */
+    public boolean storePowerUp(PowerUp.PowerUpType type, float duration) {
+        return powerUpInventory.addPowerUp(type, duration);
+    }
+    
+    /**
+     * Uses a power-up from the specified inventory slot.
+     * @param slot The slot index (0-3 for F1-F4 keys)
+     * @param currentTime Current game time for effect duration
+     * @return true if power-up was used, false if slot was empty
+     */
+    public boolean usePowerUpFromSlot(int slot, float currentTime) {
+        PowerUpInventory.PowerUpData data = powerUpInventory.usePowerUp(slot);
+        if (data == null) {
+            return false;
+        }
+        
+        // Apply the power-up effect
+        switch (data.type) {
+            case SPEED_BOOST:
+                applySpeedBoost(currentTime, data.duration);
+                break;
+            case DAMAGE_BOOST:
+                applyDamageBoost(currentTime, data.duration);
+                break;
+            case SHIELD:
+                applyShield(currentTime, data.duration);
+                break;
+            case AMMO_REFILL:
+                applyAmmoRefill(currentTime);
+                break;
+        }
+        
+        System.out.println("Player " + id + " used power-up from slot " + (slot + 1) + ": " + data.type);
+        return true;
     }
 
 }

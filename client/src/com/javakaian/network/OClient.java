@@ -67,6 +67,8 @@ public class OClient {
                         OClient.this.game.ammoUpdateReceived(m);
                     } else if (object instanceof InventoryUpdateMessage m) {
                         OClient.this.game.inventoryUpdateReceived(m);
+                    } else if (object instanceof PowerUpInventoryMessage m) {
+                        OClient.this.game.powerUpInventoryReceived(m);
                     }
 
                 });
@@ -99,8 +101,13 @@ public class OClient {
         this.client.getKryo().register(UndoSpikeMessage.class);
         this.client.getKryo().register(InventoryUpdateMessage.class);
 
+        // Power-up inventory messages
+        this.client.getKryo().register(UsePowerUpMessage.class);
+        this.client.getKryo().register(PowerUpInventoryMessage.class);
+
         // primitive arrays
         this.client.getKryo().register(float[].class);
+        this.client.getKryo().register(int[].class);
 
     }
 

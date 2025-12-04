@@ -50,6 +50,11 @@ public interface OMessageListener {
     void reloadReceived(ReloadMessage m);
 
     /**
+     * Player wants to use a power-up from their inventory
+     */
+    void usePowerUpReceived(UsePowerUpMessage m);
+
+    /**
      * Invoked when a network connection is closed unexpectedly or normally.
      * Implementations should clean up any player state associated with this connection.
      */

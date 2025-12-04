@@ -46,4 +46,10 @@ public interface OMessageListener {
 
     void ammoUpdateReceived(AmmoUpdateMessage m);
 
+    /**
+     * Should be invoked when power-up inventory message received.
+     * Updates the player's stored power-ups display.
+     */
+    void powerUpInventoryReceived(PowerUpInventoryMessage m);
+
 }

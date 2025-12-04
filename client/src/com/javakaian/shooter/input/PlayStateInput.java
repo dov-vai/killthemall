@@ -110,6 +110,29 @@ public class PlayStateInput extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+        // Interpreter Pattern - Handle console toggle and input
+        if (keycode == Keys.GRAVE) { // ~ key
+            playState.toggleConsole();
+            return true;
+        }
+        
+        // If console is visible, handle console-specific keys
+        if (playState.isConsoleVisible()) {
+            switch (keycode) {
+                case Keys.ENTER:
+                    playState.executeConsoleCommand();
+                    return true;
+                case Keys.ESCAPE:
+                    playState.hideConsole();
+                    return true;
+                case Keys.BACKSPACE:
+                    playState.consoleBackspace();
+                    return true;
+                default:
+                    // Let keyTyped handle text input
+                    return false;
+            }
+        }
 
         // Try to handle with command pattern first
         if (keyBindingManager.handleKeyPress(keycode)) {
@@ -129,6 +152,19 @@ public class PlayStateInput extends InputAdapter {
             case Keys.SPACE:
                 // Start shooting (for full auto and charged shot)
                 playState.shoot();
+                break;
+            // Power-up usage with F1-F4 keys
+            case Keys.F1:
+                playState.usePowerUp(0);
+                break;
+            case Keys.F2:
+                playState.usePowerUp(1);
+                break;
+            case Keys.F3:
+                playState.usePowerUp(2);
+                break;
+            case Keys.F4:
+                playState.usePowerUp(3);
                 break;
             default:
                 break;

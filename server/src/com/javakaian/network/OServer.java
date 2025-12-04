@@ -128,6 +128,8 @@ public class OServer {
                 messageListener.placeSpikeReceived(m);
             } else if (message instanceof UndoSpikeMessage m) {
                 messageListener.undoSpikeReceived(m);
+            } else if (message instanceof UsePowerUpMessage m) {
+                messageListener.usePowerUpReceived(m);
             }
 
         }
@@ -163,8 +165,13 @@ public class OServer {
         this.server.getKryo().register(UndoSpikeMessage.class);
         this.server.getKryo().register(InventoryUpdateMessage.class);
 
+        // Power-up inventory messages
+        this.server.getKryo().register(UsePowerUpMessage.class);
+        this.server.getKryo().register(PowerUpInventoryMessage.class);
+
         // primitive arrays
         this.server.getKryo().register(float[].class);
+        this.server.getKryo().register(int[].class);
     }
 
     public void sendToAllUDP(Object m) {

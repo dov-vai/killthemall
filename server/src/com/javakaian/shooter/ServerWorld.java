@@ -217,6 +217,7 @@ public class ServerWorld implements OMessageListener {
     /**
      * Check collisions using Iterator pattern.
      * Demonstrates iterating through different collection types uniformly.
+     * Now stores power-ups in player inventory instead of applying instantly.
      */
     private void checkPowerUpCollisions() {
         Iterator<PowerUp> iter = powerUpsArray.createIterator();
@@ -228,9 +229,12 @@ public class ServerWorld implements OMessageListener {
             
             for (Player player : players) {
                 if (player.getBoundRect().overlaps(powerUp.getBoundRect())) {
-                    applyPowerUpEffect(player, powerUp);
-                    powerUp.setVisible(false);
-                    toRemove.add(powerUp);
+                    // Store power-up in inventory instead of applying immediately
+                    boolean stored = storePowerUpInInventory(player, powerUp);
+                    if (stored) {
+                        powerUp.setVisible(false);
+                        toRemove.add(powerUp);
+                    }
                     break;
                 }
             }
@@ -243,6 +247,40 @@ public class ServerWorld implements OMessageListener {
         }
     }
 
+    /**
+     * Stores a power-up in the player's inventory.
+     * @return true if stored successfully, false if inventory is full
+     */
+    private boolean storePowerUpInInventory(Player player, PowerUp powerUp) {
+        boolean stored = player.storePowerUp(powerUp.getType(), powerUp.getDuration());
+        
+        if (stored) {
+            logger.debug("Player " + player.getId() + " stored " + powerUp.getType() + 
+                        " in inventory (duration: " + powerUp.getDuration() + "s)");
+            
+            // Send inventory update to client
+            sendPowerUpInventoryUpdate(player);
+        } else {
+            logger.debug("Player " + player.getId() + " inventory full, couldn't store " + powerUp.getType());
+        }
+        
+        return stored;
+    }
+    
+    /**
+     * Sends the player's power-up inventory state to clients.
+     */
+    private void sendPowerUpInventoryUpdate(Player player) {
+        PowerUpInventoryMessage msg = new PowerUpInventoryMessage();
+        msg.setPlayerId(player.getId());
+        msg.setSlots(player.getPowerUpInventory().getSlotsAsOrdinals());
+        server.sendToAllUDP(msg);
+    }
+
+    /**
+     * @deprecated Use storePowerUpInInventory instead. Kept for reference.
+     */
+    @SuppressWarnings("unused")
     private void applyPowerUpEffect(Player player, PowerUp powerUp) {
         switch (powerUp.getType()) {
         case SPEED_BOOST:
@@ -795,6 +833,32 @@ public class ServerWorld implements OMessageListener {
         if (commandStack == null || commandStack.isEmpty()) {
             logger.debug("Player " + m.getPlayerId() + " has no spikes to undo");
         }
+    }
+
+    @Override
+    public void usePowerUpReceived(UsePowerUpMessage m) {
+        players.stream().filter(p -> p.getId() == m.getPlayerId()).findFirst()
+                .ifPresent(player -> {
+                    int slot = m.getPowerUpSlot();
+                    if (slot < 0 || slot >= 4) {
+                        logger.debug("Player " + m.getPlayerId() + " invalid power-up slot: " + slot);
+                        return;
+                    }
+                    
+                    boolean used = player.usePowerUpFromSlot(slot, gameTime);
+                    
+                    if (used) {
+                        logger.debug("Player " + m.getPlayerId() + " used power-up from slot " + (slot + 1));
+                        
+                        // Send updated inventory to clients
+                        sendPowerUpInventoryUpdate(player);
+                        
+                        // If it was an ammo refill, also send ammo update
+                        sendAmmoUpdate(player);
+                    } else {
+                        logger.debug("Player " + m.getPlayerId() + " tried to use empty slot " + (slot + 1));
+                    }
+                });
     }
 
 }

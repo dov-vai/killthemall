@@ -66,6 +66,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private String currentWeaponStats = "";
     private BitmapFont weaponsFont;
     private int spikeCount = 0;
+    // Power-up inventory slots (4 slots for F1-F4 keys)
+    // Values: -1 = empty, 0 = SPEED_BOOST, 1 = DAMAGE_BOOST, 2 = SHIELD, 3 = AMMO_REFILL
+    private int[] powerUpSlots = new int[]{-1, -1, -1, -1};
+    private static final String[] POWER_UP_NAMES = {"SPD", "DMG", "SHD", "AMO"};
+    private static final Color[] POWER_UP_COLORS = {Color.CYAN, Color.RED, Color.BLUE, Color.YELLOW};
     // Adapter pattern - unified game logger
     private IGameLogger gameLogger;
     private SimpleLogDisplay logDisplay;
@@ -444,13 +449,17 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         }
 
         gm.renderText(sb, weaponsFont, "SPIKES: " + spikeCount, TextAlignment.LEFT, 0.02f, baseEquipmentY + 0.20f);
+        
+        // Render power-up inventory
+        renderPowerUpInventory(gm, baseEquipmentY + 0.23f);
+        
         gm.renderText(
                 sb,
                 healthFont,
                 "1-3: Weapons | 4-8: Attachments | 0: Reset | B: Fire Mode | R: Reload",
                 TextAlignment.CENTER,
                 0f,
-                0.90f);
+                0.88f);
 
         gm.renderText(
                 sb,
@@ -458,7 +467,15 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 "E: Place Spike | U: Undo | L: Logs | SPACE: Shoot",
                 TextAlignment.CENTER,
                 0f,
-                0.95f);
+                0.91f);
+                
+        gm.renderText(
+                sb,
+                healthFont,
+                "F1-F4: Use Power-ups | ~: Console",
+                TextAlignment.CENTER,
+                0f,
+                0.94f);
 
         renderNotifications();
         sb.end();
@@ -473,6 +490,31 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             gameConsole.render(sr);
             gameConsole.renderText(sb);
         }
+    }
+
+    /**
+     * Renders the power-up inventory display showing F1-F4 slots.
+     */
+    private void renderPowerUpInventory(GameManagerFacade gm, float yOffset) {
+        StringBuilder inventoryText = new StringBuilder("POWER-UPS: ");
+        boolean hasAny = false;
+        
+        for (int i = 0; i < 4; i++) {
+            inventoryText.append("[F").append(i + 1).append(":");
+            if (powerUpSlots[i] >= 0 && powerUpSlots[i] < POWER_UP_NAMES.length) {
+                inventoryText.append(POWER_UP_NAMES[powerUpSlots[i]]);
+                hasAny = true;
+            } else {
+                inventoryText.append("---");
+            }
+            inventoryText.append("] ");
+        }
+        
+        if (!hasAny) {
+            inventoryText = new StringBuilder("POWER-UPS: None collected");
+        }
+        
+        gm.renderText(sb, weaponsFont, inventoryText.toString(), TextAlignment.LEFT, 0.02f, yOffset);
     }
 
     private void renderNotifications() {
@@ -835,6 +877,48 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 currentBridgeWeapon.setCurrentAmmo(m.getCurrentAmmo());
             }
         }
+    }
+
+    @Override
+    public void powerUpInventoryReceived(PowerUpInventoryMessage m) {
+        if (player != null && m.getPlayerId() == player.getId()) {
+            int[] serverSlots = m.getSlots();
+            if (serverSlots != null && serverSlots.length == 4) {
+                // Check if a new power-up was added
+                for (int i = 0; i < 4; i++) {
+                    if (powerUpSlots[i] == -1 && serverSlots[i] != -1) {
+                        String powerUpName = serverSlots[i] >= 0 && serverSlots[i] < POWER_UP_NAMES.length 
+                            ? POWER_UP_NAMES[serverSlots[i]] : "?";
+                        notifications.add(new Notification(
+                            "Collected " + powerUpName + " power-up! Press F" + (i + 1) + " to use",
+                            3.0f));
+                    }
+                }
+                System.arraycopy(serverSlots, 0, powerUpSlots, 0, 4);
+            }
+        }
+    }
+
+    /**
+     * Uses a power-up from the specified inventory slot.
+     * @param slot 0-3 corresponding to F1-F4 keys
+     */
+    public void usePowerUp(int slot) {
+        if (player == null || slot < 0 || slot >= 4) return;
+        
+        if (powerUpSlots[slot] == -1) {
+            notifications.add(new Notification("Slot F" + (slot + 1) + " is empty!", 1.5f));
+            return;
+        }
+        
+        UsePowerUpMessage m = new UsePowerUpMessage();
+        m.setPlayerId(player.getId());
+        m.setPowerUpSlot(slot);
+        client.sendTCP(m);
+        
+        String powerUpName = powerUpSlots[slot] >= 0 && powerUpSlots[slot] < POWER_UP_NAMES.length 
+            ? POWER_UP_NAMES[powerUpSlots[slot]] : "Power-up";
+        notifications.add(new Notification("Used " + powerUpName + "!", 2.0f));
     }
 
     public void restart() {

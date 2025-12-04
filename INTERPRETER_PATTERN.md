@@ -7,50 +7,314 @@ This implementation demonstrates the **Interpreter Design Pattern** (GoF) in the
 ## Pattern Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    INTERPRETER PATTERN                          │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         INTERPRETER PATTERN STRUCTURE                           │
+│                    Integration with Existing Game Classes                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-           ┌───────────────────┐
-           │ CommandInterpreter│ ◄─── Client
-           │ +parse(String)    │      (Parses text into expression tree)
-           └────────┬──────────┘
-                    │ creates
-                    ▼
-           ┌────────────────┐
-           │  <<interface>> │
-           │   Expression   │ ◄─── AbstractExpression
-           │                │
-           │ +interpret(    │
-           │    Context)    │
-           └───────┬────────┘
-                   │
-        ┌──────────┴──────────────────────────┐
-        │                                     │
-        │                                     │
-┌───────▼──────────┐              ┌──────────▼────────────┐
-│ TerminalExpression│              │ NonterminalExpression │
-│                   │              │                       │
-│ - NumberExpression│              │ - TeleportExpression  │
-│ - HealExpression  │              │ - SequenceExpression  │
-│ - SpeedExpression │              │                       │
-│ - GodModeExpression│             │   Contains other      │
-│ - HelpExpression  │              │   expressions         │
-│ - StatsExpression │              │                       │
-│ - ClearExpression │              │                       │
-└───────────────────┘              └───────────────────────┘
-        │                                     │
-        └──────────┬──────────────────────────┘
-                   │ uses
-                   ▼
-           ┌───────────────┐
-           │   Context     │
-           │───────────────│
-           │ - variables   │
-           │ - playState   │
-           │ - player      │
-           │ - output      │
-           └───────────────┘
+                              EXISTING GAME CLASSES
+    ┌──────────────────────────────────────────────────────────────────────────┐
+    │                                                                          │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ StateController     │      │ State            │                      │
+    │  │ (existing)          │─────▶│ (existing)       │                      │
+    │  │                     │      │ - camera         │                      │
+    │  │ +setState()         │      │ - sr: ShapeRend  │                      │
+    │  │ +render()           │      │ - sb: SpriteBatch│                      │
+    │  └─────────────────────┘      └────────┬─────────┘                      │
+    │                                        │ extends                         │
+    │                                        ▼                                 │
+    │  ┌─────────────────────────────────────────────────────────────────┐    │
+    │  │ PlayState (existing - modified)                                 │    │
+    │  │                                                                 │    │
+    │  │ - player: Player              - enemies: List<Enemy>            │    │
+    │  │ - bullets: List<Bullet>       - powerUps: List<PowerUp>         │    │
+    │  │ - spikes: List<Spike>         - client: OClient                 │    │
+    │  │ - healthFont: BitmapFont      - gameConsole: GameConsole ◄──NEW │    │
+    │  │                                                                 │    │
+    │  │ +render()     ──────────────▶ gameConsole.render()              │    │
+    │  │ +update()     ──────────────▶ gameConsole.update()              │    │
+    │  │ +loginReceived() ───────────▶ initializes gameConsole           │    │
+    │  └──────────────────────────────────────┬──────────────────────────┘    │
+    │                                         │                                │
+    │                                         │ references                     │
+    │                                         ▼                                │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ Player              │      │ Vector2          │                      │
+    │  │ (existing)          │      │ (libgdx)         │                      │
+    │  │                     │      │ - x: float       │                      │
+    │  │ - position: Vector2 │◄────▶│ - y: float       │                      │
+    │  │ - health: int       │      └──────────────────┘                      │
+    │  │ - id: int           │                                                 │
+    │  │ - hasShield: bool   │      ┌──────────────────┐                      │
+    │  │                     │      │ BitmapFont       │                      │
+    │  │ +setPosition()      │      │ (libgdx)         │                      │
+    │  │ +setHealth()        │      │ - for console UI │                      │
+    │  │ +getHealth()        │      └──────────────────┘                      │
+    │  └─────────────────────┘                                                 │
+    │                                                                          │
+    └──────────────────────────────────────────────────────────────────────────┘
+                  │
+                  │ integrates with
+                  ▼
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                         INTERPRETER PATTERN                             │
+    │                                                                         │
+    │           ┌───────────────────┐                                         │
+    │           │ CommandInterpreter│ ◄─── Client                             │
+    │           │ +parse(String)    │      (Parses text into expression tree) │
+    │           └────────┬──────────┘                                         │
+    │                    │ creates                                            │
+    │                    ▼                                                    │
+    │           ┌────────────────┐                                            │
+    │           │  <<interface>> │                                            │
+    │           │   Expression   │ ◄─── AbstractExpression                    │
+    │           │                │                                            │
+    │           │ +interpret(    │                                            │
+    │           │    Context)    │                                            │
+    │           └───────┬────────┘                                            │
+    │                   │                                                     │
+    │        ┌──────────┴──────────────────────────┐                          │
+    │        │                                     │                          │
+    │        │                                     │                          │
+    │ ┌──────▼───────────┐              ┌─────────▼─────────────┐             │
+    │ │TerminalExpression│              │ NonterminalExpression │             │
+    │ │                  │              │                       │             │
+    │ │ - NumberExpr     │              │ - TeleportExpression  │             │
+    │ │ - HealExpression │              │ - SequenceExpression  │             │
+    │ │ - SpeedExpression│              │                       │             │
+    │ │ - GodModeExpr    │              │   Contains other      │             │
+    │ │ - HelpExpression │              │   expressions         │             │
+    │ │ - StatsExpression│              │                       │             │
+    │ │ - ClearExpression│              │                       │             │
+    │ └──────────────────┘              └───────────────────────┘             │
+    │        │                                     │                          │
+    │        └──────────┬──────────────────────────┘                          │
+    │                   │ uses                                                │
+    │                   ▼                                                     │
+    │           ┌───────────────┐                                             │
+    │           │   Context     │                                             │
+    │           │───────────────│                                             │
+    │           │ - variables   │                                             │
+    │           │ - playState ──┼────────▶ PlayState (existing)               │
+    │           │ - player ─────┼────────▶ Player (existing)                  │
+    │           │ - output      │                                             │
+    │           └───────────────┘                                             │
+    │                                                                         │
+    │           ┌───────────────────────────────────────────────────┐         │
+    │           │ GameConsole (UI Component)                        │         │
+    │           │                                                   │         │
+    │           │ - interpreter: CommandInterpreter                 │         │
+    │           │ - context: Context                                │         │
+    │           │ - visible: boolean                                │         │
+    │           │ - font: BitmapFont ◄───────── from libgdx         │         │
+    │           │                                                   │         │
+    │           │ +toggle()  ◄─────── triggered by ~ key press      │         │
+    │           │ +render()  ◄─────── called by PlayState.render()  │         │
+    │           │ +update()  ◄─────── called by PlayState.update()  │         │
+    │           └───────────────────────────────────────────────────┘         │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+                  │
+                  │ uses for rendering
+                  ▼
+    ┌──────────────────────────────────────────────────────────────────────────┐
+    │                         LIBGDX FRAMEWORK                                 │
+    │                                                                          │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ ShapeRenderer       │      │ SpriteBatch      │                      │
+    │  │ (libgdx)            │      │ (libgdx)         │                      │
+    │  │                     │      │                  │                      │
+    │  │ +setColor()         │      │ +begin()         │                      │
+    │  │ +rect()             │      │ +end()           │                      │
+    │  │ +rectLine()         │      │ +draw()          │                      │
+    │  └─────────────────────┘      └──────────────────┘                      │
+    │           ▲                          ▲                                   │
+    │           │                          │                                   │
+    │           │ console background       │ console text                      │
+    │           │                          │                                   │
+    │  ┌────────┴──────────────────────────┴────────┐                         │
+    │  │              GameConsole.render()          │                         │
+    │  │              GameConsole.renderText()      │                         │
+    │  └────────────────────────────────────────────┘                         │
+    │                                                                          │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ Gdx.input           │      │ Input.Keys       │                      │
+    │  │ (libgdx)            │      │ (libgdx)         │                      │
+    │  │                     │      │                  │                      │
+    │  │ +isKeyJustPressed() │      │ Keys.GRAVE (~)   │                      │
+    │  │                     │      │ Keys.ENTER       │                      │
+    │  │                     │      │ Keys.ESCAPE      │                      │
+    │  └─────────────────────┘      └──────────────────┘                      │
+    │                                                                          │
+    └──────────────────────────────────────────────────────────────────────────┘
+```
+
+## Class Relationships Table
+
+| Existing Class      | Role in Pattern      | Connection                                       |
+| ------------------- | -------------------- | ------------------------------------------------ |
+| `PlayState`         | Host for GameConsole | Initializes, updates, and renders console        |
+| `Player`            | Target of commands   | HealExpression, TeleportExpression modify Player |
+| `Vector2`           | Position data        | Used by TeleportExpression to set position       |
+| `StateController`   | State management     | Controls PlayState lifecycle                     |
+| `State`             | Base class           | PlayState inherits rendering infrastructure      |
+| `ShapeRenderer`     | Console background   | GameConsole uses for semi-transparent bg         |
+| `SpriteBatch`       | Text rendering       | GameConsole uses for command/output text         |
+| `BitmapFont`        | Font rendering       | Console displays text using BitmapFont           |
+| `Gdx.input`         | Keyboard input       | Detects ~ key to toggle console                  |
+| `Input.Keys`        | Key constants        | GRAVE, ENTER, ESCAPE, BACKSPACE                  |
+| `OClient`           | Network client       | Future: could send commands to server            |
+| `GameManagerFacade` | Font generation      | Creates BitmapFont for console                   |
+
+## Command to Game Object Mapping
+
+| Command            | Expression         | Affects         | Existing Class                               |
+| ------------------ | ------------------ | --------------- | -------------------------------------------- |
+| `heal <n>`         | HealExpression     | Player health   | `Player.setHealth()`                         |
+| `teleport <x> <y>` | TeleportExpression | Player position | `Player.setPosition(Vector2)`                |
+| `speed <n>`        | SpeedExpression    | Movement speed  | Context variable                             |
+| `god`              | GodModeExpression  | Invincibility   | Context variable                             |
+| `stats`            | StatsExpression    | Display info    | `Player.getHealth()`, `Player.getPosition()` |
+| `help`             | HelpExpression     | Show commands   | Console output                               |
+| `clear`            | ClearExpression    | Clear console   | Console output buffer                        |
+
+## Execution Flow with Existing Classes
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    EXECUTION FLOW: "heal 50" COMMAND                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  User Input                 Pattern Classes              Existing Game Classes
+  ──────────                 ───────────────              ─────────────────────
+
+  ┌─────────────┐
+  │ Press ~ key │
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────────┐       ┌─────────────────────┐
+  │ Gdx.input       │──────▶│ GameConsole.toggle()│
+  │ (libgdx)        │       │                     │
+  │ Keys.GRAVE      │       │ visible = true      │
+  └─────────────────┘       └─────────────────────┘
+         │
+         ▼
+  ┌─────────────┐
+  │ Type:       │
+  │ "heal 50"   │
+  └──────┬──────┘
+         │
+         ▼
+  ┌─────────────────┐       ┌─────────────────────┐
+  │ Press ENTER     │──────▶│ GameConsole         │
+  │ Keys.ENTER      │       │ .executeCommand()   │
+  └─────────────────┘       └──────────┬──────────┘
+                                       │
+                                       ▼
+                            ┌─────────────────────┐
+                            │ CommandInterpreter  │
+                            │ .parse("heal 50")   │
+                            └──────────┬──────────┘
+                                       │
+                                       │ creates expression tree
+                                       ▼
+                            ┌─────────────────────┐
+                            │ HealExpression      │
+                            │      │              │
+                            │ NumberExpression(50)│
+                            └──────────┬──────────┘
+                                       │
+                                       ▼
+                            ┌─────────────────────┐      ┌──────────────────┐
+                            │ HealExpression      │      │                  │
+                            │ .interpret(context) │─────▶│ Context          │
+                            │                     │      │ - player ────────┼───┐
+                            │ 1. Get amount (50)  │      │ - playState      │   │
+                            │ 2. Get player       │      │ - output         │   │
+                            │ 3. Calculate health │      └──────────────────┘   │
+                            └──────────┬──────────┘                             │
+                                       │                                        │
+                                       │                                        │
+                                       ▼                                        ▼
+                                                              ┌──────────────────────┐
+                                                              │ Player               │
+                                                              │ (existing)           │
+                                                              │                      │
+                                                              │ health: 50 → 100     │
+                                                              │                      │
+                                                              │ .setHealth(100)      │
+                                                              │ .getHealth() → 100   │
+                                                              └──────────────────────┘
+                                       │
+                                       ▼
+                            ┌─────────────────────┐
+                            │ context.appendOutput│
+                            │ ("Healed 50 HP.    │
+                            │  Current: 100")     │
+                            └──────────┬──────────┘
+                                       │
+                                       ▼
+                            ┌─────────────────────┐      ┌──────────────────┐
+                            │ GameConsole         │      │ SpriteBatch      │
+                            │ .renderText()       │─────▶│ (libgdx)         │
+                            │                     │      │                  │
+                            │ Display output      │      │ draws text       │
+                            └─────────────────────┘      └──────────────────┘
+```
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│               EXECUTION FLOW: "teleport 500 300" COMMAND                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Command: "teleport 500 300"
+
+                            ┌─────────────────────┐
+                            │ CommandInterpreter  │
+                            │ .parse()            │
+                            └──────────┬──────────┘
+                                       │
+                                       │ creates
+                                       ▼
+                            ┌─────────────────────┐
+                            │ TeleportExpression  │
+                            │   /           \     │
+                            │ Number(500) Number(300)
+                            └──────────┬──────────┘
+                                       │
+                                       │ interpret
+                                       ▼
+                            ┌─────────────────────┐
+                            │ 1. xExpr.interpret()│
+                            │    → lastNumber=500 │
+                            │                     │
+                            │ 2. yExpr.interpret()│
+                            │    → lastNumber=300 │
+                            └──────────┬──────────┘
+                                       │
+                                       ▼
+                                                              ┌──────────────────────┐
+                                                              │ Player               │
+                                                              │ (existing)           │
+                                                              │                      │
+                                                              │ position.x: → 500    │
+                                                              │ position.y: → 300    │
+                                                              │                      │
+                                                              │ .setPosition(        │
+                                                              │   new Vector2(500,   │
+                                                              │               300))  │
+                                                              └──────────────────────┘
+                                                                        │
+                                                                        ▼
+                                                              ┌──────────────────────┐
+                                                              │ Vector2              │
+                                                              │ (libgdx)             │
+                                                              │                      │
+                                                              │ x: 500               │
+                                                              │ y: 300               │
+                                                              └──────────────────────┘
 ```
 
 ## Components

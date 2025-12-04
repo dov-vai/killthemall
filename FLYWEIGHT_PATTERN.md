@@ -7,29 +7,300 @@ This implementation demonstrates the **Flyweight Design Pattern** (GoF) in the K
 ## Pattern Structure
 
 ```
-┌─────────────────────┐
-│ FlyweightFactory    │──────flyweights────────┐
-│ +getFlyweight(key)  │                        │
-└─────────────────────┘                        │
-         │                                      ▼
-         │                              ┌──────────────┐
-         │                              │  Flyweight   │◁─┐
-         │                              │ +operation() │  │
-         │                              └──────────────┘  │
-         │                                     ▲          │
-         │                                     │          │
-         │                      ┌──────────────┴──────────┴──────────┐
-         │                      │                                     │
-         │           ┌──────────────────────┐          ┌─────────────────────────────┐
-         │           │ ConcreteFlyweight    │          │ UnsharedConcreteFlyweight   │
-         │           │ -intrinsicState      │          │ -allStates                  │
-         │           │ +operation()         │          │ +operation()                │
-         │           └──────────────────────┘          └─────────────────────────────┘
-         │                      ▲
-         │                      │
-         │           ┌──────────────────────┐
-         └──────────▷│ Client (PowerUp)     │
-                     └──────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         FLYWEIGHT PATTERN STRUCTURE                             │
+│                    Integration with Existing Game Classes                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                              EXISTING GAME CLASSES
+    ┌──────────────────────────────────────────────────────────────────────────┐
+    │                                                                          │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ OMessageParser      │      │ GameWorldMessage │                      │
+    │  │ (existing)          │◄─────│ (existing)       │                      │
+    │  │                     │      │ - powerUps[]     │                      │
+    │  │ +getPowerUpsFromGWM │      │ - enemies[]      │                      │
+    │  └──────────┬──────────┘      │ - bullets[]      │                      │
+    │             │                 └──────────────────┘                      │
+    │             │ creates                                                    │
+    │             ▼                                                            │
+    │  ┌─────────────────────┐      ┌──────────────────┐                      │
+    │  │ PlayState           │◄─────│ StateController  │                      │
+    │  │ (existing)          │      │ (existing)       │                      │
+    │  │                     │      └──────────────────┘                      │
+    │  │ - powerUps: List    │                                                 │
+    │  │ - player: Player    │──────┐                                         │
+    │  │ - enemies: List     │      │                                         │
+    │  │ - bullets: List     │      │                                         │
+    │  │                     │      │                                         │
+    │  │ +render()           │      │                                         │
+    │  │ +update()           │      ▼                                         │
+    │  └──────────┬──────────┘  ┌──────────────────┐                          │
+    │             │             │ Player           │                          │
+    │             │             │ (existing)       │                          │
+    │             │             │ - position       │                          │
+    │             │             │ - health         │                          │
+    │             │             │ - id             │                          │
+    │             │             └──────────────────┘                          │
+    │             │                                                            │
+    └─────────────┼────────────────────────────────────────────────────────────┘
+                  │ renders
+                  ▼
+    ┌──────────────────────────────────────────────────────────────────────────┐
+    │                          FLYWEIGHT PATTERN                               │
+    │                                                                          │
+    │  ┌─────────────────────┐                                                │
+    │  │ FlyweightFactory    │──────flyweights────────┐                       │
+    │  │ +getFlyweight(key)  │                        │                       │
+    │  └─────────────────────┘                        │                       │
+    │           │                                      ▼                       │
+    │           │                              ┌──────────────┐               │
+    │           │                              │  Flyweight   │◁─┐            │
+    │           │                              │ +operation() │  │            │
+    │           │                              └──────────────┘  │            │
+    │           │                                     ▲          │            │
+    │           │                                     │          │            │
+    │           │                      ┌──────────────┴──────────┴───────┐    │
+    │           │                      │                                 │    │
+    │           │           ┌──────────────────────┐    ┌────────────────────┐│
+    │           │           │ ConcreteFlyweight    │    │UnsharedConcrete    ││
+    │           │           │ -intrinsicState      │    │Flyweight           ││
+    │           │           │ +operation()         │    │ -allStates         ││
+    │           │           └──────────────────────┘    └────────────────────┘│
+    │           │                      ▲                                      │
+    │           │                      │                                      │
+    │           │           ┌──────────────────────┐                          │
+    │           └──────────▷│ PowerUp (Client)     │                          │
+    │                       │ (modified)           │                          │
+    │                       │ - position: Vector2  │◄─────┐                   │
+    │                       │ - size: float        │      │                   │
+    │                       │ - type: PowerUpType  │      │                   │
+    │                       │ + render()           │      │                   │
+    │                       └──────────────────────┘      │                   │
+    │                                                      │                   │
+    └──────────────────────────────────────────────────────┼───────────────────┘
+                                                           │
+    ┌──────────────────────────────────────────────────────┼───────────────────┐
+    │                    LIBGDX FRAMEWORK                  │                   │
+    │                                                      │                   │
+    │  ┌─────────────────────┐      ┌──────────────────┐  │                   │
+    │  │ ShapeRenderer       │      │ Vector2          │──┘                   │
+    │  │ (libgdx)            │      │ (libgdx)         │                      │
+    │  │                     │      │ - x: float       │                      │
+    │  │ +setColor()         │      │ - y: float       │                      │
+    │  │ +circle()           │      └──────────────────┘                      │
+    │  │ +rect()             │                                                 │
+    │  └─────────────────────┘      ┌──────────────────┐                      │
+    │           ▲                   │ Color            │                      │
+    │           │                   │ (libgdx)         │                      │
+    │           │ used by           │ GREEN, PINK,     │                      │
+    │           │ operation()       │ BLUE, YELLOW     │                      │
+    │           │                   └──────────────────┘                      │
+    └───────────┼──────────────────────────────────────────────────────────────┘
+                │
+                │
+    ┌───────────┴──────────────────────────────────────────────────────────────┐
+    │                    OTHER GAME SHAPES (Similar Pattern)                   │
+    │                                                                          │
+    │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐          │
+    │  │ Enemy           │  │ Bullet          │  │ Spike           │          │
+    │  │ (existing)      │  │ (existing)      │  │ (existing)      │          │
+    │  │ - position      │  │ - position      │  │ - position      │          │
+    │  │ - size          │  │ - size          │  │ - size          │          │
+    │  │ - color         │  │ - visible       │  │ + render()      │          │
+    │  │ + render()      │  │ + render()      │  │                 │          │
+    │  └─────────────────┘  └─────────────────┘  └─────────────────┘          │
+    │                                                                          │
+    │  (Could also benefit from Flyweight pattern in future)                  │
+    └──────────────────────────────────────────────────────────────────────────┘
+```
+
+## Class Relationships Table
+
+| Existing Class     | Role in Pattern    | Connection                                           |
+| ------------------ | ------------------ | ---------------------------------------------------- |
+| `PlayState`        | Holds PowerUp list | Renders PowerUps via `GameManagerFacade`             |
+| `OMessageParser`   | Creates PowerUps   | `getPowerUpsFromGWM()` creates PowerUp instances     |
+| `GameWorldMessage` | Network data       | Contains PowerUp positions from server               |
+| `ShapeRenderer`    | Rendering          | Used by Flyweight `operation()` to draw              |
+| `Vector2`          | Position storage   | PowerUp stores position as extrinsic state           |
+| `Color`            | Rendering colors   | ConcreteFlyweight uses for PowerUp types             |
+| `StateController`  | State management   | Controls PlayState lifecycle                         |
+| `Player`           | Game entity        | Collects PowerUps and stores in inventory            |
+| `PowerUpInventory` | Storage system     | Stores collected PowerUps for later use (F1-F4)      |
+| `Enemy`            | Game entity        | Similar shape pattern, potential Flyweight candidate |
+| `Bullet`           | Game entity        | Similar shape pattern, potential Flyweight candidate |
+
+## Data Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DATA FLOW                                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Server                    Network                      Client
+┌─────────┐              ┌───────────┐              ┌─────────────────────────┐
+│ Server  │   UDP/TCP    │ GameWorld │              │                         │
+│ World   │─────────────▶│ Message   │─────────────▶│  OMessageParser         │
+│         │              │           │              │  .getPowerUpsFromGWM()  │
+└─────────┘              └───────────┘              └───────────┬─────────────┘
+                                                                │
+                                                                │ creates
+                                                                ▼
+                                                    ┌─────────────────────────┐
+                                                    │  List<PowerUp>          │
+                                                    │  ┌─────────┐            │
+                                                    │  │PowerUp 1│──┐         │
+                                                    │  └─────────┘  │         │
+                                                    │  ┌─────────┐  │ share   │
+                                                    │  │PowerUp 2│──┤         │
+                                                    │  └─────────┘  │         │
+                                                    │  ┌─────────┐  │         │
+                                                    │  │PowerUp 3│──┘         │
+                                                    │  └─────────┘            │
+                                                    └───────────┬─────────────┘
+                                                                │
+                                                                ▼
+                                                    ┌─────────────────────────┐
+                                                    │  FlyweightFactory       │
+                                                    │  ┌───────────────────┐  │
+                                                    │  │ SPEED_BOOST → Fw1 │  │
+                                                    │  │ DAMAGE_BOOST→ Fw2 │  │
+                                                    │  │ SHIELD     → Fw3 │  │
+                                                    │  │ AMMO_REFILL→ Fw4 │  │
+                                                    │  └───────────────────┘  │
+                                                    └───────────┬─────────────┘
+                                                                │
+                                                                │ render
+                                                                ▼
+                                                    ┌─────────────────────────┐
+                                                    │  ShapeRenderer          │
+                                                    │  (draws to screen)      │
+                                                    └─────────────────────────┘
+```
+
+## Rendering Flow with Existing Classes
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 RENDER FLOW: PowerUp.render() with Flyweight                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  PlayState                Pattern Classes              LibGDX Framework
+  ─────────                ───────────────              ────────────────
+
+  ┌─────────────────────┐
+  │ PlayState.render()  │
+  │ (existing)          │
+  │                     │
+  │ for each powerUp:   │
+  │   powerUp.render(sr)│
+  └──────────┬──────────┘
+             │
+             │ calls
+             ▼
+  ┌─────────────────────┐
+  │ PowerUp.render(sr)  │
+  │ (modified)          │
+  │                     │
+  │ 1. Get flyweight    │───────────────────┐
+  │ 2. Call operation() │                   │
+  └──────────┬──────────┘                   │
+             │                              │
+             ▼                              ▼
+  ┌─────────────────────┐      ┌─────────────────────┐
+  │ FlyweightFactory    │      │ Flyweight fw =      │
+  │ .getFlyweight(type) │─────▶│ factory.getFlyweight│
+  │                     │      │ (PowerUpType.       │
+  │ Check if exists:    │      │  SPEED_BOOST)       │
+  │ - YES → return      │      └──────────┬──────────┘
+  │ - NO  → create      │                 │
+  └─────────────────────┘                 │
+                                          │
+             ┌────────────────────────────┘
+             │
+             ▼
+  ┌─────────────────────┐
+  │ ConcreteFlyweight   │
+  │ .operation(sr,      │
+  │            x, y,    │◄────── Extrinsic State
+  │            size)    │        (from PowerUp)
+  │                     │
+  │ Intrinsic State:    │
+  │ - type: SPEED_BOOST │
+  │ - color: GREEN      │
+  └──────────┬──────────┘
+             │
+             │ uses
+             ▼
+                                          ┌──────────────────────┐
+                                          │ ShapeRenderer        │
+                                          │ (libgdx - existing)  │
+                                          │                      │
+                                          │ sr.setColor(GREEN)   │
+                                          │ sr.circle(x, y, r)   │
+                                          │ sr.rect(x, y, w, h)  │
+                                          └──────────────────────┘
+                                                    │
+                                                    ▼
+                                          ┌──────────────────────┐
+                                          │ Color                │
+                                          │ (libgdx - existing)  │
+                                          │                      │
+                                          │ Color.GREEN          │
+                                          │ Color.PINK           │
+                                          │ Color.BLUE           │
+                                          │ Color.YELLOW         │
+                                          └──────────────────────┘
+```
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│              MEMORY COMPARISON: Before vs After Flyweight                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  BEFORE (without Flyweight)              AFTER (with Flyweight)
+
+  ┌──────────────────────┐                ┌──────────────────────┐
+  │ PowerUp 1            │                │ PowerUp 1            │
+  │ - position (100,100) │                │ - position (100,100) │
+  │ - size: 20           │                │ - size: 20           │
+  │ - type: SPEED_BOOST  │                │ - type: SPEED_BOOST  │
+  │ - render logic ───┐  │                │ - (no render logic)  │──┐
+  │ - color: GREEN    │  │                └──────────────────────┘  │
+  └───────────────────┼──┘                                          │
+                      │                                             │
+  ┌───────────────────┼──┐                ┌──────────────────────┐  │
+  │ PowerUp 2         │  │                │ PowerUp 2            │  │
+  │ - position (200,150) │                │ - position (200,150) │  │
+  │ - size: 20        │  │                │ - size: 20           │  │
+  │ - type: SPEED_BOOST  │                │ - type: SPEED_BOOST  │  │share
+  │ - render logic ───┼──│ DUPLICATE     │ - (no render logic)  │──┤
+  │ - color: GREEN    │  │                └──────────────────────┘  │
+  └───────────────────┼──┘                                          │
+                      │                                             │
+  ┌───────────────────┼──┐                ┌──────────────────────┐  │
+  │ PowerUp 3         │  │                │ PowerUp 3            │  │
+  │ - position (300,200) │                │ - position (300,200) │  │
+  │ - size: 20        │  │                │ - size: 20           │  │
+  │ - type: SPEED_BOOST  │                │ - type: SPEED_BOOST  │  │
+  │ - render logic ───┼──│ DUPLICATE     │ - (no render logic)  │──┘
+  │ - color: GREEN    │  │                └──────────────────────┘
+  └───────────────────┴──┘                          │
+                                                    │ all reference
+         Memory: HIGH                               ▼
+         (3 × full objects)              ┌──────────────────────┐
+                                         │ ConcreteFlyweight    │
+                                         │ (SPEED_BOOST)        │
+                                         │                      │
+                                         │ - type: SPEED_BOOST  │
+                                         │ - color: GREEN       │
+                                         │ - render logic       │
+                                         │   (SINGLE COPY)      │
+                                         └──────────────────────┘
+
+                                                  Memory: LOW
+                                         (3 lightweight + 1 flyweight)
 ```
 
 ## Components
@@ -162,6 +433,71 @@ The Flyweight pattern is seamlessly integrated into the existing game:
 2. PowerUp constructor remains unchanged for backward compatibility
 3. `render()` method now uses Flyweight internally
 4. No changes required in game states (PlayState, etc.)
+
+## Integration with Power-Up Inventory System
+
+The Flyweight pattern works alongside the **Power-Up Inventory System**:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│           FLYWEIGHT + POWER-UP INVENTORY INTEGRATION                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  ┌──────────────────┐                    ┌──────────────────────────────────┐
+  │ PowerUp (Map)    │                    │ PowerUpInventory (Player)        │
+  │ Uses Flyweight   │                    │ Stores collected power-ups       │
+  │ for rendering    │                    │                                  │
+  │                  │   on collision     │ ┌────┬────┬────┬────┐            │
+  │ - position       │ ─────────────────▶ │ │ F1 │ F2 │ F3 │ F4 │            │
+  │ - type           │   store, don't     │ │SPD │DMG │SHD │AMO │            │
+  │ - render() ──┐   │   apply instantly  │ └────┴────┴────┴────┘            │
+  └──────────────┼───┘                    └──────────────────────────────────┘
+                 │                                      │
+                 │                                      │ F1-F4 pressed
+                 ▼                                      ▼
+  ┌──────────────────────┐                ┌──────────────────────────────────┐
+  │ FlyweightFactory     │                │ Player.usePowerUpFromSlot()      │
+  │ (Shared rendering)   │                │ - applySpeedBoost()              │
+  │                      │                │ - applyDamageBoost()             │
+  │ ┌────────────────┐   │                │ - applyShield()                  │
+  │ │ SPEED_BOOST    │   │                │ - applyAmmoRefill()              │
+  │ │ ConcreteFly    │   │                └──────────────────────────────────┘
+  │ └────────────────┘   │
+  │ ┌────────────────┐   │
+  │ │ DAMAGE_BOOST   │   │       PowerUpType enum shared by:
+  │ │ ConcreteFly    │   │       ├── ConcreteFlyweight (intrinsic state)
+  │ └────────────────┘   │       ├── PowerUpInventory (stored slots)
+  │ ┌────────────────┐   │       └── Player effect methods
+  │ │ SHIELD         │   │
+  │ │ ConcreteFly    │   │
+  │ └────────────────┘   │
+  │ ┌────────────────┐   │
+  │ │ AMMO_REFILL    │   │
+  │ │ ConcreteFly    │   │
+  │ └────────────────┘   │
+  └──────────────────────┘
+```
+
+### Relationship Between Patterns
+
+| Component           | Flyweight Role                 | Inventory Role                        |
+| ------------------- | ------------------------------ | ------------------------------------- |
+| `PowerUpType` enum  | Intrinsic state (shared)       | Identifies stored power-up type       |
+| `PowerUp` (client)  | Client holding extrinsic state | Visual representation on map          |
+| `PowerUp` (server)  | Contains type and duration     | Source of collected power-up data     |
+| `ConcreteFlyweight` | Shared rendering per type      | N/A (rendering only)                  |
+| `PowerUpInventory`  | N/A (storage only)             | Stores up to 4 power-ups for use      |
+| `Player`            | Collides with map PowerUps     | Owns inventory, uses stored power-ups |
+
+### Data Flow: Collection to Usage
+
+```
+1. PowerUp spawns on map → Rendered using Flyweight pattern
+2. Player collides with PowerUp → Stored in PowerUpInventory (not applied)
+3. Player presses F1-F4 → UsePowerUpMessage sent to server
+4. Server applies effect → Player gains boost/shield/ammo
+5. PowerUp removed from map → Flyweight still cached for next spawn
+```
 
 ## Testing
 
