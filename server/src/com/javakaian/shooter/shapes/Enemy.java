@@ -3,6 +3,8 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.strategy.EnemyBehaviorStrategy;
+import com.javakaian.shooter.mediator.CollisionMediator;
+import com.javakaian.shooter.mediator.CollisionEvent;
 
 import java.util.List;
 
@@ -12,6 +14,7 @@ public class Enemy implements Cloneable {
     private boolean visible = true;
     private Rectangle boundRect;
     private EnemyBehaviorStrategy behaviorStrategy;
+    private CollisionMediator mediator;
 
     public Enemy(float x, float y, float size) {
         this.position = new Vector2(x, y);
@@ -31,11 +34,25 @@ public class Enemy implements Cloneable {
 
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+        
+        // Notify mediator that enemy has moved
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
     }
 
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+        
+        // Notify mediator that enemy has moved
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
+    }
+    
+    public void setMediator(CollisionMediator mediator) {
+        this.mediator = mediator;
     }
 
     @Override
