@@ -178,13 +178,12 @@ public class GameCollisionMediator implements CollisionMediator {
         }
         
         // Check player vs power-ups
-        Iterator<PowerUp> iter = powerUpsArray.createIterator();
+        Iterator<PowerUp> iter = powerUpsList.createIterator();
         List<PowerUp> toRemove = new ArrayList<>();
         
         for (iter.first(); !iter.isDone(); iter.next()) {
             PowerUp powerUp = iter.currentItem();
-            if (powerUp == null || !powerUp.isVisible()) continue;
-            
+                        
             if (player.getBoundRect().overlaps(powerUp.getBoundRect())) {
                 applyPowerUpEffect(player, powerUp);
                 powerUp.setVisible(false);

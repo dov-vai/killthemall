@@ -14,16 +14,31 @@ public class ListIterator implements Iterator<PowerUp> {
     public ListIterator(PowerUpList collection) {
         this.collection = collection;
         this.currentIndex = 0;
+        findNextValid();
     }
     
     @Override
     public void first() {
         currentIndex = 0;
+        findNextValid();
     }
     
     @Override
     public void next() {
         if (!isDone()) {
+            currentIndex++;
+            findNextValid();
+        }
+    }
+
+    private void findNextValid() {
+        while (currentIndex < collection.getPowerUps().size()) {
+            PowerUp p = collection.getPowerUps().get(currentIndex);
+            
+            if (p != null && p.isVisible()) {
+                return;
+            }
+            
             currentIndex++;
         }
     }

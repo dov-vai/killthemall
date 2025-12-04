@@ -192,7 +192,7 @@ public class ServerWorld implements OMessageListener {
             }
         }
 
-        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes, powerUpsArray);
+        GameWorldMessage m = MessageCreator.generateGWMMessage(enemies, bullets, players, spikes, placedSpikes, powerUpsMap);
         server.sendToAllUDP(m);
 
     }
