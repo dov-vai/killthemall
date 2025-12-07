@@ -45,5 +45,17 @@ public interface OMessageListener {
     void inventoryUpdateReceived(InventoryUpdateMessage m);
 
     void ammoUpdateReceived(AmmoUpdateMessage m);
+    
+    /**
+     * Should be invoked when a chat message is received from a team member.
+     * Demonstrates Mediator pattern - messages routed through TeamChatMediator.
+     */
+    void chatMessageReceived(ChatMessage m);
+    
+    /**
+     * Should be invoked when a team assignment message is received.
+     * Notifies client about player team assignments.
+     */
+    void teamAssignmentReceived(TeamAssignmentMessage m);
 
 }

@@ -128,6 +128,8 @@ public class OServer {
                 messageListener.placeSpikeReceived(m);
             } else if (message instanceof UndoSpikeMessage m) {
                 messageListener.undoSpikeReceived(m);
+            } else if (message instanceof ChatMessage m) {
+                messageListener.chatMessageReceived(m);
             }
 
         }
@@ -162,6 +164,10 @@ public class OServer {
         this.server.getKryo().register(PlaceSpikeMessage.class);
         this.server.getKryo().register(UndoSpikeMessage.class);
         this.server.getKryo().register(InventoryUpdateMessage.class);
+        
+        // Team chat messages - Mediator pattern
+        this.server.getKryo().register(ChatMessage.class);
+        this.server.getKryo().register(TeamAssignmentMessage.class);
 
         // primitive arrays
         this.server.getKryo().register(float[].class);

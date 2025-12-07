@@ -67,6 +67,10 @@ public class OClient {
                         OClient.this.game.ammoUpdateReceived(m);
                     } else if (object instanceof InventoryUpdateMessage m) {
                         OClient.this.game.inventoryUpdateReceived(m);
+                    } else if (object instanceof ChatMessage m) {
+                        OClient.this.game.chatMessageReceived(m);
+                    } else if (object instanceof TeamAssignmentMessage m) {
+                        OClient.this.game.teamAssignmentReceived(m);
                     }
 
                 });
@@ -98,6 +102,10 @@ public class OClient {
         this.client.getKryo().register(PlaceSpikeMessage.class);
         this.client.getKryo().register(UndoSpikeMessage.class);
         this.client.getKryo().register(InventoryUpdateMessage.class);
+        
+        // Team chat messages - Mediator pattern
+        this.client.getKryo().register(ChatMessage.class);
+        this.client.getKryo().register(TeamAssignmentMessage.class);
 
         // primitive arrays
         this.client.getKryo().register(float[].class);

@@ -18,18 +18,8 @@ public class StartGameCommand implements InputCommand {
 
     @Override
     public void execute() {
-        PlayState playState = (PlayState) menuState.getSc()
-                .getStateMap()
-                .get(StateEnum.PLAY_STATE.ordinal());
-
-        if (playState == null) {
-            playState = new PlayState(menuState.getSc());
-            menuState.getSc().getStateMap().put(StateEnum.PLAY_STATE.ordinal(), playState);
-        }
-
-        playState.setThemeFactory(ThemeFactory.getFactory(menuState.isDarkMode()));
-
-        menuState.getSc().setState(StateEnum.PLAY_STATE);
+        // Go to team selection state first
+        menuState.getSc().setState(StateEnum.TEAM_SELECTION_STATE);
     }
 
     @Override

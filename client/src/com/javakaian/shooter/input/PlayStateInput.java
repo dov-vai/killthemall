@@ -113,6 +113,22 @@ public class PlayStateInput extends InputAdapter {
     @Override
     public boolean keyDown(int keycode) {
 
+        // Handle chat input separately
+        if (playState.isChatInputActive()) {
+            if (keycode == Keys.ENTER) {
+                playState.sendChatMessage();
+                return true;
+            } else if (keycode == Keys.ESCAPE) {
+                playState.toggleChatInput();
+                return true;
+            } else if (keycode == Keys.BACKSPACE) {
+                playState.removeChatCharacter();
+                return true;
+            }
+            // Let keyTyped handle character input
+            return false;
+        }
+
         // Try to handle with command pattern first
         if (keyBindingManager.handleKeyPress(keycode)) {
             return true;
@@ -127,6 +143,10 @@ public class PlayStateInput extends InputAdapter {
             case Keys.U:
                 // Undo spike (server-side undo, separate from client command undo)
                 playState.undoSpike();
+                break;
+            case Keys.T:
+                // Toggle team chat input
+                playState.toggleChatInput();
                 break;
             case Keys.SPACE:
                 // Start shooting (for full auto and charged shot)
@@ -152,6 +172,19 @@ public class PlayStateInput extends InputAdapter {
         if (keycode == Keys.SPACE) {
             playState.stopShooting();
             return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean keyTyped(char character) {
+        // Handle character input for chat
+        if (playState.isChatInputActive()) {
+            if (Character.isLetterOrDigit(character) || Character.isSpaceChar(character) || 
+                "!@#$%^&*()_+-=[]{}|;:',.<>?/".indexOf(character) >= 0) {
+                playState.addChatCharacter(character);
+                return true;
+            }
         }
         return false;
     }

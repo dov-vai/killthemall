@@ -48,6 +48,12 @@ public interface OMessageListener {
      * Player requests a reload of their current weapon
      */
     void reloadReceived(ReloadMessage m);
+    
+    /**
+     * Player sends a chat message to their team.
+     * Demonstrates Mediator pattern - messages routed through TeamChatMediator.
+     */
+    void chatMessageReceived(ChatMessage m);
 
     /**
      * Invoked when a network connection is closed unexpectedly or normally.

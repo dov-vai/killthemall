@@ -28,6 +28,9 @@ import com.javakaian.shooter.weapons.decorators.ScopeAttachment;
 import com.javakaian.shooter.weapons.decorators.SilencerAttachment;
 import com.javakaian.shooter.iterator.*;
 import com.javakaian.shooter.iterator.Iterator;
+import com.javakaian.shooter.mediator.ChatMediator;
+import com.javakaian.shooter.mediator.TeamChatMediator;
+import com.javakaian.shooter.teams.*;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -74,6 +77,9 @@ public class ServerWorld implements OMessageListener {
     private PowerUpCollection powerUpsMap; //id for lookup
     private float powerUpSpawnTime = 0f;
     private int powerUpIdCounter = 0;
+    
+    //Mediator pattern for team chat
+    private ChatMediator teamChatMediator;
 
     public ServerWorld() {
 
@@ -99,6 +105,9 @@ public class ServerWorld implements OMessageListener {
         
         playerSpikeCommands = new HashMap<>();
         connectionToPlayerId = new HashMap<>();
+        
+        //Mediator pattern - centralized team chat communication
+        teamChatMediator = new TeamChatMediator(server);
 
         behaviorStrategies = new EnemyBehaviorStrategy[]{
                 new AggressiveBehavior(),
@@ -420,8 +429,37 @@ public class ServerWorld implements OMessageListener {
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        players.add(new Player(m.getX(), m.getY(), 50, id));
-        logger.debug("Login Message recieved from : " + id);
+        Player player = new Player(m.getX(), m.getY(), 50, id);
+        
+        // Create appropriate team player based on selection
+        String selectedTeam = m.getSelectedTeam();
+        if (selectedTeam == null || selectedTeam.isEmpty()) {
+            // Auto-assign to smallest team if no selection
+            selectedTeam = ((TeamChatMediator) teamChatMediator).getSmallestTeam();
+            logger.info("Auto-assigned player " + id + " to " + selectedTeam + " team");
+        }
+        
+        TeamPlayer teamPlayer;
+        switch (selectedTeam) {
+            case "BLUE":
+                teamPlayer = new BlueTeamPlayer(id, "Player" + id);
+                break;
+            case "GREEN":
+                teamPlayer = new GreenTeamPlayer(id, "Player" + id);
+                break;
+            case "RED":
+            default:
+                teamPlayer = new RedTeamPlayer(id, "Player" + id);
+                break;
+        }
+        
+        player.setTeamPlayer(teamPlayer);
+        players.add(player);
+        
+        // Register with team chat mediator
+        teamChatMediator.registerTeamPlayer(id, teamPlayer);
+        
+        logger.debug("Login Message recieved from : " + id + " - joined " + selectedTeam + " team");
 
         giveWeaponToPlayer(id, "pistol");
         sendWeaponInfoToPlayer(id);
@@ -429,6 +467,11 @@ public class ServerWorld implements OMessageListener {
 
         m.setPlayerId(id);
         server.sendToUDP(con.getID(), m);
+        
+        // Send team assignment to all clients
+        TeamAssignmentMessage teamMsg = new TeamAssignmentMessage(id, selectedTeam, teamPlayer.getPlayerName());
+        server.sendToAllUDP(teamMsg);
+        
         // Track which player ID belongs to this connection for proper cleanup on
         // disconnect
         connectionToPlayerId.put(con.getID(), id);
@@ -455,6 +498,9 @@ public class ServerWorld implements OMessageListener {
 
     private void removePlayerById(int playerId) {
         players.stream().filter(p -> p.getId() == playerId).findFirst().ifPresent(p -> {
+            // Unregister from team chat mediator
+            teamChatMediator.unregisterTeamPlayer(playerId);
+            
             players.remove(p);
             idPool.putUserIDBack(p.getId());
         });
@@ -764,6 +810,23 @@ public class ServerWorld implements OMessageListener {
         if (commandStack == null || commandStack.isEmpty()) {
             logger.debug("Player " + m.getPlayerId() + " has no spikes to undo");
         }
+    }
+    
+    @Override
+    public void chatMessageReceived(ChatMessage m) {
+        // Validate sender exists
+        Player sender = players.stream()
+                .filter(p -> p.getId() == m.getSenderId())
+                .findFirst()
+                .orElse(null);
+        
+        if (sender == null) {
+            logger.warn("Received chat message from non-existent player: " + m.getSenderId());
+            return;
+        }
+        
+        // Send message through mediator - it will route to team members only
+        teamChatMediator.sendMessageToTeam(m.getSenderId(), m.getMessage());
     }
 
 }
