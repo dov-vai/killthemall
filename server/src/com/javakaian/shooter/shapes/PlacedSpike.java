@@ -2,8 +2,6 @@ package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.javakaian.shooter.mediator.CollisionMediator;
-import com.javakaian.shooter.mediator.CollisionEvent;
 
 /**
  * Represents a spike that has been placed by a player
@@ -17,7 +15,6 @@ public class PlacedSpike {
     private boolean visible;
     private boolean consumed; // true if spike has damaged a player
     private Rectangle boundRect;
-    private CollisionMediator mediator;
 
     public PlacedSpike(float x, float y, float size, float rotation, int playerId) {
         this.position = new Vector2(x, y);
@@ -32,15 +29,6 @@ public class PlacedSpike {
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
-        
-        // Notify mediator that placed spike is active
-        if (mediator != null && visible && !consumed) {
-            mediator.notify(this, CollisionEvent.SPIKE_PLACED);
-        }
-    }
-    
-    public void setMediator(CollisionMediator mediator) {
-        this.mediator = mediator;
     }
 
     public Vector2 getPosition() {

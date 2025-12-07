@@ -2,8 +2,6 @@ package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.javakaian.shooter.mediator.CollisionMediator;
-import com.javakaian.shooter.mediator.CollisionEvent;
 
 public class PowerUp {
     
@@ -21,7 +19,6 @@ public class PowerUp {
     private Rectangle boundRect;
     private float duration; // how long the effect lasts
     private float size;
-    private CollisionMediator mediator;
     
     public PowerUp(int id, float x, float y, PowerUpType type, float duration) {
         this.id = id;
@@ -36,15 +33,6 @@ public class PowerUp {
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
-        
-        // Notify mediator that power-up is ready
-        if (mediator != null && visible) {
-            mediator.notify(this, CollisionEvent.PICKUP_READY);
-        }
-    }
-    
-    public void setMediator(CollisionMediator mediator) {
-        this.mediator = mediator;
     }
     
     // Getters and setters

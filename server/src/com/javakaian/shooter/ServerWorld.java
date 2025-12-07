@@ -5,9 +5,6 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
 import com.javakaian.shooter.shapes.Bullet;
-import com.javakaian.shooter.shapes.StandardBullet;
-import com.javakaian.shooter.shapes.FastBullet;
-import com.javakaian.shooter.shapes.HeavyBullet;
 import com.javakaian.shooter.factory.BulletFactory;
 import com.javakaian.shooter.factory.ConcreteBulletFactory;
 import com.javakaian.shooter.factory.BulletType;
@@ -31,8 +28,6 @@ import com.javakaian.shooter.weapons.decorators.ScopeAttachment;
 import com.javakaian.shooter.weapons.decorators.SilencerAttachment;
 import com.javakaian.shooter.iterator.*;
 import com.javakaian.shooter.iterator.Iterator;
-import com.javakaian.shooter.mediator.CollisionMediator;
-import com.javakaian.shooter.mediator.GameCollisionMediator;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -79,9 +74,6 @@ public class ServerWorld implements OMessageListener {
     private PowerUpCollection powerUpsMap; //id for lookup
     private float powerUpSpawnTime = 0f;
     private int powerUpIdCounter = 0;
-    
-    // Mediator pattern for collision handling
-    private CollisionMediator collisionMediator;
 
     public ServerWorld() {
 
@@ -114,12 +106,6 @@ public class ServerWorld implements OMessageListener {
                 new FlankingBehavior(),
                 new ErraticBehavior()
         };
-        
-        // Initialize collision mediator
-        collisionMediator = new GameCollisionMediator(
-            players, enemies, bullets, spikes, placedSpikes,
-            powerUpsArray, powerUpsList, powerUpsMap, server
-        );
     }
 
     public void update(float deltaTime) {
@@ -132,11 +118,8 @@ public class ServerWorld implements OMessageListener {
         this.powerUpSpawnTime += deltaTime;
 
         server.parseMessage();
-        
-        // Update game time in mediator
-        collisionMediator.setGameTime(gameTime);
 
-        // update every object - they will notify mediator on movement
+        // update every object
         players.forEach(p -> p.update(deltaTime));
         enemies.forEach(e -> e.update(deltaTime, players)); // Pass players for AI behavior
         bullets.forEach(b -> b.update(deltaTime));
@@ -152,7 +135,7 @@ public class ServerWorld implements OMessageListener {
             }
         }   
 
-        // Collision checking is handled automatically via mediator notify() calls
+        checkCollision();
 
         // update object list. Remove necessary
         players.removeIf(p -> !p.isAlive());
@@ -163,6 +146,8 @@ public class ServerWorld implements OMessageListener {
         spawnRandomEnemy();
         spawnRandomSpike();
         spawnRandomPowerUp();
+
+        checkPowerUpCollisions();
 
         // Periodically switch each enemy's behavior strategy randomly every 30 seconds
         if (strategySwitchTimer >= 30f && !enemies.isEmpty()) {
@@ -220,8 +205,6 @@ public class ServerWorld implements OMessageListener {
                 8.0f // effect duration
             );
             
-            powerUp.setMediator(collisionMediator);
-            
             powerUpsArray.add(powerUp);
             powerUpsList.add(powerUp);
             powerUpsMap.add(powerUp);
@@ -229,6 +212,70 @@ public class ServerWorld implements OMessageListener {
             logger.debug("Spawned " + randomType + " power-up. Total: " + powerUpsArray.size());
         }
     }
+
+    /**
+     * Check collisions using Iterator pattern.
+     * Demonstrates iterating through different collection types uniformly.
+     */
+    private void checkPowerUpCollisions() {
+        Iterator<PowerUp> iter = powerUpsArray.createIterator();
+        List<PowerUp> toRemove = new ArrayList<>();
+        
+        for (iter.first(); !iter.isDone(); iter.next()) {
+            PowerUp powerUp = iter.currentItem();
+            if (powerUp == null || !powerUp.isVisible()) continue;
+            
+            for (Player player : players) {
+                if (player.getBoundRect().overlaps(powerUp.getBoundRect())) {
+                    applyPowerUpEffect(player, powerUp);
+                    powerUp.setVisible(false);
+                    toRemove.add(powerUp);
+                    break;
+                }
+            }
+        }
+        
+        for (PowerUp p : toRemove) {
+            powerUpsArray.remove(p);
+            powerUpsList.remove(p);
+            powerUpsMap.remove(p);
+        }
+    }
+
+    private void applyPowerUpEffect(Player player, PowerUp powerUp) {
+        switch (powerUp.getType()) {
+        case SPEED_BOOST:
+            player.applySpeedBoost(gameTime, powerUp.getDuration());
+            logger.debug("Player " + player.getId() + " collected SPEED_BOOST (x2.0 speed for " + 
+                        powerUp.getDuration() + "s)");
+            break;
+            
+        case DAMAGE_BOOST:
+            player.applyDamageBoost(gameTime, powerUp.getDuration());
+            logger.debug("Player " + player.getId() + " collected DAMAGE_BOOST (x1.5 damage for " + 
+                        powerUp.getDuration() + "s)");
+            break;
+            
+        case SHIELD:
+            player.applyShield(gameTime, powerUp.getDuration());
+            logger.debug("Player " + player.getId() + " collected SHIELD (50 HP shield for " + 
+                        powerUp.getDuration() + "s)");
+            break;
+            
+        case AMMO_REFILL:
+            player.applyAmmoRefill(gameTime);
+            logger.debug("Player " + player.getId() + " collected AMMO_REFILL (instant reload)");
+
+            InventoryUpdateMessage reloadMsg = new InventoryUpdateMessage();
+            reloadMsg.setPlayerId(player.getId());
+            reloadMsg.setSpikeCount(player.getRefill());
+            reloadMsg.setShouldReload(true);
+            server.sendToAllUDP(reloadMsg); 
+            break;
+    }
+    }
+
+
 
     /**
      * Spawns an enemy to the random location. In 0.4 second if enemy list size is
@@ -250,7 +297,6 @@ public class ServerWorld implements OMessageListener {
                     cloned.setPosition(new Vector2(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000)));
                     cloned.setBehaviorStrategy(strategy);
                     cloned.setVisible(true);
-                    cloned.setMediator(collisionMediator);
 
                     enemies.set(i, cloned);
                     respawned = true;
@@ -263,7 +309,6 @@ public class ServerWorld implements OMessageListener {
                         new SecureRandom().nextInt(1000),
                         10,
                         strategy);
-                newEnemy.setMediator(collisionMediator);
                 enemies.add(newEnemy);
             }
             logger.debug("Spawned enemy with " + strategy.getStrategyName() + " behavior");
@@ -274,19 +319,108 @@ public class ServerWorld implements OMessageListener {
         if (spikeSpawnTime >= 5.0f && spikes.size() < 5) {
             spikeSpawnTime = 0;
             Spike spike = new Spike(new SecureRandom().nextInt(1000), new SecureRandom().nextInt(1000), 30);
-            spike.setMediator(collisionMediator);
             spikes.add(spike);
             logger.debug("Spawned spike pickup. Total spikes: " + spikes.size());
         }
+    }
+
+    private void checkCollision() {
+
+        for (Bullet b : bullets) {
+
+            for (Enemy e : enemies) {
+
+                if (b.isVisible() && e.getBoundRect().overlaps(b.getBoundRect())) {
+                    b.setVisible(false);
+                    e.setVisible(false);
+                    players.stream().filter(p -> p.getId() == b.getId()).findFirst().ifPresent(Player::increaseHealth);
+                }
+
+            }
+            for (Player p : players) {
+                if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
+                    b.setVisible(false);
+
+                    players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
+                    .ifPresent(attacker -> {
+                        if (attacker.getCurrentWeapon() != null) {
+                            Weapon attackerWeapon = attacker.getCurrentWeapon();
+                            
+                            // apply damage boost
+                            float baseDamage = attackerWeapon.getDamage();
+                            float damageMultiplier = attacker.getDamageMultiplier();
+                            int finalDamage = (int) (baseDamage * damageMultiplier);
+                            
+                            String weaponName = attackerWeapon.getName();
+                            
+                            System.out.println("Player " + p.getId() + " hit by " + weaponName + 
+                                " for " + finalDamage + " damage (base: " + baseDamage + 
+                                ", multiplier: " + damageMultiplier + ")");
+                            
+                            p.hit(finalDamage);  // shield take damage if available
+                        }
+                    });
+                    if (!p.isAlive()) {
+
+                        PlayerDiedMessage m = new PlayerDiedMessage();
+                        m.setPlayerId(p.getId());
+                        server.sendToAllUDP(m);
+                    }
+
+                }
+            }
+
+        }
+
+        // Check spike pickup collisions
+        for (Spike spike : spikes) {
+            for (Player player : players) {
+                if (spike.isVisible() && player.getBoundRect().overlaps(spike.getBoundRect())) {
+                    spike.setVisible(false);
+                    player.addSpike();
+
+                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                    inventoryMsg.setPlayerId(player.getId());
+                    inventoryMsg.setSpikeCount(player.getSpikeCount());
+                    server.sendToAllUDP(inventoryMsg);
+
+                    logger.debug("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
+                }
+            }
+        }
+
+        // Check placed spike collisions with other players
+        for (PlacedSpike placedSpike : placedSpikes) {
+            for (Player player : players) {
+                // Don't damage the player who placed the spike
+                if (placedSpike.isVisible() && !placedSpike.isConsumed() &&
+                        player.getId() != placedSpike.getPlayerId() &&
+                        player.getBoundRect().overlaps(placedSpike.getBoundRect())) {
+
+                    placedSpike.setConsumed(true);
+                    placedSpike.setVisible(false);
+
+                    int spikeDamage = 20;
+                    player.hit(spikeDamage);
+
+                    logger.debug("Player " + player.getId() + " hit by spike for " + spikeDamage + " damage");
+
+                    if (!player.isAlive()) {
+                        PlayerDiedMessage m = new PlayerDiedMessage();
+                        m.setPlayerId(player.getId());
+                        server.sendToAllUDP(m);
+                    }
+                }
+            }
+        }
+
     }
 
     @Override
     public void loginReceived(Connection con, LoginMessage m) {
 
         int id = idPool.getUserID();
-        Player newPlayer = new Player(m.getX(), m.getY(), 50, id);
-        newPlayer.setMediator(collisionMediator);
-        players.add(newPlayer);
+        players.add(new Player(m.getX(), m.getY(), 50, id));
         logger.debug("Login Message recieved from : " + id);
 
         giveWeaponToPlayer(id, "pistol");
@@ -392,16 +526,6 @@ public class ServerWorld implements OMessageListener {
                 owner.getPosition().y + owner.getBoundRect().height / 2,
                 angleRad,
                 owner.getId());
-        
-        // Set mediator for bullet (all concrete bullet types have setMediator method)
-        if (b instanceof StandardBullet) {
-            ((StandardBullet) b).setMediator(collisionMediator);
-        } else if (b instanceof FastBullet) {
-            ((FastBullet) b).setMediator(collisionMediator);
-        } else if (b instanceof HeavyBullet) {
-            ((HeavyBullet) b).setMediator(collisionMediator);
-        }
-        
         bullets.add(b);
     }
 
@@ -586,7 +710,7 @@ public class ServerWorld implements OMessageListener {
                         float x = player.getPosition().x + (float) Math.cos(angleRad) * distance;
                         float y = player.getPosition().y - (float) Math.sin(angleRad) * distance;
 
-                        PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikes, x, y, m.getRotation(), collisionMediator);
+                        PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikes, x, y, m.getRotation());
                         command.execute();
 
                         playerSpikeCommands.computeIfAbsent(player.getId(), k -> new Stack<>()).push(command);
