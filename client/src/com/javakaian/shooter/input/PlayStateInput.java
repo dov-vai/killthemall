@@ -147,7 +147,7 @@ public class PlayStateInput extends InputAdapter {
             case Keys.T:
                 // Toggle team chat input
                 playState.toggleChatInput();
-                break;
+                return true;  // Consume the T key press so it doesn't go to keyTyped
             case Keys.SPACE:
                 // Start shooting (for full auto and charged shot)
                 playState.shoot();
@@ -180,6 +180,16 @@ public class PlayStateInput extends InputAdapter {
     public boolean keyTyped(char character) {
         // Handle character input for chat
         if (playState.isChatInputActive()) {
+            // Only filter out 't' or 'T' if we just opened the chat
+            if ((character == 't' || character == 'T') && playState.isJustOpenedChat()) {
+                playState.clearJustOpenedChat();
+                return true; // Consume but don't add to chat
+            }
+            // Clear the flag for any other character
+            if (playState.isJustOpenedChat()) {
+                playState.clearJustOpenedChat();
+            }
+            
             if (Character.isLetterOrDigit(character) || Character.isSpaceChar(character) || 
                 "!@#$%^&*()_+-=[]{}|;:',.<>?/".indexOf(character) >= 0) {
                 playState.addChatCharacter(character);

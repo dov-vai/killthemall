@@ -12,6 +12,7 @@ public class Player {
     private int health;
     private boolean hasShield = false;
     private int shieldHealth = 0;
+    private String teamName = "RED"; // Default team
 
     private Vector2 center;
 
@@ -76,6 +77,14 @@ public class Player {
 
     public void setShieldHealth(int shieldHealth) {
         this.shieldHealth = shieldHealth;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 
 }

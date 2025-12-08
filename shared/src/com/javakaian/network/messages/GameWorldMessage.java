@@ -13,8 +13,9 @@ public class GameWorldMessage {
      */
     private float[] enemies;
     /**
-     * X,Y,ID,Health,HasShield,ShieldHealth of all the players.->
-     * x1,y1,ID1,Health1,Shield1,ShieldHP1,x2,y2,ID2,Health2,Shield2,ShieldHP2...
+     * X,Y,ID,Health,HasShield,ShieldHealth,TeamCode of all the players.->
+     * x1,y1,ID1,Health1,Shield1,ShieldHP1,Team1,x2,y2,ID2,Health2,Shield2,ShieldHP2,Team2...
+     * TeamCode: 0=RED, 1=BLUE, 2=GREEN
      */
     private float[] players;
     /**

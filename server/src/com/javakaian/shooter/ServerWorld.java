@@ -352,6 +352,16 @@ public class ServerWorld implements OMessageListener {
 
                     players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
                     .ifPresent(attacker -> {
+                        // Check for friendly fire - skip damage if same team
+                        String attackerTeam = attacker.getTeamName();
+                        String targetTeam = p.getTeamName();
+                        
+                        if (attackerTeam != null && targetTeam != null && attackerTeam.equals(targetTeam)) {
+                            System.out.println("Friendly fire blocked: Player " + attacker.getId() + 
+                                " (" + attackerTeam + ") vs Player " + p.getId() + " (" + targetTeam + ")");
+                            return; // Don't apply damage to teammates
+                        }
+                        
                         if (attacker.getCurrentWeapon() != null) {
                             Weapon attackerWeapon = attacker.getCurrentWeapon();
                             

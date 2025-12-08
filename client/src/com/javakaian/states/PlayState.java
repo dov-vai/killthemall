@@ -91,6 +91,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private java.util.List<ChatMessage> chatMessages;
     private static final int MAX_CHAT_MESSAGES = 10;
     private boolean chatInputActive = false;
+    private boolean justOpenedChat = false; // Flag to prevent 'T' from appearing when opening chat
     private StringBuilder chatInputText = new StringBuilder();
     private BitmapFont chatFont;
     private BitmapFont chatFontRed;
@@ -751,6 +752,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void processInputs() {
+        // Block player movement when typing in chat
+        if (chatInputActive) {
+            return;
+        }
+        
         PositionMessage p = new PositionMessage();
         p.setPlayerId(player.getId());
         if (Gdx.input.isKeyPressed(Keys.S)) {
@@ -1014,6 +1020,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         chatInputActive = !chatInputActive;
         if (!chatInputActive) {
             chatInputText.setLength(0); // Clear input
+            justOpenedChat = false;
+        } else {
+            justOpenedChat = true; // Set flag when opening chat
         }
     }
     
@@ -1024,6 +1033,20 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (chatInputActive && chatInputText.length() < 50) {
             chatInputText.append(character);
         }
+    }
+    
+    /**
+     * Check if we just opened chat (to filter the trigger key)
+     */
+    public boolean isJustOpenedChat() {
+        return justOpenedChat;
+    }
+    
+    /**
+     * Clear the just opened chat flag
+     */
+    public void clearJustOpenedChat() {
+        justOpenedChat = false;
     }
     
     /**
