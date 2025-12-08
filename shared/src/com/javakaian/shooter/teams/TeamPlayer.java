@@ -1,15 +1,18 @@
 package com.javakaian.shooter.teams;
 
 import com.javakaian.network.messages.ChatMessage;
+import com.javakaian.shooter.mediator.ChatMediator;
 
 /**
  * Abstract base class for team players.
- * Demonstrates Mediator pattern - each team class sends messages through the mediator.
+ * Demonstrates Mediator pattern - each team member holds a reference to the mediator
+ * and communicates with teammates through it.
  */
 public abstract class TeamPlayer {
     
     protected int playerId;
     protected String playerName;
+    protected ChatMediator mediator;
     
     public TeamPlayer(int playerId, String playerName) {
         this.playerId = playerId;
@@ -27,6 +30,24 @@ public abstract class TeamPlayer {
      * Each team has a distinct color.
      */
     public abstract String getTeamColor();
+    
+    /**
+     * Set the mediator for this team player.
+     * Called when the player registers with the mediator.
+     */
+    public void setMediator(ChatMediator mediator) {
+        this.mediator = mediator;
+    }
+    
+    /**
+     * Send a message to all team members through the mediator.
+     * This is the primary way team members communicate with each other.
+     */
+    public void sendMessage(String message) {
+        if (mediator != null) {
+            mediator.sendMessageToTeam(this, message);
+        }
+    }
     
     /**
      * Called when this player receives a team chat message.

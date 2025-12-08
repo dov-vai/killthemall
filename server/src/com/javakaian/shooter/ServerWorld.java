@@ -825,8 +825,10 @@ public class ServerWorld implements OMessageListener {
             return;
         }
         
-        // Send message through mediator - it will route to team members only
-        teamChatMediator.sendMessageToTeam(m.getSenderId(), m.getMessage());
+        // Get the team player and let them send the message through their mediator
+        if (sender.getTeamPlayer() != null) {
+            sender.getTeamPlayer().sendMessage(m.getMessage());
+        }
     }
 
 }

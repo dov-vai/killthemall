@@ -33,6 +33,9 @@ public class TeamChatMediator implements ChatMediator {
     public void registerTeamPlayer(int playerId, TeamPlayer teamPlayer) {
         teamPlayers.put(playerId, teamPlayer);
         
+        // Set this mediator in the team player so it can communicate
+        teamPlayer.setMediator(this);
+        
         String teamName = teamPlayer.getTeamName();
         teamRosters.computeIfAbsent(teamName, k -> new ArrayList<>()).add(playerId);
         
@@ -59,9 +62,16 @@ public class TeamChatMediator implements ChatMediator {
     }
     
     @Override
-    public void sendMessageToTeam(int senderId, String message) {
-        TeamPlayer sender = teamPlayers.get(senderId);
+    public void sendMessageToTeam(TeamPlayer sender, String message) {
         if (sender == null) {
+            logger.warn("Attempted to send message from null sender");
+            return;
+        }
+        
+        int senderId = sender.getPlayerId();
+        
+        // Verify sender is registered
+        if (!teamPlayers.containsKey(senderId)) {
             logger.warn("Attempted to send message from unregistered player: " + senderId);
             return;
         }
