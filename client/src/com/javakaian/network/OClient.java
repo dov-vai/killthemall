@@ -115,6 +115,10 @@ public class OClient {
     public void close() {
         client.close();
     }
+    
+    public boolean isConnected() {
+        return client.isConnected();
+    }
 
     public void sendTCP(Object m) {
         client.sendTCP(m);

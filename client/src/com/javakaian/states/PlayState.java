@@ -902,7 +902,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void setSelectedTeam(String selectedTeam) {
         // If we're already connected (e.g., switching teams), logout first and reinit
         // Also reinit if client is null/closed (e.g., after returning from menu)
-        if (player != null || client == null) {
+        if (player != null || client == null || !client.isConnected()) {
             if (player != null) {
                 logout();
             }
