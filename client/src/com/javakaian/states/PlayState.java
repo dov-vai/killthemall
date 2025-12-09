@@ -85,6 +85,18 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private FontManager healthFontManager;
     private FontManager notifFontManager;
     private FontManager weaponsFontManager;
+    
+    // Team chat - Mediator pattern
+    private String selectedTeam;
+    private java.util.List<ChatMessage> chatMessages;
+    private static final int MAX_CHAT_MESSAGES = 10;
+    private boolean chatInputActive = false;
+    private boolean justOpenedChat = false; // Flag to prevent 'T' from appearing when opening chat
+    private StringBuilder chatInputText = new StringBuilder();
+    private BitmapFont chatFont;
+    private BitmapFont chatFontRed;
+    private BitmapFont chatFontBlue;
+    private BitmapFont chatFontGreen;
 
 
     public PlayState(StateController sc) {
@@ -115,6 +127,12 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         // Initialize Bridge Pattern weapons
         currentFiringMode = new SingleShotMechanism();
         currentBridgeWeapon = new AssaultRifle(currentFiringMode);
+        
+        // Initialize chat fonts once to prevent memory leak
+        chatFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.WHITE);
+        chatFontRed = GameManagerFacade.getInstance().generateBitmapFont(14, Color.RED);
+        chatFontBlue = GameManagerFacade.getInstance().generateBitmapFont(14, Color.CYAN);
+        chatFontGreen = GameManagerFacade.getInstance().generateBitmapFont(14, Color.GREEN);
 
         init();
         ip = new PlayStateInput(this);
@@ -377,9 +395,14 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         aimLine = themeFactory.createAimLine(new Vector2(0, 0), new Vector2(0, 0));
         aimLine.setCamera(camera);
 
+        chatMessages = new java.util.ArrayList<>();
+    }
+    
+    private void connectToServer() {
         LoginMessage m = new LoginMessage();
         m.setX(new SecureRandom().nextInt(GameConstants.SCREEN_WIDTH));
         m.setY(new SecureRandom().nextInt(GameConstants.SCREEN_HEIGHT));
+        m.setSelectedTeam(selectedTeam != null ? selectedTeam : "RED");
         client.sendTCP(m);
     }
 
@@ -484,6 +507,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
                 0.95f);
 
         renderNotifications();
+        renderChatMessages();
         sb.end();
 
         // Render log display if visible
@@ -728,6 +752,11 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     }
 
     private void processInputs() {
+        // Block player movement when typing in chat
+        if (chatInputActive) {
+            return;
+        }
+        
         PositionMessage p = new PositionMessage();
         p.setPlayerId(player.getId());
         if (Gdx.input.isKeyPressed(Keys.S)) {
@@ -845,9 +874,69 @@ public class PlayState extends State implements OMessageListener, AchievementObs
             }
         }
     }
+    
+    @Override
+    public void chatMessageReceived(ChatMessage m) {
+        // Add message to chat history
+        chatMessages.add(m);
+        
+        // Keep only last MAX_CHAT_MESSAGES
+        while (chatMessages.size() > MAX_CHAT_MESSAGES) {
+            chatMessages.remove(0);
+        }
+        
+        // Log for debugging
+        gameLogger.logEvent(new GameLogEntry(
+            System.currentTimeMillis(),
+            "TEAM_CHAT",
+            "[" + m.getTeamName() + "] " + m.getSenderName() + ": " + m.getMessage(),
+            "INFO"
+        ));
+    }
+    
+    @Override
+    public void teamAssignmentReceived(TeamAssignmentMessage m) {
+        // Log team assignments
+        gameLogger.logEvent(new GameLogEntry(
+            System.currentTimeMillis(),
+            "TEAM_ASSIGNMENT",
+            "Player " + m.getPlayerId() + " (" + m.getPlayerName() + ") joined " + m.getTeamName() + " team",
+            "INFO"
+        ));
+    }
+    
+    public void setSelectedTeam(String selectedTeam) {
+        // If we're already connected (e.g., switching teams), logout first and reinit
+        // Also reinit if client is null/closed (e.g., after returning from menu)
+        if (player != null || client == null || !client.isConnected()) {
+            if (player != null) {
+                logout();
+            }
+            init(); // Reinitialize to create new client connection
+        }
+        this.selectedTeam = selectedTeam;
+        connectToServer();
+    }
+    
+    public String getSelectedTeam() {
+        return selectedTeam;
+    }
 
     public void restart() {
         init();
+    }
+    
+    public void logout() {
+        if (player != null) {
+            LogoutMessage m = new LogoutMessage();
+            m.setPlayerId(player.getId());
+            client.sendTCP(m);
+        }
+        if (client != null) {
+            client.close();
+        }
+        player = null;
+        chatMessages.clear();
     }
 
     @Override
@@ -866,6 +955,13 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         weaponsFontManager.dispose();
         if (logDisplay != null)
             logDisplay.dispose();
+        
+        // Dispose chat fonts
+        if (chatFont != null) chatFont.dispose();
+        if (chatFontRed != null) chatFontRed.dispose();
+        if (chatFontBlue != null) chatFontBlue.dispose();
+        if (chatFontGreen != null) chatFontGreen.dispose();
+        
         stats.endSession();
 
         sc.getAchievementManager().removeListener(this);
@@ -875,4 +971,114 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     public void onAchievementUnlocked(Achievement achievement) {
         notifications.add(new Notification("Achievement Unlocked: " + achievement.getTitle(), 3.0f));
     }
+    
+    /**
+     * Render chat messages in the top-right corner
+     */
+    private void renderChatMessages() {
+        if (chatMessages.isEmpty() && !chatInputActive) return;
+        
+        GameManagerFacade gm = GameManagerFacade.getInstance();
+        
+        float startX = 0.65f; // Right side of screen
+        float startY = 0.05f; // Top
+        
+        // Render chat messages using pre-created fonts
+        for (int i = 0; i < chatMessages.size(); i++) {
+            ChatMessage msg = chatMessages.get(i);
+            BitmapFont coloredFont = getTeamFont(msg.getTeamName());
+            
+            String displayText = msg.getSenderName() + ": " + msg.getMessage();
+            gm.renderText(sb, coloredFont, displayText, TextAlignment.LEFT, startX, startY + (i * 0.03f));
+        }
+        
+        // Render chat input if active
+        if (chatInputActive) {
+            float inputY = startY + (chatMessages.size() * 0.03f) + 0.02f;
+            String inputDisplay = "> " + chatInputText.toString() + "_";
+            gm.renderText(sb, chatFont, inputDisplay, TextAlignment.LEFT, startX, inputY);
+            gm.renderText(sb, chatFont, "(Enter to send, Esc to cancel)", TextAlignment.LEFT, startX, inputY + 0.03f);
+        } else {
+            // Show hint to open chat
+            gm.renderText(sb, chatFont, "T: Team Chat", TextAlignment.LEFT, startX, startY + (chatMessages.size() * 0.03f) + 0.02f);
+        }
+    }
+    
+    private BitmapFont getTeamFont(String teamName) {
+        return switch (teamName) {
+            case "RED" -> chatFontRed;
+            case "BLUE" -> chatFontBlue;
+            case "GREEN" -> chatFontGreen;
+            default -> chatFont;
+        };
+    }
+    
+    /**
+     * Toggle chat input mode
+     */
+    public void toggleChatInput() {
+        chatInputActive = !chatInputActive;
+        if (!chatInputActive) {
+            chatInputText.setLength(0); // Clear input
+            justOpenedChat = false;
+        } else {
+            justOpenedChat = true; // Set flag when opening chat
+        }
+    }
+    
+    /**
+     * Add character to chat input
+     */
+    public void addChatCharacter(char character) {
+        if (chatInputActive && chatInputText.length() < 50) {
+            chatInputText.append(character);
+        }
+    }
+    
+    /**
+     * Check if we just opened chat (to filter the trigger key)
+     */
+    public boolean isJustOpenedChat() {
+        return justOpenedChat;
+    }
+    
+    /**
+     * Clear the just opened chat flag
+     */
+    public void clearJustOpenedChat() {
+        justOpenedChat = false;
+    }
+    
+    /**
+     * Remove last character from chat input
+     */
+    public void removeChatCharacter() {
+        if (chatInputActive && chatInputText.length() > 0) {
+            chatInputText.setLength(chatInputText.length() - 1);
+        }
+    }
+    
+    /**
+     * Send chat message to team
+     */
+    public void sendChatMessage() {
+        if (chatInputActive && chatInputText.length() > 0 && player != null) {
+            ChatMessage msg = new ChatMessage();
+            msg.setSenderId(player.getId());
+            msg.setSenderName("Player" + player.getId());
+            msg.setMessage(chatInputText.toString());
+            msg.setTeamName(selectedTeam != null ? selectedTeam : "RED");
+            msg.setTimestamp(System.currentTimeMillis());
+            
+            client.sendUDP(msg);
+            
+            chatInputText.setLength(0);
+            chatInputActive = false;
+        }
+    }
+    
+    public boolean isChatInputActive() {
+        return chatInputActive;
+    }
+    
 }

@@ -46,19 +46,30 @@ public class OMessageParser {
 
         float[] tp = m.getPlayers();
         List<Player> plist = new ArrayList<>();
-        for (int i = 0; i < tp.length / 6; i++) {
+        for (int i = 0; i < tp.length / 7; i++) { // Changed from 6 to 7
 
-            float x = tp[i * 6];
-            float y = tp[i * 6 + 1];
-            float id = tp[i * 6 + 2];
-            float health = tp[i * 6 + 3];
-            float hasShield = tp[i * 6 + 4];
-            float shieldHealth = tp[i * 6 + 5];
+            float x = tp[i * 7];
+            float y = tp[i * 7 + 1];
+            float id = tp[i * 7 + 2];
+            float health = tp[i * 7 + 3];
+            float hasShield = tp[i * 7 + 4];
+            float shieldHealth = tp[i * 7 + 5];
+            float teamCode = tp[i * 7 + 6];
+            
             Player p = new Player(x, y, 50);
             p.setHealth((int) health);
             p.setId((int) id);
             p.setShield(hasShield == 1f);
             p.setShieldHealth((int) shieldHealth);
+            
+            // Decode team name from code: 0=RED, 1=BLUE, 2=GREEN
+            String teamName = "RED";
+            if (teamCode == 1f) {
+                teamName = "BLUE";
+            } else if (teamCode == 2f) {
+                teamName = "GREEN";
+            }
+            p.setTeamName(teamName);
 
             plist.add(p);
 

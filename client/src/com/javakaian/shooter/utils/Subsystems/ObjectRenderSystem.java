@@ -23,9 +23,12 @@ public class ObjectRenderSystem {
         sr.begin(ShapeType.Line);
 
         if (otherPlayers != null) {
-            sr.setColor(Color.RED);
             for (Player p : otherPlayers) {
                 if (p != null) {
+                    // Set color based on team
+                    Color teamColor = getTeamColor(p.getTeamName());
+                    sr.setColor(teamColor);
+                    
                     p.render(sr);
                     
                     if (p.hasShield()) {
@@ -34,7 +37,6 @@ public class ObjectRenderSystem {
                         float centerY = p.getPosition().y + 25;
                         sr.circle(centerX, centerY, 35);
                         sr.circle(centerX, centerY, 38);
-                        sr.setColor(Color.RED);
                     }
                 }
             }
@@ -53,7 +55,7 @@ public class ObjectRenderSystem {
         }
 
         if (mainPlayer != null) {
-            sr.setColor(Color.BLUE);
+            sr.setColor(Color.WHITE); // Changed from BLUE to WHITE to distinguish from blue team
             mainPlayer.render(sr);
 
             if (mainPlayer.hasShield()) {
@@ -68,6 +70,20 @@ public class ObjectRenderSystem {
         if (aimLine != null) aimLine.render(sr);
 
         sr.end();
+    }
+    
+    /**
+     * Get color for a team name
+     */
+    private Color getTeamColor(String teamName) {
+        if (teamName == null) return Color.RED;
+        
+        return switch (teamName) {
+            case "RED" -> Color.RED;
+            case "BLUE" -> new Color(0, 0.5f, 1, 1); // Lighter blue for visibility
+            case "GREEN" -> Color.GREEN;
+            default -> Color.RED;
+        };
     }
 
 }

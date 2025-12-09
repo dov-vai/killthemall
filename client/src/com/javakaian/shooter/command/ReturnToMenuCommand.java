@@ -17,6 +17,7 @@ public class ReturnToMenuCommand implements InputCommand {
 
     @Override
     public void execute() {
+        playState.logout();
         GameStats.getInstance().endSession();
         playState.getSc().setState(StateEnum.MENU_STATE);
     }

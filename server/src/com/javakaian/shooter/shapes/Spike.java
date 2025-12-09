@@ -2,8 +2,6 @@ package com.javakaian.shooter.shapes;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.javakaian.shooter.mediator.CollisionMediator;
-import com.javakaian.shooter.mediator.CollisionEvent;
 
 /**
  * Represents a spike pickup in the world that players can collect
@@ -13,7 +11,6 @@ public class Spike {
     private float size;
     private boolean visible;
     private Rectangle boundRect;
-    private CollisionMediator mediator;
 
     public Spike(float x, float y, float size) {
         this.position = new Vector2(x, y);
@@ -25,15 +22,6 @@ public class Spike {
     public void update(float deltaTime) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
-        
-        // Notify mediator that spike pickup is ready
-        if (mediator != null && visible) {
-            mediator.notify(this, CollisionEvent.PICKUP_READY);
-        }
-    }
-    
-    public void setMediator(CollisionMediator mediator) {
-        this.mediator = mediator;
     }
 
     public Vector2 getPosition() {
