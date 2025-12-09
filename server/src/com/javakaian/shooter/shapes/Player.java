@@ -3,7 +3,6 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
-import com.javakaian.shooter.weapons.bridge.BridgeWeapon;
 import com.javakaian.shooter.teams.TeamPlayer;
 
 public class Player {

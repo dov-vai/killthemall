@@ -16,6 +16,10 @@ import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.strategy.*;
 import com.javakaian.shooter.command.Command;
 import com.javakaian.shooter.command.PlaceSpikeCommand;
+import com.javakaian.shooter.teams.BlueTeamPlayer;
+import com.javakaian.shooter.teams.GreenTeamPlayer;
+import com.javakaian.shooter.teams.RedTeamPlayer;
+import com.javakaian.shooter.teams.TeamPlayer;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
@@ -30,7 +34,6 @@ import com.javakaian.shooter.iterator.*;
 import com.javakaian.shooter.iterator.Iterator;
 import com.javakaian.shooter.mediator.ChatMediator;
 import com.javakaian.shooter.mediator.TeamChatMediator;
-import com.javakaian.shooter.teams.*;
 
 import java.security.SecureRandom;
 import java.util.*;
