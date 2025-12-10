@@ -138,6 +138,18 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         ip = new PlayStateInput(this);
     }
 
+    public void requestRewind() {
+        if (player == null) return;
+        
+        RewindMessage msg = new RewindMessage();
+        msg.setPlayerId(player.getId());
+        client.sendTCP(msg);
+        
+        notifications.add(new Notification("⚡ REWIND ACTIVATED!", 2.0f));
+        
+        System.out.println("⏮️ Rewind requested for Player " + player.getId());
+    }
+
     @Override
     public void weaponInfoReceived(WeaponInfoMessage m) {
         if (player != null && m.getPlayerId() == player.getId()) {
@@ -501,7 +513,7 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         gm.renderText(
                 sb,
                 healthFont,
-                "E: Place Spike | U: Undo | L: Logs | SPACE: Shoot",
+                "E: Place Spike | U: Undo | L: Logs | F: Rewind | SPACE: Shoot",
                 TextAlignment.CENTER,
                 0f,
                 0.95f);
@@ -922,8 +934,20 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         return selectedTeam;
     }
 
+    // public void restart() {
+    //     init();
+    // }
+
     public void restart() {
+        // Clear old player completely
+        //player = null;
+        
+        // Reinitialize connection
         init();
+        
+        // Send login message to server (critical!)
+        connectToServer();
+        
     }
     
     public void logout() {

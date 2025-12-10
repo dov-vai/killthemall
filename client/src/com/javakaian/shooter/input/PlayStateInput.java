@@ -159,6 +159,9 @@ public class PlayStateInput extends InputAdapter {
             case Keys.F10:
                 ProxyPatternManualDemo.runPerformanceReport();
                 break;
+            case Keys.F:
+                playState.requestRewind();
+                return true;
             default:
                 break;
         }

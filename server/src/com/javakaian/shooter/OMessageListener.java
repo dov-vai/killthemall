@@ -61,4 +61,6 @@ public interface OMessageListener {
      */
     void disconnected(Connection con);
 
+    void rewindReceived(RewindMessage m);
+
 }
