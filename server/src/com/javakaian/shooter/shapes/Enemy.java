@@ -3,6 +3,8 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.strategy.EnemyBehaviorStrategy;
+import com.javakaian.shooter.mediator.CollisionMediator;
+import com.javakaian.shooter.mediator.CollisionEvent;
 
 public class Enemy implements Cloneable, GameObject {
 
@@ -10,6 +12,7 @@ public class Enemy implements Cloneable, GameObject {
     private boolean visible = true;
     private Rectangle boundRect;
     private EnemyBehaviorStrategy behaviorStrategy;
+    private CollisionMediator mediator;
 
     public Enemy(float x, float y, float size, EnemyBehaviorStrategy strategy) {
         this.position = new Vector2(x, y);
@@ -20,16 +23,35 @@ public class Enemy implements Cloneable, GameObject {
     @Override
     public void update(UpdateContext context) {
         if (!visible) return;
+
         if (behaviorStrategy != null && context.players != null && !context.players.isEmpty()) {
             position = behaviorStrategy.behaveDifferently(position, context.players, context.deltaTime);
         }
+
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
     }
 
     @Override
     public boolean isAlive() {
         return isVisible();
+    }
+
+    public void update(float deltaTime) {
+        this.boundRect.x = position.x;
+        this.boundRect.y = position.y;
+
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
+    }
+
+    public void setMediator(CollisionMediator mediator) {
+        this.mediator = mediator;
     }
 
     @Override

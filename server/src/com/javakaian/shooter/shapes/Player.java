@@ -4,6 +4,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.shooter.weapons.bridge.BridgeWeapon;
+import com.javakaian.shooter.mediator.CollisionMediator;
+import com.javakaian.shooter.mediator.CollisionEvent;
 
 public class Player implements GameObject {
 
@@ -13,6 +15,8 @@ public class Player implements GameObject {
     private Rectangle boundRect;
     private boolean alive;
     private int health;
+    
+    private CollisionMediator mediator;
 
     //weapon system
     private Weapon currentWeapon;
@@ -53,6 +57,15 @@ public class Player implements GameObject {
     public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+        
+        // Notify mediator that player has moved
+        if (mediator != null) {
+            mediator.notify(this, CollisionEvent.MOVED);
+        }
+    }
+    
+    public void setMediator(CollisionMediator mediator) {
+        this.mediator = mediator;
     }
 
     /**
@@ -155,21 +168,6 @@ public class Player implements GameObject {
         this.currentWeapon = weapon;
         this.lastShotTime = 0;
         System.out.println("Player " + id + " equipped: " + weapon.getDescription());
-    }
-
-    public boolean canShoot(float currentTime) {
-        if (currentWeapon == null) return false;
-
-        float timeSinceLastShot = currentTime - lastShotTime;
-        float requiredCooldown = 1.0f / currentWeapon.getFireRate();
-
-        boolean canShoot = timeSinceLastShot >= requiredCooldown;
-
-        System.out.println("Player " + id + " canShoot check: time=" + currentTime +
-                " lastShot=" + lastShotTime + " timeSince=" + timeSinceLastShot +
-                " required=" + requiredCooldown + " result=" + canShoot);
-
-        return canShoot;
     }
 
     public Weapon getCurrentWeapon() {

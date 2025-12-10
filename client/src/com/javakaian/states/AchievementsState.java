@@ -9,18 +9,27 @@ import com.javakaian.shooter.achievements.AchievementManager;
 import com.javakaian.shooter.input.AchievementsStateInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
+import com.javakaian.shooter.utils.fonts.FontManager;
 
 import java.util.List;
 
 public class AchievementsState extends State {
 
     private final AchievementManager achievementManager;
-    private BitmapFont smallFont;
+    //private BitmapFont smallFont;
+    private FontManager smallFontManager;
 
     public AchievementsState(StateController sc, AchievementManager achievementManager) {
         super(sc);
         this.achievementManager = achievementManager;
-        smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
+        //smallFont = GameManagerFacade.getInstance().generateBitmapFont(28, Color.WHITE);
+        smallFontManager = new FontManager(28, Color.WHITE, "Warungasem.ttf", "Achievements-SmallFont");
+        //smallFontManager.switchToSecurityProxy(false); // Restrict initially
+        smallFontManager.switchToVirtualProxy();
+
+        // check if player has unlocked achievements screen
+        // boolean hasAccess = true;
+        // smallFontManager.setSecurityAccess(hasAccess);
         ip = new AchievementsStateInput(this);
     }
 
@@ -30,6 +39,11 @@ public class AchievementsState extends State {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         GameManagerFacade gm = GameManagerFacade.getInstance();
+
+        BitmapFont smallFont = smallFontManager.getFontResource().getFont();
+        if (smallFont == null) {
+            smallFont = bitmapFont; // fallback to main font
+        }
 
         sb.begin();
 
@@ -60,6 +74,9 @@ public class AchievementsState extends State {
     @Override
     public void dispose() {
         // no-op
+        if (smallFontManager != null) {
+            smallFontManager.dispose();
+        }
     }
 
     public void backToMenu() {

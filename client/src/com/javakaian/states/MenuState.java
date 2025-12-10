@@ -12,6 +12,7 @@ import com.javakaian.shooter.logger.GameLogEntry;
 import com.javakaian.shooter.logger.IGameLogger;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
+import com.javakaian.shooter.utils.fonts.FontManager;
 
 public class MenuState extends State {
 
@@ -21,6 +22,8 @@ public class MenuState extends State {
 
     private IGameLogger gameLogger;
 
+    private FontManager bitmapFontManager;
+    private FontManager smallFontManager;
 
     public MenuState(StateController sc) {
         super(sc);
@@ -61,11 +64,24 @@ public class MenuState extends State {
         ThemeFactory factory = ThemeFactory.getFactory(darkMode);
         currentTheme = factory.createTheme();
 
-        if (smallFont != null) smallFont.dispose();
-        if (bitmapFont != null) bitmapFont.dispose();
+        // if (smallFont != null) smallFont.dispose();
+        // if (bitmapFont != null) bitmapFont.dispose();
 
-        bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(64, currentTheme.getTextColor());
-        smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, currentTheme.getTextColor());
+        // bitmapFont = GameManagerFacade.getInstance().generateBitmapFont(64, currentTheme.getTextColor());
+        // smallFont = GameManagerFacade.getInstance().generateBitmapFont(32, currentTheme.getTextColor());
+
+        if (bitmapFontManager == null) {
+            bitmapFontManager = new FontManager(64, currentTheme.getTextColor(), "Warungasem.ttf", "Menu-BitmapFont");
+            smallFontManager = new FontManager(32, currentTheme.getTextColor(), "Warungasem.ttf", "Menu-SmallFont");
+            
+            // Use Virtual Proxy for delayed creation
+            bitmapFontManager.switchToVirtualProxy();
+            smallFontManager.switchToVirtualProxy();
+        }
+
+        bitmapFont = bitmapFontManager.getFontResource().getFont();
+        smallFont = smallFontManager.getFontResource().getFont();
+        
     }
 
 
@@ -109,7 +125,9 @@ public class MenuState extends State {
 
     @Override
     public void dispose() {
-        smallFont.dispose();
+        //smallFont.dispose();
+        bitmapFontManager.dispose();
+        smallFontManager.dispose();
     }
 
     public void restart() {

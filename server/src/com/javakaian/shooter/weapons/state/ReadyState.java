@@ -10,7 +10,6 @@ public class ReadyState implements WeaponState {
     public void attemptFire(Weapon weapon, ServerWorld world, Player owner, float angleRad) {
         if (weapon.getCurrentAmmo() > 0) {
             weapon.fireWeapon(world, owner, angleRad);
-            weapon.setState(new CooldownState());
         } else {
             weapon.setState(new EmptyState());
         }
