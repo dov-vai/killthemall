@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.shooter.teams.TeamPlayer;
 
-public class Player {
+public class Player implements GameObject {
 
     private float size;
     private Vector2 position;
@@ -53,7 +53,7 @@ public class Player {
         this.refill = 0;
     }
 
-    public void update(float deltaTime) {
+    public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
     }
@@ -158,21 +158,6 @@ public class Player {
         this.currentWeapon = weapon;
         this.lastShotTime = 0;
         System.out.println("Player " + id + " equipped: " + weapon.getDescription());
-    }
-
-    public boolean canShoot(float currentTime) {
-        if (currentWeapon == null) return false;
-
-        float timeSinceLastShot = currentTime - lastShotTime;
-        float requiredCooldown = 1.0f / currentWeapon.getFireRate();
-
-        boolean canShoot = timeSinceLastShot >= requiredCooldown;
-
-        System.out.println("Player " + id + " canShoot check: time=" + currentTime +
-                " lastShot=" + lastShotTime + " timeSince=" + timeSinceLastShot +
-                " required=" + requiredCooldown + " result=" + canShoot);
-
-        return canShoot;
     }
 
     public Weapon getCurrentWeapon() {

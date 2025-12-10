@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * Represents a spike pickup in the world that players can collect
  */
-public class Spike {
+public class Spike implements GameObject {
     private Vector2 position;
     private float size;
     private boolean visible;
@@ -19,9 +19,14 @@ public class Spike {
         this.boundRect = new Rectangle(x, y, size, size);
     }
 
-    public void update(float deltaTime) {
+    public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isVisible();
     }
 
     public Vector2 getPosition() {

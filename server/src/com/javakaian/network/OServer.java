@@ -48,11 +48,12 @@ public class OServer {
 
     private Logger logger = Logger.getLogger(OServer.class);
 
+    private MessageHandler chain;
+
     public OServer(OMessageListener cmo) {
-
         this.messageListener = cmo;
-
         init();
+        buildChain();
     }
 
     private void init() {
@@ -90,6 +91,29 @@ public class OServer {
 
     }
 
+    private void buildChain() {
+        MessageHandler login = new LoginMessageHandler();
+        MessageHandler logout = new LogoutMessageHandler();
+        MessageHandler position = new PositionMessageHandler();
+        MessageHandler shoot = new ShootMessageHandler();
+        MessageHandler reload = new ReloadMessageHandler();
+        MessageHandler weaponChange = new WeaponChangeMessageHandler();
+        MessageHandler placeSpike = new PlaceSpikeMessageHandler();
+        MessageHandler undoSpike = new UndoSpikeMessageHandler();
+        MessageHandler chat = new ChatMessageHandler();
+
+        login.setNext(logout);
+        logout.setNext(position);
+        position.setNext(shoot);
+        shoot.setNext(reload);
+        reload.setNext(weaponChange);
+        weaponChange.setNext(placeSpike);
+        placeSpike.setNext(undoSpike);
+        undoSpike.setNext(chat);
+
+        chain = login;
+    }
+
     /**
      * Gets messages from connection and message queues,parse them and invokes
      * necessary methods.
@@ -108,28 +132,8 @@ public class OServer {
             Connection con = connectionQueue.poll();
             Object message = messageQueue.poll();
 
-            if (message instanceof LoginMessage m) {
-
-                messageListener.loginReceived(con, m);
-
-            } else if (message instanceof LogoutMessage m) {
-                messageListener.logoutReceived(m);
-
-            } else if (message instanceof PositionMessage m) {
-                messageListener.playerMovedReceived(m);
-
-            } else if (message instanceof ShootMessage m) {
-                messageListener.shootReceived(m);
-            } else if (message instanceof ReloadMessage m) {
-                messageListener.reloadReceived(m);
-            } else if (message instanceof WeaponChangeMessage m) {
-                messageListener.weaponChangeReceived(m);
-            } else if (message instanceof PlaceSpikeMessage m) {
-                messageListener.placeSpikeReceived(m);
-            } else if (message instanceof UndoSpikeMessage m) {
-                messageListener.undoSpikeReceived(m);
-            } else if (message instanceof ChatMessage m) {
-                messageListener.chatMessageReceived(m);
+            if (message != null) {
+                chain.handle(con, message, messageListener);
             }
 
         }

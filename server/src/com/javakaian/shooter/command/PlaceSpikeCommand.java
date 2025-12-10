@@ -1,5 +1,7 @@
 package com.javakaian.shooter.command;
 
+import com.javakaian.shooter.ServerWorld;
+import com.javakaian.shooter.shapes.GameObjectComposite;
 import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.shapes.Player;
 
@@ -13,17 +15,20 @@ public class PlaceSpikeCommand implements Command {
     private Player player;
     private PlacedSpike placedSpike;
     private List<PlacedSpike> placedSpikes;
+    private GameObjectComposite worldObjects;
     private float x;
     private float y;
     private float rotation;
 
-    public PlaceSpikeCommand(Player player, List<PlacedSpike> placedSpikes, float x, float y, float rotation) {
+    public PlaceSpikeCommand(Player player, List<PlacedSpike> placedSpikes, GameObjectComposite worldObjects, float x, float y, float rotation) {
         this.player = player;
         this.placedSpikes = placedSpikes;
+        this.worldObjects = worldObjects;
         this.x = x;
         this.y = y;
         this.rotation = rotation;
     }
+
 
     @Override
     public void execute() {
@@ -31,6 +36,7 @@ public class PlaceSpikeCommand implements Command {
             player.removeSpike();
             placedSpike = new PlacedSpike(x, y, 35, rotation, player.getId());
             placedSpikes.add(placedSpike);
+            worldObjects.add(placedSpike);
         }
     }
 
@@ -38,13 +44,16 @@ public class PlaceSpikeCommand implements Command {
     public void undo() {
         if (canUndo()) {
             placedSpikes.remove(placedSpike);
+            worldObjects.remove(placedSpike);
             player.addSpike();
         }
     }
 
     @Override
     public boolean canUndo() {
-        return placedSpike != null && !placedSpike.isConsumed() && placedSpike.isVisible();
+        return placedSpike != null &&
+               !placedSpike.isConsumed() &&
+               placedSpike.isVisible();
     }
 
     public PlacedSpike getPlacedSpike() {

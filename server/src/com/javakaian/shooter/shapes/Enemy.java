@@ -6,17 +6,12 @@ import com.javakaian.shooter.strategy.EnemyBehaviorStrategy;
 
 import java.util.List;
 
-public class Enemy implements Cloneable {
+public class Enemy implements Cloneable, GameObject {
 
     private Vector2 position;
     private boolean visible = true;
     private Rectangle boundRect;
     private EnemyBehaviorStrategy behaviorStrategy;
-
-    public Enemy(float x, float y, float size) {
-        this.position = new Vector2(x, y);
-        this.boundRect = new Rectangle(x, y, size, size);
-    }
 
     public Enemy(float x, float y, float size, EnemyBehaviorStrategy strategy) {
         this.position = new Vector2(x, y);
@@ -24,13 +19,21 @@ public class Enemy implements Cloneable {
         this.behaviorStrategy = strategy;
     }
 
-    public void update(float deltaTime, List<Player> players) {
-        if (behaviorStrategy != null && players != null) {
-            position = behaviorStrategy.behaveDifferently(position, players, deltaTime);
+    @Override
+    public void update(UpdateContext context) {
+        if (!visible) return;
+
+        if (behaviorStrategy != null && context.players != null && !context.players.isEmpty()) {
+            position = behaviorStrategy.behaveDifferently(position, context.players, context.deltaTime);
         }
 
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+    }
+
+    @Override
+    public boolean isAlive() {
+        return isVisible();
     }
 
     public void update(float deltaTime) {

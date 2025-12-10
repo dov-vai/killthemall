@@ -11,6 +11,7 @@ public class KillThemAllServer extends ApplicationAdapter {
 
     private ServerWorld serverWorld;
 
+
     private Logger logger = Logger.getLogger(KillThemAllServer.class);
 
     public KillThemAllServer() {

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Weapon {
+        // Store cooldown timer here so it persists across state changes
+    public float cooldownTimer = 0f;
     protected String barrel;
     protected String scope;
     protected String stock;
@@ -144,9 +146,14 @@ public abstract class Weapon {
 
     public void setState(WeaponState state) {
         this.state = state;
+        // Reset cooldown timer only when entering CooldownState
+        if (state instanceof com.javakaian.shooter.weapons.state.CooldownState) {
+            this.cooldownTimer = 0f;
+        }
     }
 
     public void requestFire(ServerWorld world, Player owner, float angleRad) {
+        System.out.println(state.getName());
         state.attemptFire(this, world, owner, angleRad);
     }
 
