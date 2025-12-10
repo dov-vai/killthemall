@@ -748,7 +748,7 @@ public class ServerWorld implements OMessageListener {
                     float y = player.getPosition().y - (float) Math.sin(angleRad) * distance;
 
                     List<PlacedSpike> placedSpikesList = worldObjects.getAll(PlacedSpike.class);
-                    PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikesList, x, y, m.getRotation());
+                    PlaceSpikeCommand command = new PlaceSpikeCommand(player, placedSpikesList, worldObjects, x, y, m.getRotation());
                     command.execute();
 
                     playerSpikeCommands.computeIfAbsent(player.getId(), k -> new Stack<>()).push(command);

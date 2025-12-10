@@ -20,7 +20,7 @@ public class PlaceSpikeCommand implements Command {
     private float y;
     private float rotation;
 
-    public PlaceSpikeCommand(Player player, List<PlacedSpike> placedSpikes, float x, float y, float rotation) {
+    public PlaceSpikeCommand(Player player, List<PlacedSpike> placedSpikes, GameObjectComposite worldObjects, float x, float y, float rotation) {
         this.player = player;
         this.placedSpikes = placedSpikes;
         this.worldObjects = worldObjects;
@@ -28,6 +28,7 @@ public class PlaceSpikeCommand implements Command {
         this.y = y;
         this.rotation = rotation;
     }
+
 
     @Override
     public void execute() {
