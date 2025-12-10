@@ -35,6 +35,9 @@ import com.javakaian.shooter.iterator.Iterator;
 import com.javakaian.shooter.mediator.ChatMediator;
 import com.javakaian.shooter.mediator.TeamChatMediator;
 
+import com.javakaian.shooter.memento.IMemento;
+import com.javakaian.shooter.memento.PlayerCaretaker;
+
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -80,6 +83,11 @@ public class ServerWorld implements OMessageListener {
     //Mediator pattern for team chat
     private ChatMediator teamChatMediator;
 
+    //Memento
+    private Map<Integer, PlayerCaretaker> playerCheckpoint;
+    private float checkpointTimer = 0f;
+    private static final float CHECKPOINT_INTERVAL = 30f;
+
     // Mediator pattern for collision handling
     public ServerWorld() {
 
@@ -107,6 +115,10 @@ public class ServerWorld implements OMessageListener {
         //Mediator pattern - centralized team chat communication
         teamChatMediator = new TeamChatMediator(server);
 
+        //Memento
+        playerCheckpoint = new HashMap<>();
+        logger.debug("Checkpoint system initialized");
+
         behaviorStrategies = new EnemyBehaviorStrategy[]{
                 new AggressiveBehavior(),
                 new DefensiveBehavior(),
@@ -123,6 +135,7 @@ public class ServerWorld implements OMessageListener {
         this.strategySwitchTimer += deltaTime;
         this.spikeSpawnTime += deltaTime;
         this.powerUpSpawnTime += deltaTime;
+        this.checkpointTimer += deltaTime;
 
         server.parseMessage();
         worldObjects.update(new UpdateContext(deltaTime, worldObjects.getAll(Player.class)));
@@ -134,6 +147,12 @@ public class ServerWorld implements OMessageListener {
                 p.update(deltaTime);
             }
         }   
+
+        // Autosave checkpoints
+        if (checkpointTimer >= CHECKPOINT_INTERVAL) {
+            checkpointTimer = 0f;
+            autoSavePlayerCheckpoints();
+        }
 
         // Collision checking is handled automatically via mediator notify() calls
         checkCollision();
@@ -808,6 +827,162 @@ public class ServerWorld implements OMessageListener {
         if (sender.getTeamPlayer() != null) {
             sender.getTeamPlayer().sendMessage(m.getMessage());
         }
+    }
+
+    /**
+     * Automatically save checkpoints for all alive players.
+     * Called every 30 seconds to create restore points.
+     */
+    private void autoSavePlayerCheckpoints() {
+        List<Player> alivePlayers = worldObjects.getAll(Player.class).stream()
+                .filter(Player::isAlive)
+                .toList();
+        
+        for (Player player : alivePlayers) {
+            savePlayerCheckpoint(player.getId());
+        }
+        
+        if (!alivePlayers.isEmpty()) {
+            logger.debug("Auto-saved checkpoints for " + alivePlayers.size() + " players");
+        }
+    }
+
+    /**
+     * Save a checkpoint for a specific player.
+     * Creates a memento of current player state.
+     * 
+     * @param playerId The ID of the player to save
+     */
+    public void savePlayerCheckpoint(int playerId) {
+        Player player = worldObjects.getAll(Player.class).stream()
+                .filter(p -> p.getId() == playerId)
+                .findFirst()
+                .orElse(null);
+        
+        if (player == null || !player.isAlive()) {
+            logger.debug("Cannot save checkpoint for player " + playerId + " - not found or dead");
+            return;
+        }
+        
+        // Get or create caretaker for this player
+        PlayerCaretaker caretaker = playerCheckpoints.computeIfAbsent(
+            playerId,
+            PlayerCaretaker::new
+        );
+        
+        // Create and save memento
+        IMemento checkpoint = player.createMemento();
+        caretaker.saveCheckpoint(checkpoint);
+        
+        logger.debug("Saved checkpoint for Player " + playerId + 
+                    " (Total: " + caretaker.getCheckpointCount() + " checkpoints)");
+        
+        // Notify player that checkpoint was saved
+        CheckpointSavedMessage msg = new CheckpointSavedMessage();
+        msg.setPlayerId(playerId);
+        msg.setCheckpointCount(caretaker.getCheckpointCount());
+        server.sendToUDP(getConnectionByPlayerId(playerId), msg);
+    }
+
+    /**
+     * Restore a player to their last checkpoint.
+     * This is called when a player dies and chooses to respawn.
+     * 
+     * @param playerId The ID of the player to restore
+     * @return true if restore was successful, false otherwise
+     */
+    public boolean restorePlayerFromCheckpoint(int playerId) {
+        PlayerCaretaker caretaker = playerCheckpoints.get(playerId);
+        
+        if (caretaker == null || caretaker.getCheckpointCount() == 0) {
+            logger.warn("No checkpoint available for player " + playerId);
+            return false;
+        }
+        
+        Player player = worldObjects.getAll(Player.class).stream()
+                .filter(p -> p.getId() == playerId)
+                .findFirst()
+                .orElse(null);
+        
+        if (player == null) {
+            // Player was removed, need to recreate
+            player = new Player(0, 0, 50, playerId);
+            worldObjects.add(player);
+        }
+        
+        // Get last checkpoint
+        IMemento lastCheckpoint = caretaker.getLastCheckpoint();
+        
+        if (lastCheckpoint != null) {
+            // Restore player state
+            player.restoreFromMemento(lastCheckpoint);
+            
+            // Apply respawn penalty (reduce health by 20%)
+            int currentHealth = player.getHealth();
+            int penaltyHealth = Math.max(30, (int)(currentHealth * 0.8));
+            player.hit(currentHealth - penaltyHealth);
+            
+            logger.info("Player " + playerId + " restored from checkpoint " +
+                    "(Health restored to " + player.getHealth() + " with 20% penalty)");
+            
+            // Notify all clients that player respawned
+            PlayerRespawnedMessage msg = new PlayerRespawnedMessage();
+            msg.setPlayerId(playerId);
+            msg.setX(player.getPosition().x);
+            msg.setY(player.getPosition().y);
+            msg.setHealth(player.getHealth());
+            server.sendToAllUDP(msg);
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Handle player death with checkpoint option.
+     * Modified death logic to support respawning.
+     */
+    private void handlePlayerDeath(Player player) {
+        if (player == null) return;
+        
+        PlayerCaretaker caretaker = playerCheckpoints.get(player.getId());
+        boolean hasCheckpoint = (caretaker != null && caretaker.getCheckpointCount() > 0);
+        
+        // Send death message with checkpoint availability
+        PlayerDiedMessage msg = new PlayerDiedMessage();
+        msg.setPlayerId(player.getId());
+        msg.setHasCheckpoint(hasCheckpoint);
+        server.sendToAllUDP(msg);
+        
+        if (hasCheckpoint) {
+            logger.info("Player " + player.getId() + " died but has " + 
+                    caretaker.getCheckpointCount() + " checkpoints available");
+        } else {
+            logger.info("Player " + player.getId() + " died with no checkpoints - game over");
+            // Remove player
+            worldObjects.remove(player);
+        }
+    }
+
+    /**
+     * Helper to get connection ID by player ID
+     */
+    private int getConnectionByPlayerId(int playerId) {
+        for (Map.Entry<Integer, Integer> entry : connectionToPlayerId.entrySet()) {
+            if (entry.getValue() == playerId) {
+                return entry.getKey();
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Clean up checkpoints when player disconnects
+     */
+    private void cleanupPlayerCheckpoints(int playerId) {
+        playerCheckpoints.remove(playerId);
+        logger.debug("Cleaned up checkpoints for player " + playerId);
     }
 
 }
