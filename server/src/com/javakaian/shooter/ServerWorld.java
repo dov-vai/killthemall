@@ -5,9 +5,6 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.OServer;
 import com.javakaian.network.messages.*;
 import com.javakaian.shooter.shapes.*;
-import com.javakaian.shooter.shapes.StandardBullet;
-import com.javakaian.shooter.shapes.FastBullet;
-import com.javakaian.shooter.shapes.HeavyBullet;
 import com.javakaian.shooter.factory.BulletFactory;
 import com.javakaian.shooter.factory.ConcreteBulletFactory;
 import com.javakaian.shooter.factory.BulletType;
@@ -23,9 +20,6 @@ import com.javakaian.shooter.teams.BlueTeamPlayer;
 import com.javakaian.shooter.teams.GreenTeamPlayer;
 import com.javakaian.shooter.teams.RedTeamPlayer;
 import com.javakaian.shooter.teams.TeamPlayer;
-import com.javakaian.shooter.weapons.Rifle;
-import com.javakaian.shooter.weapons.Shotgun;
-import com.javakaian.shooter.weapons.Sniper;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.util.MessageCreator;
 import org.apache.log4j.Logger;
@@ -47,7 +41,6 @@ import java.util.*;
 public class ServerWorld implements OMessageListener {
 
     private GameObjectComposite worldObjects;
-
 
     private OServer server;
 
@@ -195,9 +188,6 @@ public class ServerWorld implements OMessageListener {
         }
     }
 
-    public float getGameTime() {
-        return gameTime;
-    }
 
     /**
      * Spawns power-ups and adds them to different collections.
