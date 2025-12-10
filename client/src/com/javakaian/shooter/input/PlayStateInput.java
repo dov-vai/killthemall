@@ -113,6 +113,22 @@ public class PlayStateInput extends InputAdapter {
     @Override
     public boolean keyDown(int keycode) {
 
+        // Handle chat input separately
+        if (playState.isChatInputActive()) {
+            if (keycode == Keys.ENTER) {
+                playState.sendChatMessage();
+                return true;
+            } else if (keycode == Keys.ESCAPE) {
+                playState.toggleChatInput();
+                return true;
+            } else if (keycode == Keys.BACKSPACE) {
+                playState.removeChatCharacter();
+                return true;
+            }
+            // Let keyTyped handle character input
+            return false;
+        }
+
         // Try to handle with command pattern first
         if (keyBindingManager.handleKeyPress(keycode)) {
             return true;
@@ -128,6 +144,10 @@ public class PlayStateInput extends InputAdapter {
                 // Undo spike (server-side undo, separate from client command undo)
                 playState.undoSpike();
                 break;
+            case Keys.T:
+                // Toggle team chat input
+                playState.toggleChatInput();
+                return true;  // Consume the T key press so it doesn't go to keyTyped
             case Keys.SPACE:
                 // Start shooting (for full auto and charged shot)
                 playState.shoot();
@@ -152,6 +172,29 @@ public class PlayStateInput extends InputAdapter {
         if (keycode == Keys.SPACE) {
             playState.stopShooting();
             return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean keyTyped(char character) {
+        // Handle character input for chat
+        if (playState.isChatInputActive()) {
+            // Only filter out 't' or 'T' if we just opened the chat
+            if ((character == 't' || character == 'T') && playState.isJustOpenedChat()) {
+                playState.clearJustOpenedChat();
+                return true; // Consume but don't add to chat
+            }
+            // Clear the flag for any other character
+            if (playState.isJustOpenedChat()) {
+                playState.clearJustOpenedChat();
+            }
+            
+            if (Character.isLetterOrDigit(character) || Character.isSpaceChar(character) || 
+                "!@#$%^&*()_+-=[]{}|;:',.<>?/".indexOf(character) >= 0) {
+                playState.addChatCharacter(character);
+                return true;
+            }
         }
         return false;
     }

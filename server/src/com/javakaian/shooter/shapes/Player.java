@@ -3,9 +3,7 @@ package com.javakaian.shooter.shapes;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
-import com.javakaian.shooter.weapons.bridge.BridgeWeapon;
-import com.javakaian.shooter.mediator.CollisionMediator;
-import com.javakaian.shooter.mediator.CollisionEvent;
+import com.javakaian.shooter.teams.TeamPlayer;
 
 public class Player implements GameObject {
 
@@ -15,8 +13,6 @@ public class Player implements GameObject {
     private Rectangle boundRect;
     private boolean alive;
     private int health;
-    
-    private CollisionMediator mediator;
 
     //weapon system
     private Weapon currentWeapon;
@@ -24,6 +20,9 @@ public class Player implements GameObject {
 
     //spike inventory
     private int spikeCount;
+    
+    //team system - Mediator pattern
+    private TeamPlayer teamPlayer;
 
     //iterator - powerups
     private boolean hasSpeedBoost = false;
@@ -57,15 +56,6 @@ public class Player implements GameObject {
     public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
-        
-        // Notify mediator that player has moved
-        if (mediator != null) {
-            mediator.notify(this, CollisionEvent.MOVED);
-        }
-    }
-    
-    public void setMediator(CollisionMediator mediator) {
-        this.mediator = mediator;
     }
 
     /**
@@ -287,6 +277,19 @@ public class Player implements GameObject {
     public float getShieldTimeRemaining(float currentTime) {
         if (!hasShield) return 0f;
         return Math.max(0f, shieldEndTime - currentTime);
+    }
+    
+    //team system - Mediator pattern support
+    public TeamPlayer getTeamPlayer() {
+        return teamPlayer;
+    }
+    
+    public void setTeamPlayer(TeamPlayer teamPlayer) {
+        this.teamPlayer = teamPlayer;
+    }
+    
+    public String getTeamName() {
+        return teamPlayer != null ? teamPlayer.getTeamName() : null;
     }
 
 }

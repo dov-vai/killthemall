@@ -1,10 +1,9 @@
 package com.javakaian.shooter.command;
 
 import com.javakaian.shooter.ServerWorld;
+import com.javakaian.shooter.shapes.GameObjectComposite;
 import com.javakaian.shooter.shapes.PlacedSpike;
 import com.javakaian.shooter.shapes.Player;
-import com.javakaian.shooter.shapes.GameObjectComposite;
-import com.javakaian.shooter.mediator.CollisionMediator;
 
 import java.util.List;
 
@@ -17,24 +16,17 @@ public class PlaceSpikeCommand implements Command {
     private PlacedSpike placedSpike;
     private List<PlacedSpike> placedSpikes;
     private GameObjectComposite worldObjects;
-    private CollisionMediator mediator;
     private float x;
     private float y;
     private float rotation;
 
-    public PlaceSpikeCommand(Player player,
-                             List<PlacedSpike> placedSpikes,
-                             GameObjectComposite worldObjects,
-                             float x, float y, float rotation,
-                             CollisionMediator mediator) {
-
+    public PlaceSpikeCommand(Player player, List<PlacedSpike> placedSpikes, float x, float y, float rotation) {
         this.player = player;
         this.placedSpikes = placedSpikes;
         this.worldObjects = worldObjects;
         this.x = x;
         this.y = y;
         this.rotation = rotation;
-        this.mediator = mediator;
     }
 
     @Override
@@ -42,10 +34,6 @@ public class PlaceSpikeCommand implements Command {
         if (player.hasSpikes()) {
             player.removeSpike();
             placedSpike = new PlacedSpike(x, y, 35, rotation, player.getId());
-
-            placedSpike.setVisible(true);
-            placedSpike.setMediator(mediator);
-
             placedSpikes.add(placedSpike);
             worldObjects.add(placedSpike);
         }
@@ -62,8 +50,8 @@ public class PlaceSpikeCommand implements Command {
 
     @Override
     public boolean canUndo() {
-        return placedSpike != null && 
-               !placedSpike.isConsumed() && 
+        return placedSpike != null &&
+               !placedSpike.isConsumed() &&
                placedSpike.isVisible();
     }
 

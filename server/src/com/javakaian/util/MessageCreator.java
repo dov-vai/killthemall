@@ -40,17 +40,27 @@ public class MessageCreator {
 
         gwm.setEnemies(coordinates);
 
-        float[] pcord = new float[players.size() * 6];
+        float[] pcord = new float[players.size() * 7]; // Changed from 6 to 7 to include team
         for (int i = 0; i < players.size(); i++) {
             var player = players.get(i);
             var position = player.getPosition();
 
-            pcord[i * 6] = position.x;
-            pcord[i * 6 + 1] = position.y;
-            pcord[i * 6 + 2] = player.getId();
-            pcord[i * 6 + 3] = player.getHealth();
-            pcord[i * 6 + 4] = player.hasShield() ? 1f : 0f;
-            pcord[i * 6 + 5] = player.getShieldHealth();
+            pcord[i * 7] = position.x;
+            pcord[i * 7 + 1] = position.y;
+            pcord[i * 7 + 2] = player.getId();
+            pcord[i * 7 + 3] = player.getHealth();
+            pcord[i * 7 + 4] = player.hasShield() ? 1f : 0f;
+            pcord[i * 7 + 5] = player.getShieldHealth();
+            
+            // Encode team name as number: RED=0, BLUE=1, GREEN=2
+            String teamName = player.getTeamName();
+            float teamCode = 0f; // Default to RED
+            if ("BLUE".equals(teamName)) {
+                teamCode = 1f;
+            } else if ("GREEN".equals(teamName)) {
+                teamCode = 2f;
+            }
+            pcord[i * 7 + 6] = teamCode;
         }
 
         gwm.setPlayers(pcord);

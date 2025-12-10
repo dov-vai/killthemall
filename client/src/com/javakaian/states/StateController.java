@@ -86,6 +86,9 @@ public class StateController {
                 case ACHIEVEMENTS_STATE:
                     currentState = new AchievementsState(this, achievementManager);
                     break;
+                case TEAM_SELECTION_STATE:
+                    currentState = new TeamSelectionState(this);
+                    break;
                 default:
                     currentState = new MenuState(this);
                     break;

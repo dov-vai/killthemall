@@ -17,6 +17,11 @@ public class LoginMessage {
      */
     private float x;
     private float y;
+    
+    /**
+     * Selected team name (RED, BLUE, or GREEN)
+     */
+    private String selectedTeam;
 
     public int getPlayerId() {
         return playerId;
@@ -40,6 +45,14 @@ public class LoginMessage {
 
     public void setY(float y) {
         this.y = y;
+    }
+    
+    public String getSelectedTeam() {
+        return selectedTeam;
+    }
+    
+    public void setSelectedTeam(String selectedTeam) {
+        this.selectedTeam = selectedTeam;
     }
 
 }
