@@ -449,6 +449,17 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         gm.renderGameObjects(sr, players, enemies, bullets, spikes, placedSpikes, powerUps, player, aimLine);
 
         sb.begin();
+        
+        // Flyweight Pattern - Render weapon image
+        if (currentWeaponImage != null && currentWeaponImage.isLoaded()) {
+            float weaponX = GameConstants.SCREEN_WIDTH * 0.82f; // Right side of screen
+            float weaponY = GameConstants.SCREEN_HEIGHT * 0.10f; // Top of screen
+            float weaponWidth = 150f;
+            float weaponHeight = 100f;
+            
+            sb.draw(currentWeaponImage.getTexture(), weaponX, weaponY, weaponWidth, weaponHeight);
+        }
+        
         gm.renderText(sb, healthFont, "HEALTH: " + player.getHealth(), TextAlignment.CENTER, 0f, 0.05f);
 
         if (player.hasShield()) {
