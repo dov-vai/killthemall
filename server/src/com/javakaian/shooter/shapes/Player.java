@@ -62,7 +62,6 @@ public class Player implements GameObject {
 
     /**
      * Create a memento containing the current state of this player.
-     * This is like taking a "snapshot" of the player at this exact moment.
      * 
      * @return IMemento (narrow interface) - can be stored by Caretaker
      */
@@ -93,8 +92,6 @@ public class Player implements GameObject {
 
     /**
      * Restore this player's state from a memento.
-     * This is like "loading a save game" - the player goes back to
-     * the exact state when the memento was created.
      * 
      * @param memento The memento to restore from (narrow interface)
      */
