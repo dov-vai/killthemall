@@ -101,6 +101,7 @@ public class OServer {
         MessageHandler placeSpike = new PlaceSpikeMessageHandler();
         MessageHandler undoSpike = new UndoSpikeMessageHandler();
         MessageHandler chat = new ChatMessageHandler();
+        MessageHandler rewind = new RewindMessageHandler();
 
         login.setNext(logout);
         logout.setNext(position);
@@ -110,6 +111,7 @@ public class OServer {
         weaponChange.setNext(placeSpike);
         placeSpike.setNext(undoSpike);
         undoSpike.setNext(chat);
+        chat.setNext(rewind);
 
         chain = login;
     }
@@ -175,6 +177,9 @@ public class OServer {
 
         // primitive arrays
         this.server.getKryo().register(float[].class);
+
+        //memento rewind
+        this.server.getKryo().register(RewindMessage.class);
     }
 
     public void sendToAllUDP(Object m) {
