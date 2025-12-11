@@ -30,7 +30,8 @@ import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.stats.GameStats;
 import com.javakaian.shooter.weapons.bridge.*;
 import com.javakaian.shooter.utils.fonts.FontManager;
-import com.javakaian.shooter.utils.fonts.FontResource;
+import com.javakaian.shooter.weapons.images.WeaponImage;
+import com.javakaian.shooter.weapons.images.WeaponImageFactory;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -86,6 +87,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
     private FontManager notifFontManager;
     private FontManager weaponsFontManager;
     
+    // Flyweight Pattern - Weapon images
+    private WeaponImageFactory weaponImageFactory;
+    private WeaponImage currentWeaponImage;
+    
     // Team chat - Mediator pattern
     private String selectedTeam;
     private java.util.List<ChatMessage> chatMessages;
@@ -128,6 +133,10 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         currentFiringMode = new SingleShotMechanism();
         currentBridgeWeapon = new AssaultRifle(currentFiringMode);
         
+        // Initialize Flyweight Pattern for weapon images
+        weaponImageFactory = WeaponImageFactory.getInstance();
+        currentWeaponImage = weaponImageFactory.getWeaponImage("assault_rifle");
+        
         // Initialize chat fonts once to prevent memory leak
         chatFont = GameManagerFacade.getInstance().generateBitmapFont(14, Color.WHITE);
         chatFontRed = GameManagerFacade.getInstance().generateBitmapFont(14, Color.RED);
@@ -155,6 +164,21 @@ public class PlayState extends State implements OMessageListener, AchievementObs
 
             // Bridge Pattern - Update local weapon
             updateBridgeWeapon(weaponConfig);
+            
+            // Flyweight Pattern - Load weapon image (cached if previously loaded)
+            long imageLoadStart = System.nanoTime();
+            currentWeaponImage = weaponImageFactory.getWeaponImage(currentBaseConfig);
+            currentWeaponImage.getTexture(); // Trigger loading
+            long imageLoadTime = System.nanoTime() - imageLoadStart;
+            
+            // Log image loading performance
+            GameLogEntry imageLoadEvent = new GameLogEntry(
+                    System.currentTimeMillis(),
+                    "WEAPON_IMAGE_LOAD",
+                    String.format("Loaded image for %s in %.3f ms (Flyweight cache)", 
+                        currentBaseConfig, imageLoadTime / 1_000_000.0),
+                    "INFO");
+            gameLogger.logEvent(imageLoadEvent);
 
             WeaponChangeMessage message = new WeaponChangeMessage();
             message.setPlayerId(player.getId());
@@ -961,6 +985,9 @@ public class PlayState extends State implements OMessageListener, AchievementObs
         if (chatFontRed != null) chatFontRed.dispose();
         if (chatFontBlue != null) chatFontBlue.dispose();
         if (chatFontGreen != null) chatFontGreen.dispose();
+        
+        // Note: WeaponImageFactory is a singleton and manages its own pool lifecycle
+        // Individual weapon images are shared via Flyweight pattern
         
         stats.endSession();
 

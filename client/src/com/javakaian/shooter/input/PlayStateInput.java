@@ -4,8 +4,8 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.javakaian.shooter.command.*;
 import com.javakaian.states.PlayState;
-import com.badlogic.gdx.Input.Keys;
 import com.javakaian.shooter.utils.fonts.ProxyPatternManualDemo;
+import com.javakaian.shooter.weapons.images.WeaponImageBenchmarkDemo;
 
 /**
  * Input handles of PlayState using Command pattern
@@ -158,6 +158,10 @@ public class PlayStateInput extends InputAdapter {
                 break;
             case Keys.F10:
                 ProxyPatternManualDemo.runPerformanceReport();
+                break;
+            case Keys.F11:
+                // Weapon Image Flyweight pattern benchmark
+                WeaponImageBenchmarkDemo.runDemo();
                 break;
             default:
                 break;
