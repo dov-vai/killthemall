@@ -83,7 +83,7 @@ public class ServerWorld implements OMessageListener {
     private float checkpointTimer = 0f;
     private static final float CHECKPOINT_INTERVAL = 10f;
     private Map<Integer, Float> rewindCooldowns;
-    private static final float REWIND_COOLDOWN = 30f;
+    private static final float REWIND_COOLDOWN = 10f;
 
     // Mediator pattern for collision handling
     public ServerWorld() {
@@ -381,12 +381,6 @@ public class ServerWorld implements OMessageListener {
                                 }
                             });
 
-                    // if (!p.isAlive()) {
-                    //     worldObjects.remove(p);
-                    //     PlayerDiedMessage msg = new PlayerDiedMessage();
-                    //     msg.setPlayerId(p.getId());
-                    //     server.sendToAllUDP(msg);
-                    // }
                     if (!p.isAlive()) {
                         handlePlayerDeath(p);
                     }
@@ -418,12 +412,6 @@ public class ServerWorld implements OMessageListener {
                     spike.setConsumed(true);
                     worldObjects.remove(spike);
 
-                    // if (!player.isAlive()) {
-                    //     worldObjects.remove(player);
-                    //     PlayerDiedMessage msg = new PlayerDiedMessage();
-                    //     msg.setPlayerId(player.getId());
-                    //     server.sendToAllUDP(msg);
-                    // }
                     if (!player.isAlive()) {
                         handlePlayerDeath(player);
                     }
@@ -492,7 +480,6 @@ public class ServerWorld implements OMessageListener {
         TeamAssignmentMessage teamMsg = new TeamAssignmentMessage(id, selectedTeam, teamPlayer.getPlayerName());
         server.sendToAllUDP(teamMsg);
 
-        // Track which player ID belongs to this connection for proper cleanup on
         // disconnect
         connectionToPlayerId.put(con.getID(), id);
     }
@@ -838,7 +825,7 @@ public class ServerWorld implements OMessageListener {
 
     /**
      * Automatically save checkpoints for all alive players.
-     * Called every 30 seconds to create restore points.
+     * Called every X seconds to create restore points.
      */
     private void autoSavePlayerCheckpoints() {
         List<Player> alivePlayers = worldObjects.getAll(Player.class).stream()
@@ -889,7 +876,7 @@ public class ServerWorld implements OMessageListener {
         playerCheckpoints.remove(playerId);
         rewindCooldowns.remove(playerId);
 
-        logger.info("✅ Player " + playerId + " removed; checkpoints cleared (death)");
+        logger.info("Player " + playerId + " removed; checkpoints cleared (death)");
     }
 
     @Override
