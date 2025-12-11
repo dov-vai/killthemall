@@ -52,6 +52,36 @@ public class AchievementManager extends AchievementsObservable implements StatsO
     public boolean isUnlocked(String id) {
         return unlocked.contains(id);
     }
+    
+    /**
+     * Iterator Pattern - Create iterator for all achievements
+     * @return Iterator for all achievements in catalog
+     */
+    public AchievementIterator createIterator() {
+        return new ConcreteAchievementIterator(new ArrayList<>(catalog.values()));
+    }
+    
+    /**
+     * Iterator Pattern - Create iterator for unlocked achievements only
+     * @return Iterator for unlocked achievements
+     */
+    public AchievementIterator createUnlockedIterator() {
+        return new FilteredAchievementIterator(
+            new ArrayList<>(catalog.values()),
+            achievement -> unlocked.contains(achievement.getId())
+        );
+    }
+    
+    /**
+     * Iterator Pattern - Create iterator for locked achievements only
+     * @return Iterator for locked achievements
+     */
+    public AchievementIterator createLockedIterator() {
+        return new FilteredAchievementIterator(
+            new ArrayList<>(catalog.values()),
+            achievement -> !unlocked.contains(achievement.getId())
+        );
+    }
 
     private void unlock(String id) {
         if (unlocked.contains(id)) return;

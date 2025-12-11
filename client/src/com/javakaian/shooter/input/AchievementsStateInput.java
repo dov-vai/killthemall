@@ -25,6 +25,12 @@ public class AchievementsStateInput extends InputAdapter {
 
     @Override
     public boolean keyDown(int keycode) {
+        // Handle Iterator pattern demo
+        if (keycode == Keys.F12) {
+            state.runIteratorDemo();
+            return true;
+        }
+        
         return keyBindingManager.handleKeyPress(keycode);
     }
 

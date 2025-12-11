@@ -6,12 +6,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.javakaian.shooter.achievements.Achievement;
 import com.javakaian.shooter.achievements.AchievementManager;
+import com.javakaian.shooter.achievements.AchievementIterator;
 import com.javakaian.shooter.input.AchievementsStateInput;
 import com.javakaian.shooter.utils.GameManagerFacade;
 import com.javakaian.shooter.utils.Subsystems.TextAlignment;
 import com.javakaian.shooter.utils.fonts.FontManager;
-
-import java.util.List;
 
 public class AchievementsState extends State {
 
@@ -49,15 +48,17 @@ public class AchievementsState extends State {
 
         gm.renderText(sb, bitmapFont, "Achievements", TextAlignment.CENTER, 0f, 0.15f);
 
-        List<Achievement> unlocked = achievementManager.getUnlocked();
-        if (unlocked.isEmpty()) {
+        // Iterator Pattern - Use iterator to traverse unlocked achievements
+        AchievementIterator iterator = achievementManager.createUnlockedIterator();
+        
+        if (!iterator.hasNext()) {
             gm.renderText(sb, smallFont, "No achievements yet", TextAlignment.CENTER, 0f, 0.30f);
         } else {
             float y = 0.28f;
-            for (Achievement a : unlocked) {
+            while (iterator.hasNext() && y <= 0.85f) {
+                Achievement a = iterator.next();
                 gm.renderText(sb, smallFont, a.getTitle() + " - " + a.getDescription(), TextAlignment.CENTER, 0f, y);
                 y += 0.06f;
-                if (y > 0.85f) break; // avoid overflow
             }
         }
 
@@ -81,5 +82,12 @@ public class AchievementsState extends State {
 
     public void backToMenu() {
         sc.setState(StateEnum.MENU_STATE);
+    }
+    
+    /**
+     * Run the Iterator Pattern demonstration
+     */
+    public void runIteratorDemo() {
+        com.javakaian.shooter.achievements.AchievementIteratorDemo.runDemo(achievementManager);
     }
 }
