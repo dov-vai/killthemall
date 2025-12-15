@@ -48,7 +48,7 @@ public class ServerWorld implements OMessageListener {
 
     private float enemyTime = 0f;
     private float spikeSpawnTime = 0f;
-
+    private float statisticsTimer = 0f;
     private UserIdPool idPool;
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
@@ -117,15 +117,6 @@ public class ServerWorld implements OMessageListener {
 
     public void update(float deltaTime) {
 
-        LoggerVisitor loggerVisitor = new LoggerVisitor();
-        for (Player p : worldObjects.getAll(Player.class)) {
-            p.accept(loggerVisitor);
-        }
-        for (Enemy e : worldObjects.getAll(Enemy.class)) {
-            e.accept(loggerVisitor);
-        }
-
-
         this.deltaTime = deltaTime;
         this.enemyTime += deltaTime;
         this.gameTime += deltaTime;
@@ -177,6 +168,26 @@ public class ServerWorld implements OMessageListener {
                 powerUpsMap
 
         );
+
+        statisticsTimer += deltaTime;
+        if (statisticsTimer >= 5.0f) {
+            statisticsTimer = 0f;
+
+            StatisticsVisitor statsVisitor = new StatisticsVisitor();
+            worldObjects.accept(statsVisitor);
+
+            System.out.println(statsVisitor.generateReport());
+
+            LoggerVisitor loggerVisitor = new LoggerVisitor();
+            for (Player p : worldObjects.getAll(Player.class)) {
+                p.accept(loggerVisitor);
+            }
+            for (Enemy e : worldObjects.getAll(Enemy.class)) {
+                e.accept(loggerVisitor);
+            }
+
+        }
+
 
         server.sendToAllUDP(m);
     }
