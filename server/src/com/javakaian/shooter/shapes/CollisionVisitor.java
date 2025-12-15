@@ -1,5 +1,6 @@
 package com.javakaian.shooter.shapes;
 
+import com.javakaian.network.OServer;
 import com.javakaian.shooter.ServerWorld;
 import com.javakaian.network.messages.*;
 
@@ -9,9 +10,11 @@ import java.util.List;
 public class CollisionVisitor implements GameObjectVisitor {
 
     private final GameObjectComposite worldObjects;
+    private OServer server;
 
-    public CollisionVisitor(GameObjectComposite worldObjects) {
+    public CollisionVisitor(GameObjectComposite worldObjects, OServer server) {
         this.worldObjects = worldObjects;
+        this.server = server;
     }
 
     @Override
@@ -46,8 +49,19 @@ public class CollisionVisitor implements GameObjectVisitor {
         List<Spike> spikes = new ArrayList<>(worldObjects.getAll(Spike.class));
         for (Spike spike : spikes) {
             if (spike.getBoundRect().overlaps(player.getBoundRect())) {
+                // increment spike count
                 player.addSpike();
+
+                // remove spike from world
                 worldObjects.remove(spike);
+
+                // send inventory update to all clients
+                InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
+                inventoryMsg.setPlayerId(player.getId());
+                inventoryMsg.setSpikeCount(player.getSpikeCount());
+                server.sendToAllUDP(inventoryMsg);
+
+                System.out.println("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
             }
         }
 

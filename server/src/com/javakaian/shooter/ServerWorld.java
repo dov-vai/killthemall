@@ -117,6 +117,15 @@ public class ServerWorld implements OMessageListener {
 
     public void update(float deltaTime) {
 
+        LoggerVisitor loggerVisitor = new LoggerVisitor();
+        for (Player p : worldObjects.getAll(Player.class)) {
+            p.accept(loggerVisitor);
+        }
+        for (Enemy e : worldObjects.getAll(Enemy.class)) {
+            e.accept(loggerVisitor);
+        }
+
+
         this.deltaTime = deltaTime;
         this.enemyTime += deltaTime;
         this.gameTime += deltaTime;
@@ -330,7 +339,7 @@ public class ServerWorld implements OMessageListener {
     }
 
     private void checkCollision() {
-        CollisionVisitor visitor = new CollisionVisitor(worldObjects);
+        CollisionVisitor visitor = new CollisionVisitor(worldObjects, server);
 
         worldObjects.accept(visitor);
 

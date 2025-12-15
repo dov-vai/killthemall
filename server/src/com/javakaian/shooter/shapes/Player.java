@@ -181,6 +181,7 @@ public class Player implements GameObject {
 
     public void addSpike() {
         this.spikeCount++;
+        System.out.println("SPIKE ADDED");
     }
 
     public boolean hasSpikes() {
