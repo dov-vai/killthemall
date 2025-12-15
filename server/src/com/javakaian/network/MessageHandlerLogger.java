@@ -4,13 +4,14 @@ import com.esotericsoftware.kryonet.Connection;
 import com.javakaian.network.messages.LogoutMessage;
 import com.javakaian.shooter.OMessageListener;
 
-public class LogoutMessageHandler extends MessageHandler {
+public class MessageHandlerLogger extends MessageHandler {
     @Override
     protected boolean process(Connection con, Object message, OMessageListener listener) {
-        if (message instanceof LogoutMessage m) {
-            listener.logoutReceived(m);
-//            return true;
-        }
+        Log(message);
         return false;
+    }
+
+    private void Log(Object message){
+        System.out.println("MESSAGE FROM LOGGER:" + message.toString());
     }
 }

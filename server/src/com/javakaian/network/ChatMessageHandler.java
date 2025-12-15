@@ -9,7 +9,7 @@ public class ChatMessageHandler extends MessageHandler {
     protected boolean process(Connection con, Object message, OMessageListener listener) {
         if (message instanceof ChatMessage m) {
             listener.chatMessageReceived(m);
-            return true;
+//            return true;
         }
         return false;
     }

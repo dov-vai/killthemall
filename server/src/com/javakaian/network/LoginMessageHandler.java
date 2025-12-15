@@ -9,7 +9,7 @@ public class LoginMessageHandler extends MessageHandler {
     protected boolean process(Connection con, Object message, OMessageListener listener) {
         if (message instanceof LoginMessage m) {
             listener.loginReceived(con, m);
-            return true;
+//            return true;
         }
         return false;
     }

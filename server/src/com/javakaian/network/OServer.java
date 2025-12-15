@@ -101,6 +101,7 @@ public class OServer {
         MessageHandler placeSpike = new PlaceSpikeMessageHandler();
         MessageHandler undoSpike = new UndoSpikeMessageHandler();
         MessageHandler chat = new ChatMessageHandler();
+        MessageHandler logger = new MessageHandlerLogger();
 
         login.setNext(logout);
         logout.setNext(position);
@@ -110,6 +111,7 @@ public class OServer {
         weaponChange.setNext(placeSpike);
         placeSpike.setNext(undoSpike);
         undoSpike.setNext(chat);
+        chat.setNext(logger);
 
         chain = login;
     }

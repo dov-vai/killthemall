@@ -9,7 +9,7 @@ public class PlaceSpikeMessageHandler extends MessageHandler {
     protected boolean process(Connection con, Object message, OMessageListener listener) {
         if (message instanceof PlaceSpikeMessage m) {
             listener.placeSpikeReceived(m);
-            return true;
+//            return true;
         }
         return false;
     }
