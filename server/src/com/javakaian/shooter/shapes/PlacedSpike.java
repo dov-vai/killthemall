@@ -32,6 +32,11 @@ public class PlacedSpike implements GameObject {
     }
 
     @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public boolean isAlive() {
         return !isConsumed();
     }

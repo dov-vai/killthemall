@@ -46,7 +46,7 @@ public class ServerWorld implements OMessageListener {
 
     private float enemyTime = 0f;
     private float spikeSpawnTime = 0f;
-
+    private float statisticsTimer = 0f;
     private UserIdPool idPool;
 
     private Logger logger = Logger.getLogger(ServerWorld.class);
@@ -185,6 +185,26 @@ public class ServerWorld implements OMessageListener {
                 powerUpsMap
 
         );
+
+        statisticsTimer += deltaTime;
+        if (statisticsTimer >= 5.0f) {
+            statisticsTimer = 0f;
+
+            StatisticsVisitor statsVisitor = new StatisticsVisitor();
+            worldObjects.accept(statsVisitor);
+
+            System.out.println(statsVisitor.generateReport());
+
+            LoggerVisitor loggerVisitor = new LoggerVisitor();
+            for (Player p : worldObjects.getAll(Player.class)) {
+                p.accept(loggerVisitor);
+            }
+            for (Enemy e : worldObjects.getAll(Enemy.class)) {
+                e.accept(loggerVisitor);
+            }
+
+        }
+
 
         server.sendToAllUDP(m);
     }
@@ -347,84 +367,27 @@ public class ServerWorld implements OMessageListener {
     }
 
     private void checkCollision() {
-        List<Bullet> bullets = worldObjects.getAll(Bullet.class);
-        List<Player> players = worldObjects.getAll(Player.class);
-        List<Enemy> enemies = worldObjects.getAll(Enemy.class);
-        List<Spike> spikes = worldObjects.getAll(Spike.class);
-        List<PlacedSpike> placedSpikes = worldObjects.getAll(PlacedSpike.class);
+        CollisionVisitor visitor = new CollisionVisitor(worldObjects, server);
 
-        for (Bullet b : new ArrayList<>(bullets)) {
-            if (!b.isVisible()) continue;
+        worldObjects.accept(visitor);
 
-            for (Enemy e : new ArrayList<>(enemies)) {
-                if (e.isVisible() && e.getBoundRect().overlaps(b.getBoundRect())) {
-                    worldObjects.remove(b);
-                    worldObjects.remove(e);
-                    break;
-                }
-            }
+        for (Player p : new ArrayList<>(worldObjects.getAll(Player.class))) {
+            if (!p.isAlive()) {
+                worldObjects.remove(p);
 
-            if (!b.isVisible()) continue;
-
-            for (Player p : players) {
-                if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
-                    b.setVisible(false);
-
-                    players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
-                            .ifPresent(attacker -> {
-                                if (attacker.getCurrentWeapon() != null) {
-                                    Weapon attackerWeapon = attacker.getCurrentWeapon();
-                                    float baseDamage = attackerWeapon.getDamage();
-                                    float damageMultiplier = attacker.getDamageMultiplier();
-                                    int finalDamage = (int) (baseDamage * damageMultiplier);
-                                    p.hit(finalDamage);
-                                }
-                            });
-
-                    if (!p.isAlive()) {
-                        handlePlayerDeath(p);
-                    }
-                    break;
-                }
+                PlayerDiedMessage msg = new PlayerDiedMessage();
+                msg.setPlayerId(p.getId());
+                server.sendToAllUDP(msg);
             }
         }
 
-        for (Spike spike : new ArrayList<>(spikes)) {
-            for (Player player : players) {
-                if (spike.getBoundRect().overlaps(player.getBoundRect())) {
-                    player.addSpike();
-                    worldObjects.remove(spike);
-                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
-                    inventoryMsg.setPlayerId(player.getId());
-                    inventoryMsg.setSpikeCount(player.getSpikeCount());
-                    server.sendToAllUDP(inventoryMsg);
-                    logger.debug("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
-                }
-            }
-        }
-
-        for (PlacedSpike spike : new ArrayList<>(placedSpikes)) {
-            if (!spike.isVisible() || spike.isConsumed()) continue;
-
-            for (Player player : players) {
-                if (player.getId() != spike.getPlayerId() && player.getBoundRect().overlaps(spike.getBoundRect())) {
-                    player.hit(20);
-                    spike.setConsumed(true);
-                    worldObjects.remove(spike);
-
-                    if (!player.isAlive()) {
-                        handlePlayerDeath(player);
-                    }
-                            // Ensure weapon cooldowns update for all players
-                            for (Player p : worldObjects.getAll(Player.class)) {
-                                if (p.getCurrentWeapon() != null) {
-                                    p.getCurrentWeapon().update(deltaTime);
-                                }
-                            }
-                }
+        for (Player p : worldObjects.getAll(Player.class)) {
+            if (p.getCurrentWeapon() != null) {
+                p.getCurrentWeapon().update(deltaTime);
             }
         }
     }
+
 
     @Override
     public void loginReceived(Connection con, LoginMessage m) {
@@ -882,53 +845,53 @@ public class ServerWorld implements OMessageListener {
     @Override
     public void rewindReceived(RewindMessage m) {
         int playerId = m.getPlayerId();
-        
+
         // Check cooldown
         Float lastRewind = rewindCooldowns.get(playerId);
         if (lastRewind != null && (gameTime - lastRewind) < REWIND_COOLDOWN) {
             float remaining = REWIND_COOLDOWN - (gameTime - lastRewind);
-            logger.info("REWIND: Player " + playerId + " on cooldown (" + 
+            logger.info("REWIND: Player " + playerId + " on cooldown (" +
                     String.format("%.1f", remaining) + "s remaining)");
             return;
         }
-        
+
         // Find player
         Player player = worldObjects.getAll(Player.class).stream()
                 .filter(p -> p.getId() == playerId)
                 .findFirst()
                 .orElse(null);
-        
+
         if (player == null || !player.isAlive()) {
             logger.warn("REWIND: Player " + playerId + " not found or dead");
             return;
         }
-        
+
         // Check if checkpoint exists
         PlayerCaretaker caretaker = playerCheckpoints.get(playerId);
         if (caretaker == null || caretaker.getCheckpointCount() == 0) {
             logger.info("REWIND: Player " + playerId + " has no checkpoint to rewind to");
             return;
         }
-        
+
         // Get checkpoint (before rewind state)
         IMemento checkpoint = caretaker.getLastCheckpoint();
-        
+
         logger.info("REWIND ACTIVATED: Player " + playerId);
         logger.info("   Before: Pos=" + player.getPosition() + ", HP=" + player.getHealth());
-        
+
         // RESTORE from checkpoint (THIS IS THE MEMENTO PATTERN IN ACTION!)
         player.restoreFromMemento(checkpoint);
-        
+
         // Update bound rect to match restored position
         player.getBoundRect().x = player.getPosition().x;
         player.getBoundRect().y = player.getPosition().y;
-        
+
         logger.info("   After:  Pos=" + player.getPosition() + ", HP=" + player.getHealth());
         logger.info("   Player rewound to checkpoint!");
-        
+
         // Set cooldown
         rewindCooldowns.put(playerId, gameTime);
-        
+
         // Notify all clients of the instant position change (creates visual "teleport" effect)
         // The normal game update will send the new state, but we could add a special effect message here
         logger.info("   Cooldown set: next rewind available in " + REWIND_COOLDOWN + "s");

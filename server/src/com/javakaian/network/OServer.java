@@ -101,6 +101,7 @@ public class OServer {
         MessageHandler placeSpike = new PlaceSpikeMessageHandler();
         MessageHandler undoSpike = new UndoSpikeMessageHandler();
         MessageHandler chat = new ChatMessageHandler();
+        MessageHandler logger = new MessageHandlerLogger();
         MessageHandler rewind = new RewindMessageHandler();
 
         login.setNext(logout);
@@ -112,6 +113,7 @@ public class OServer {
         placeSpike.setNext(undoSpike);
         undoSpike.setNext(chat);
         chat.setNext(rewind);
+        chat.setNext(logger);
 
         chain = login;
     }

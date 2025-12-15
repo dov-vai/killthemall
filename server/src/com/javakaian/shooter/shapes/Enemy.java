@@ -50,6 +50,11 @@ public class Enemy implements Cloneable, GameObject {
         }
     }
 
+    @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
     public Vector2 getPosition() {
         return position;
     }

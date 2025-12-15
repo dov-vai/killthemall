@@ -225,6 +225,11 @@ public class Player implements GameObject {
         }
     }
 
+    @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
     public boolean isVisible() {
         return alive;
     }
@@ -256,6 +261,7 @@ public class Player implements GameObject {
 
     public void addSpike() {
         this.spikeCount++;
+        System.out.println("SPIKE ADDED");
     }
 
     public boolean hasSpikes() {
