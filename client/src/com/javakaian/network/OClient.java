@@ -110,6 +110,9 @@ public class OClient {
         // primitive arrays
         this.client.getKryo().register(float[].class);
 
+        //memento rewind
+        this.client.getKryo().register(RewindMessage.class);
+
     }
 
     public void close() {

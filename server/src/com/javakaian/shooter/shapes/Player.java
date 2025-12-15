@@ -4,6 +4,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.javakaian.shooter.weapons.Weapon;
 import com.javakaian.shooter.teams.TeamPlayer;
+import com.javakaian.shooter.memento.IMemento;
+import com.javakaian.shooter.memento.PlayerMemento;
 
 public class Player implements GameObject {
 
@@ -56,6 +58,84 @@ public class Player implements GameObject {
     public void update(UpdateContext context) {
         this.boundRect.x = position.x;
         this.boundRect.y = position.y;
+    }
+
+    /**
+     * Create a memento containing the current state of this player.
+     * This is like taking a "snapshot" of the player at this exact moment.
+     * 
+     * @return IMemento (narrow interface) - can be stored by Caretaker
+     */
+    public IMemento createMemento() {
+        System.out.println("Creating memento for Player " + id + 
+                        " (HP: " + health + ", Pos: " + position + ")");
+        
+        // Create and return a new memento with current state
+        // Note: We return IMemento (narrow interface) but create PlayerMemento
+        return new PlayerMemento(
+            position,
+            health,
+            alive,
+            currentWeapon,
+            spikeCount,
+            hasSpeedBoost,
+            speedBoostEndTime,
+            speedMultiplier,
+            hasDamageBoost,
+            damageBoostEndTime,
+            damageMultiplier,
+            hasShield,
+            shieldEndTime,
+            shieldHealth,
+            lastShotTime
+        );
+    }
+
+    /**
+     * Restore this player's state from a memento.
+     * This is like "loading a save game" - the player goes back to
+     * the exact state when the memento was created.
+     * 
+     * @param memento The memento to restore from (narrow interface)
+     */
+    public void restoreFromMemento(IMemento memento) {
+        // Only Player can cast IMemento back to PlayerMemento
+        // This is the security mechanism - other classes see only IMemento
+        if (!(memento instanceof PlayerMemento)) {
+            System.out.println("Error: Invalid memento type");
+            return;
+        }
+        
+        PlayerMemento playerMemento = (PlayerMemento) memento;
+        
+        // Restore all state from the memento
+        this.position.set(playerMemento.getPosition());
+        this.health = playerMemento.getHealth();
+        this.alive = playerMemento.isAlive();
+        this.currentWeapon = playerMemento.getCurrentWeapon();
+        this.spikeCount = playerMemento.getSpikeCount();
+        
+        // Restore power-up states
+        this.hasSpeedBoost = playerMemento.hasSpeedBoost();
+        this.speedBoostEndTime = playerMemento.getSpeedBoostEndTime();
+        this.speedMultiplier = playerMemento.getSpeedMultiplier();
+        
+        this.hasDamageBoost = playerMemento.hasDamageBoost();
+        this.damageBoostEndTime = playerMemento.getDamageBoostEndTime();
+        this.damageMultiplier = playerMemento.getDamageMultiplier();
+        
+        this.hasShield = playerMemento.hasShield();
+        this.shieldEndTime = playerMemento.getShieldEndTime();
+        this.shieldHealth = playerMemento.getShieldHealth();
+        
+        this.lastShotTime = playerMemento.getLastShotTime();
+        
+        // Update bounding rectangle
+        this.boundRect.x = position.x;
+        this.boundRect.y = position.y;
+        
+        System.out.println("Restored Player " + id + " from memento " +
+                        "(HP: " + health + ", Pos: " + position + ")");
     }
 
     /**

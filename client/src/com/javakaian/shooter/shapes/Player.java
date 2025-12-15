@@ -23,17 +23,34 @@ public class Player {
         center = new Vector2(x, y);
     }
 
+    // public void render(ShapeRenderer sr) {
+    //     sr.rect(position.x, position.y, size, size);
+    //     sr.end();
+    //     sr.begin(ShapeType.Filled);
+    //     sr.rect(position.x, position.y, this.health / 2.0f, size);
+    //     sr.end();
+    //     sr.begin(ShapeType.Line);
+
+    //     center.x = position.x + size / 2;
+    //     center.y = position.y + size / 2;
+    // }
+
     public void render(ShapeRenderer sr) {
+        // Draw player outline (white/black box)
         sr.rect(position.x, position.y, size, size);
         sr.end();
+        
+        // Draw health bar (filled, clamped to 0-100)
         sr.begin(ShapeType.Filled);
-        sr.rect(position.x, position.y, this.health / 2.0f, size);
+        float healthBarWidth = Math.max(0, Math.min(100, this.health)) / 2.0f;
+        sr.rect(position.x, position.y, healthBarWidth, size);
         sr.end();
+        
         sr.begin(ShapeType.Line);
 
         center.x = position.x + size / 2;
         center.y = position.y + size / 2;
-    }
+    }   
 
     public Vector2 getCenter() {
         return center;
@@ -60,7 +77,8 @@ public class Player {
     }
 
     public void setHealth(int health) {
-        this.health = health;
+        //this.health = health;
+        this.health = Math.max(0, Math.min(100, health));
     }
 
     public boolean hasShield() {

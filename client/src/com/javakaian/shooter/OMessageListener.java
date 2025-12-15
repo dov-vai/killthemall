@@ -58,4 +58,6 @@ public interface OMessageListener {
      */
     void teamAssignmentReceived(TeamAssignmentMessage m);
 
+    default void rewindReceived(RewindMessage m) {}
+
 }
