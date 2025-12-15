@@ -48,6 +48,11 @@ public class FastBullet implements Bullet, GameObject {
     }
 
     @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public Vector2 getPosition() {
         return position;
     }

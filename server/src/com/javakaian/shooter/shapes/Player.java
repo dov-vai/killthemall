@@ -145,6 +145,11 @@ public class Player implements GameObject {
         }
     }
 
+    @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
     public boolean isVisible() {
         return alive;
     }

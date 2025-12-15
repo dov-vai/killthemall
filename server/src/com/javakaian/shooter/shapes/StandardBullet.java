@@ -42,6 +42,11 @@ public class StandardBullet implements Bullet, GameObject {
     }
 
     @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
     public boolean isAlive() {
         return isVisible();
     }

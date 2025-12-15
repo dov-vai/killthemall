@@ -57,4 +57,12 @@ public class GameObjectComposite implements GameObject {
         }
         return false;
     }
+
+    @Override
+    public void accept(GameObjectVisitor visitor) {
+        for (GameObject obj : new ArrayList<>(children)) {
+            obj.accept(visitor);
+        }
+    }
+
 }

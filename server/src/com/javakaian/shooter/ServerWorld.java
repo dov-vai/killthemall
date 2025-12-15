@@ -330,90 +330,27 @@ public class ServerWorld implements OMessageListener {
     }
 
     private void checkCollision() {
-        List<Bullet> bullets = worldObjects.getAll(Bullet.class);
-        List<Player> players = worldObjects.getAll(Player.class);
-        List<Enemy> enemies = worldObjects.getAll(Enemy.class);
-        List<Spike> spikes = worldObjects.getAll(Spike.class);
-        List<PlacedSpike> placedSpikes = worldObjects.getAll(PlacedSpike.class);
+        CollisionVisitor visitor = new CollisionVisitor(worldObjects);
 
-        for (Bullet b : new ArrayList<>(bullets)) {
-            if (!b.isVisible()) continue;
+        worldObjects.accept(visitor);
 
-            for (Enemy e : new ArrayList<>(enemies)) {
-                if (e.isVisible() && e.getBoundRect().overlaps(b.getBoundRect())) {
-                    worldObjects.remove(b);
-                    worldObjects.remove(e);
-                    break;
-                }
-            }
+        for (Player p : new ArrayList<>(worldObjects.getAll(Player.class))) {
+            if (!p.isAlive()) {
+                worldObjects.remove(p);
 
-            if (!b.isVisible()) continue;
-
-            for (Player p : players) {
-                if (b.isVisible() && p.getBoundRect().overlaps(b.getBoundRect()) && p.getId() != b.getId()) {
-                    b.setVisible(false);
-
-                    players.stream().filter(attacker -> attacker.getId() == b.getId()).findFirst()
-                            .ifPresent(attacker -> {
-                                if (attacker.getCurrentWeapon() != null) {
-                                    Weapon attackerWeapon = attacker.getCurrentWeapon();
-                                    float baseDamage = attackerWeapon.getDamage();
-                                    float damageMultiplier = attacker.getDamageMultiplier();
-                                    int finalDamage = (int) (baseDamage * damageMultiplier);
-                                    p.hit(finalDamage);
-                                }
-                            });
-
-                    if (!p.isAlive()) {
-                        worldObjects.remove(p);
-                        PlayerDiedMessage msg = new PlayerDiedMessage();
-                        msg.setPlayerId(p.getId());
-                        server.sendToAllUDP(msg);
-                    }
-                    break;
-                }
+                PlayerDiedMessage msg = new PlayerDiedMessage();
+                msg.setPlayerId(p.getId());
+                server.sendToAllUDP(msg);
             }
         }
 
-        for (Spike spike : new ArrayList<>(spikes)) {
-            for (Player player : players) {
-                if (spike.getBoundRect().overlaps(player.getBoundRect())) {
-                    player.addSpike();
-                    worldObjects.remove(spike);
-                    InventoryUpdateMessage inventoryMsg = new InventoryUpdateMessage();
-                    inventoryMsg.setPlayerId(player.getId());
-                    inventoryMsg.setSpikeCount(player.getSpikeCount());
-                    server.sendToAllUDP(inventoryMsg);
-                    logger.debug("Player " + player.getId() + " picked up spike. Total: " + player.getSpikeCount());
-                }
-            }
-        }
-
-        for (PlacedSpike spike : new ArrayList<>(placedSpikes)) {
-            if (!spike.isVisible() || spike.isConsumed()) continue;
-
-            for (Player player : players) {
-                if (player.getId() != spike.getPlayerId() && player.getBoundRect().overlaps(spike.getBoundRect())) {
-                    player.hit(20);
-                    spike.setConsumed(true);
-                    worldObjects.remove(spike);
-
-                    if (!player.isAlive()) {
-                        worldObjects.remove(player);
-                        PlayerDiedMessage msg = new PlayerDiedMessage();
-                        msg.setPlayerId(player.getId());
-                        server.sendToAllUDP(msg);
-                    }
-                            // Ensure weapon cooldowns update for all players
-                            for (Player p : worldObjects.getAll(Player.class)) {
-                                if (p.getCurrentWeapon() != null) {
-                                    p.getCurrentWeapon().update(deltaTime);
-                                }
-                            }
-                }
+        for (Player p : worldObjects.getAll(Player.class)) {
+            if (p.getCurrentWeapon() != null) {
+                p.getCurrentWeapon().update(deltaTime);
             }
         }
     }
+
 
     @Override
     public void loginReceived(Connection con, LoginMessage m) {

@@ -48,4 +48,9 @@ public class Spike implements GameObject {
     public Rectangle getBoundRect() {
         return boundRect;
     }
+
+    @Override
+    public void accept(GameObjectVisitor visitor) {
+        visitor.visit(this);
+    }
 }
