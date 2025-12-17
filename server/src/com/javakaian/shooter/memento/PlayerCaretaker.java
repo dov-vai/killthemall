@@ -11,11 +11,6 @@ import java.util.List;
  * - Providing undo/redo functionality
  * - Managing memento lifecycle
  * 
- * The Caretaker ONLY sees the Narrow Interface (IMemento) and cannot
- * access the internal state of mementos - this ensures security!
- * 
- * Think of this like a "Save Game Manager" that keeps track of all your
- * saved checkpoints but doesn't know what's inside them.
  */
 public class PlayerCaretaker {
     
@@ -30,7 +25,6 @@ public class PlayerCaretaker {
     
     /**
      * Save a checkpoint (add memento to history).
-     * Like pressing "Save Game" at a checkpoint.
      */
     public void saveCheckpoint(IMemento memento) {
         // If we're not at the end of history, remove future states
@@ -64,7 +58,7 @@ public class PlayerCaretaker {
     }
     
     /**
-     * Undo to previous state (like Ctrl+Z).
+     * Undo to previous state.
      * Returns the previous memento or null if at the beginning.
      */
     public IMemento undo() {
@@ -81,7 +75,7 @@ public class PlayerCaretaker {
     }
     
     /**
-     * Redo to next state (like Ctrl+Y).
+     * Redo to next state.
      * Returns the next memento or null if at the end.
      */
     public IMemento redo() {

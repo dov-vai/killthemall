@@ -84,6 +84,8 @@ public class ServerWorld implements OMessageListener {
     private static final float CHECKPOINT_INTERVAL = 10f;
     private Map<Integer, Float> rewindCooldowns;
     private static final float REWIND_COOLDOWN = 10f;
+    private Map<Integer, Integer> rewindUsesLeft;
+    private static final int MAX_REWINDS = 3;
 
     // Mediator pattern for collision handling
     public ServerWorld() {
@@ -115,6 +117,7 @@ public class ServerWorld implements OMessageListener {
         //Memento
         playerCheckpoints = new HashMap<>();
         rewindCooldowns = new HashMap<>();
+        rewindUsesLeft = new HashMap<>();
         logger.debug("Checkpoint system initialized");
 
         behaviorStrategies = new EnemyBehaviorStrategy[]{
@@ -519,6 +522,7 @@ public class ServerWorld implements OMessageListener {
 
         playerCheckpoints.remove(playerId);
         rewindCooldowns.remove(playerId);
+        rewindUsesLeft.remove(playerId);
     }
 
     @Override
@@ -839,6 +843,7 @@ public class ServerWorld implements OMessageListener {
             );
             IMemento checkpoint = player.createMemento();
             caretaker.saveCheckpoint(checkpoint);
+            rewindUsesLeft.put(player.getId(), MAX_REWINDS);
             playerCheckpoints.put(player.getId(), caretaker);
 
             logger.info("MEMENTO: Saved checkpoint for Player " + player.getId() +
@@ -875,6 +880,7 @@ public class ServerWorld implements OMessageListener {
         // MEMENTO: Clear checkpoints on death (no restore after death)
         playerCheckpoints.remove(playerId);
         rewindCooldowns.remove(playerId);
+        rewindUsesLeft.remove(playerId);
 
         logger.info("Player " + playerId + " removed; checkpoints cleared (death)");
     }
@@ -883,55 +889,35 @@ public class ServerWorld implements OMessageListener {
     public void rewindReceived(RewindMessage m) {
         int playerId = m.getPlayerId();
         
-        // Check cooldown
-        Float lastRewind = rewindCooldowns.get(playerId);
-        if (lastRewind != null && (gameTime - lastRewind) < REWIND_COOLDOWN) {
-            float remaining = REWIND_COOLDOWN - (gameTime - lastRewind);
-            logger.info("REWIND: Player " + playerId + " on cooldown (" + 
-                    String.format("%.1f", remaining) + "s remaining)");
-            return;
-        }
-        
-        // Find player
         Player player = worldObjects.getAll(Player.class).stream()
-                .filter(p -> p.getId() == playerId)
+                .filter(p -> p.getId() == playerId && p.isAlive())
                 .findFirst()
                 .orElse(null);
         
-        if (player == null || !player.isAlive()) {
-            logger.warn("REWIND: Player " + playerId + " not found or dead");
-            return;
-        }
+        if (player == null) return;
         
-        // Check if checkpoint exists
         PlayerCaretaker caretaker = playerCheckpoints.get(playerId);
-        if (caretaker == null || caretaker.getCheckpointCount() == 0) {
-            logger.info("REWIND: Player " + playerId + " has no checkpoint to rewind to");
+        if (caretaker == null || !caretaker.canUndo()) {
+            logger.info("REWIND: No checkpoints to rewind to");
             return;
         }
         
-        // Get checkpoint (before rewind state)
-        IMemento checkpoint = caretaker.getLastCheckpoint();
+        int uses = rewindUsesLeft.getOrDefault(playerId, MAX_REWINDS);
+        if (uses <= 0) {
+            logger.info("REWIND: No rewinds left (0/" + MAX_REWINDS + ")");
+            return;
+        }
         
-        logger.info("REWIND ACTIVATED: Player " + playerId);
-        logger.info("   Before: Pos=" + player.getPosition() + ", HP=" + player.getHealth());
-        
-        // RESTORE from checkpoint (THIS IS THE MEMENTO PATTERN IN ACTION!)
-        player.restoreFromMemento(checkpoint);
-        
-        // Update bound rect to match restored position
+        // Undo to previous checkpoint
+        IMemento previous = caretaker.undo();
+        player.restoreFromMemento(previous);
         player.getBoundRect().x = player.getPosition().x;
         player.getBoundRect().y = player.getPosition().y;
         
-        logger.info("   After:  Pos=" + player.getPosition() + ", HP=" + player.getHealth());
-        logger.info("   Player rewound to checkpoint!");
+        rewindUsesLeft.put(playerId, uses - 1);
         
-        // Set cooldown
-        rewindCooldowns.put(playerId, gameTime);
-        
-        // Notify all clients of the instant position change (creates visual "teleport" effect)
-        // The normal game update will send the new state, but we could add a special effect message here
-        logger.info("   Cooldown set: next rewind available in " + REWIND_COOLDOWN + "s");
+        logger.info("REWIND: Player " + playerId + " → Checkpoint " + caretaker.getCurrentIndex() +
+                " | HP: " + player.getHealth() + " | Rewinds: " + (uses-1) + "/" + MAX_REWINDS);
     }
 
 }
